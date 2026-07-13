@@ -3,8 +3,8 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Services — Kaligirl Financial Services</title>
-  <meta name="description" content="Fiduciary financial planning and investment guidance from Kaligirl Financial Services, a California-registered advisory firm." />
+  <title>Login — Kaligirl Financial Services</title>
+  <meta name="description" content="Existing clients: log in to the Kaligirl Financial Services client portal." />
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
@@ -28,49 +28,28 @@
 
   <main>
     <section class="hero wrap">
-      <p class="eyebrow">Services</p>
-      <h1>How we work with you.</h1>
-      <p class="lede">Every engagement is grounded in the fiduciary standard: advice that serves your interests, with fees and methods disclosed up front.</p>
+      <p class="eyebrow">Login · Existing clients</p>
+      <h1>Welcome back.</h1>
+      <p class="lede">Sign in to your secure client portal to review documents, e-sign agreements, and message your advisor. New here? <a href="get-started.html">Get started instead</a>.</p>
     </section>
 
     <section class="section">
       <div class="wrap">
-        <div class="principles">
-          <div class="principle">
-            <span class="n">01</span>
-            <div>
-              <h3>Financial planning</h3>
-              <p>A full picture of where you are and where you want to go — cash flow, savings, goals, and the trade-offs between them — organized into a plan you can act on.</p>
-            </div>
+        <!-- AUTH INTEGRATION POINT — client sign-in lives in Moxo alongside
+             onboarding. Point this form at the Moxo client-portal login URL,
+             or replace it with Moxo's embedded login flow. -->
+        <form id="login-form" class="auth-card">
+          <div class="field">
+            <label for="email">Email</label>
+            <input type="email" id="email" name="email" autocomplete="username" required />
           </div>
-          <div class="principle">
-            <span class="n">02</span>
-            <div>
-              <h3>Investment guidance</h3>
-              <p>Objective advice on how your assets are structured, without commissions or product sales shaping the recommendation.</p>
-            </div>
+          <div class="field">
+            <label for="password">Password</label>
+            <input type="password" id="password" name="password" autocomplete="current-password" required />
           </div>
-          <div class="principle">
-            <span class="n">03</span>
-            <div>
-              <h3>Decision support</h3>
-              <p>An independent second opinion for major financial choices, so you can weigh options with someone whose only stake is your outcome.</p>
-            </div>
-          </div>
-        </div>
-        <!-- COMPLIANCE: describe fees/scope accurately once finalized.
-             Avoid guarantees, performance claims, or testimonials. -->
-        <p style="margin-top:2.5rem;color:var(--muted)">Fee structure and engagement details are provided in writing before you commit to anything. [Insert approved fee/scope summary.]</p>
-      </div>
-    </section>
-
-    <section class="section">
-      <div class="wrap">
-        <div class="cta-band">
-          <h2>Not sure which fits?</h2>
-          <p>Start with an introduction and we'll figure it out together.</p>
-          <p style="margin-top:1.5rem"><a class="btn btn-primary" href="get-started.html">Book an introduction</a></p>
-        </div>
+          <button type="submit" class="btn btn-primary" style="width:100%">Sign in</button>
+          <p class="auth-foot">Trouble signing in? <a href="contact.html">Contact us</a>.</p>
+        </form>
       </div>
     </section>
   </main>

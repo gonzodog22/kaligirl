@@ -5,16 +5,17 @@
    ============================================================ */
 
 :root {
-  /* Palette — calm stewardship, not corporate-blue-stock */
-  --ink:        #16241f;   /* near-black pine, primary text */
-  --pine:       #274a42;   /* brand primary */
-  --pine-deep:  #1c352f;
-  --paper:      #f5f3ec;   /* warm paper background */
-  --paper-2:    #eeeae0;   /* raised surfaces */
-  --brass:      #a9843f;   /* single restrained accent */
-  --brass-soft: #c7a86b;
-  --line:       #d8d2c4;   /* hairline rules */
-  --muted:      #5c6660;   /* secondary text */
+  /* Palette — pulled from the Kali Girl mark: black serif wordmark,
+     sky-blue flower on white */
+  --ink:        #10161c;   /* near-black, cool undertone to match the wordmark */
+  --brand:      #2f7fac;   /* brand primary — mid petal blue */
+  --brand-deep: #1c5878;   /* hover / pressed state */
+  --paper:      #ffffff;   /* site background, matches the logo's white ground */
+  --paper-2:    #f2f8fb;   /* raised surfaces */
+  --accent:     #4fabd8;   /* single restrained accent — lighter petal blue */
+  --accent-soft:#a9dcf0;   /* palest petal blue */
+  --line:       #dde8ee;   /* hairline rules */
+  --muted:      #55707d;   /* secondary text */
 
   /* Type */
   --display: "Fraunces", Georgia, "Times New Roman", serif;
@@ -53,23 +54,23 @@ h1 { font-size: var(--step-4); }
 h2 { font-size: var(--step-3); }
 h3 { font-size: var(--step-1); }
 p { margin: 0 0 1rem; max-width: 60ch; }
-a { color: var(--pine); text-decoration-thickness: 1px; text-underline-offset: 2px; }
+a { color: var(--brand); text-decoration-thickness: 1px; text-underline-offset: 2px; }
 
 .wrap { max-width: var(--maxw); margin-inline: auto; padding-inline: var(--gutter); }
 
-/* Eyebrow — the signature brass rule motif */
+/* Eyebrow — the signature accent rule motif */
 .eyebrow {
   font-family: var(--body);
   font-size: var(--step--1);
   text-transform: uppercase;
   letter-spacing: 0.18em;
-  color: var(--brass);
+  color: var(--accent);
   display: inline-flex;
   align-items: center;
   gap: 0.75rem;
   margin: 0 0 1rem;
 }
-.eyebrow::before { content: ""; width: 2rem; height: 1px; background: var(--brass); }
+.eyebrow::before { content: ""; width: 2rem; height: 1px; background: var(--accent); }
 
 /* ---------- Header ---------- */
 .site-header {
@@ -78,24 +79,26 @@ a { color: var(--pine); text-decoration-thickness: 1px; text-underline-offset: 2
   backdrop-filter: blur(8px);
   border-bottom: 1px solid var(--line);
 }
-.nav { display: flex; align-items: center; justify-content: space-between; padding-block: 1rem; }
-.brand { font-family: var(--display); font-size: var(--step-1); font-weight: 600; color: var(--ink); text-decoration: none; letter-spacing: -0.02em; }
-.brand span { color: var(--brass); }
+.nav { display: flex; align-items: center; justify-content: space-between; padding-block: 1.5rem; min-height: 4.5rem; }
+.brand { display: flex; align-items: center; font-family: var(--display); font-size: var(--step-1); font-weight: 600; color: var(--ink); text-decoration: none; letter-spacing: -0.02em; }
+.brand span { color: var(--accent); }
+.brand-logo { height: clamp(2.5rem, 2rem + 1.5vw, 3.25rem); width: auto; display: block; }
 .nav-links { display: flex; gap: 1.75rem; align-items: center; list-style: none; margin: 0; padding: 0; }
 .nav-links a { color: var(--ink); text-decoration: none; font-size: var(--step--1); letter-spacing: 0.02em; }
-.nav-links a:hover { color: var(--pine); }
+.nav-links a:hover { color: var(--brand); }
+.nav-links a[aria-current="page"] { color: var(--brand); font-weight: 600; }
 
 /* ---------- Buttons ---------- */
 .btn {
   display: inline-block; font-family: var(--body); font-size: var(--step--1);
   letter-spacing: 0.04em; text-decoration: none; cursor: pointer;
-  padding: 0.7rem 1.4rem; border-radius: var(--radius); border: 1px solid var(--pine);
+  padding: 0.7rem 1.4rem; border-radius: var(--radius); border: 1px solid var(--brand);
   transition: background .2s ease, color .2s ease, transform .2s ease;
 }
-.btn-primary { background: var(--pine); color: var(--paper); }
-.btn-primary:hover { background: var(--pine-deep); transform: translateY(-1px); }
-.btn-ghost { background: transparent; color: var(--pine); }
-.btn-ghost:hover { background: var(--pine); color: var(--paper); }
+.btn-primary { background: var(--brand); color: var(--paper); }
+.btn-primary:hover { background: var(--brand-deep); transform: translateY(-1px); }
+.btn-ghost { background: transparent; color: var(--brand); }
+.btn-ghost:hover { background: var(--brand); color: var(--paper); }
 
 /* ---------- Hero ---------- */
 .hero { padding-block: clamp(4rem, 12vh, 8rem) clamp(3rem, 8vh, 5rem); }
@@ -116,15 +119,29 @@ a { color: var(--pine); text-decoration-thickness: 1px; text-underline-offset: 2
 .principles { display: grid; gap: 0; }
 .principle { display: grid; grid-template-columns: 3rem 1fr; gap: 1.5rem; padding-block: 1.75rem; border-top: 1px solid var(--line); }
 .principle:last-child { border-bottom: 1px solid var(--line); }
-.principle .n { font-family: var(--display); color: var(--brass); font-size: var(--step-1); }
+.principle .n { font-family: var(--display); color: var(--accent); font-size: var(--step-1); }
 .principle p { color: var(--muted); margin: 0.25rem 0 0; }
 
 /* ---------- CTA band ---------- */
-.cta-band { background: var(--pine); color: var(--paper); border-radius: var(--radius); padding: clamp(2.5rem, 6vw, 4rem); text-align: center; }
+.cta-band { background: var(--brand); color: var(--paper); border-radius: var(--radius); padding: clamp(2.5rem, 6vw, 4rem); text-align: center; }
 .cta-band h2 { color: var(--paper); }
 .cta-band p { color: color-mix(in srgb, var(--paper) 80%, transparent); margin-inline: auto; }
-.cta-band .btn-primary { background: var(--paper); color: var(--pine); border-color: var(--paper); }
-.cta-band .btn-primary:hover { background: var(--brass-soft); border-color: var(--brass-soft); color: var(--ink); }
+.cta-band .btn-primary { background: var(--paper); color: var(--brand); border-color: var(--paper); }
+.cta-band .btn-primary:hover { background: var(--accent-soft); border-color: var(--accent-soft); color: var(--ink); }
+
+/* ---------- Auth / form surfaces (login) ---------- */
+.auth-card { max-width: 26rem; margin-inline: auto; padding: 2.25rem; background: var(--paper-2); border: 1px solid var(--line); border-radius: var(--radius); }
+.field { display: flex; flex-direction: column; gap: 0.4rem; margin-bottom: 1.25rem; }
+.field label { font-size: var(--step--1); font-weight: 600; color: var(--ink); }
+.field input {
+  font: inherit; font-size: var(--step--1); padding: 0.7rem 0.85rem; border-radius: var(--radius);
+  border: 1px solid var(--line); background: var(--paper); color: var(--ink);
+}
+.field input:focus-visible { outline: 2px solid var(--accent); outline-offset: 1px; }
+.auth-foot { margin-top: 1.5rem; font-size: var(--step--1); color: var(--muted); text-align: center; }
+
+/* ---------- Moxo embed ---------- */
+.moxo-frame { width: 100%; border: none; border-radius: 8px; display: block; }
 
 /* ---------- Footer + disclosures ---------- */
 .site-footer { border-top: 1px solid var(--line); padding-block: 3rem; margin-top: 2rem; }
@@ -139,7 +156,7 @@ a { color: var(--pine); text-decoration-thickness: 1px; text-underline-offset: 2
 .mt-0 { margin-top: 0; }
 
 /* Accessibility */
-:focus-visible { outline: 2px solid var(--brass); outline-offset: 3px; }
+:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; }
 @media (prefers-reduced-motion: reduce) {
   * { animation: none !important; transition: none !important; scroll-behavior: auto !important; }
 }

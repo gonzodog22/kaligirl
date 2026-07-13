@@ -13,12 +13,13 @@
 <body>
   <header class="site-header">
     <div class="wrap nav">
-      <a class="brand" href="index.html">Kaligirl<span>.</span></a>
+      <a class="brand" href="index.html"><img class="brand-logo" src="assets/logo.png" alt="Kali Girl Financial Services" /></a>
       <nav aria-label="Primary">
         <ul class="nav-links">
           <li><a href="index.html">Home</a></li>
           <li><a href="services.html">Services</a></li>
           <li><a href="contact.html">Contact</a></li>
+          <li><a href="login.html">Login</a></li>
           <li class="nav-cta"><a class="btn btn-ghost" href="get-started.html">Get started</a></li>
         </ul>
       </nav>
@@ -27,9 +28,9 @@
 
   <main>
     <section class="hero wrap">
-      <p class="eyebrow">Get started</p>
+      <p class="eyebrow">Get started · New clients</p>
       <h1>Three steps to your first conversation.</h1>
-      <p class="lede">Onboarding, secure document exchange, and the ongoing record of our work together are handled in a dedicated client portal — so everything is tracked, timestamped, and kept private.</p>
+      <p class="lede">Onboarding, secure document exchange, and the ongoing record of our work together are handled in a dedicated client portal — so everything is tracked, timestamped, and kept private. Already a client? <a href="login.html">Log in here</a>.</p>
     </section>
 
     <section class="section">
@@ -53,29 +54,21 @@
             <span class="n">03</span>
             <div>
               <h3>Secure onboarding</h3>
-              <p>If we move forward, agreements and documents are exchanged and tracked through your private client portal.</p>
+              <p>If we move forward, agreements and documents are exchanged and tracked through your private client portal below.</p>
             </div>
           </div>
         </div>
 
-        <!-- ============================================================
-             MOXO INTEGRATION POINT
-             Regulatory intake, e-signature, secure file exchange, and the
-             audit trail all live in Moxo. Two options:
-             (a) Link out: set the button href to your Moxo booking / portal URL.
-             (b) Embed: drop Moxo's provided <iframe> / embed snippet in the
-                 container below (Hostinger static hosting serves iframes fine).
-             Keep the compliance trail inside Moxo, not in a custom form.
-             ============================================================ -->
+        <!-- MOXO INTEGRATION POINT — regulatory intake, e-signature, secure
+             file exchange, and the audit trail all live in this embed. -->
         <div id="moxo-embed" class="wrap" style="margin-top:3rem;padding:0">
-          <div class="cta-band">
-            <h2>Ready when you are.</h2>
-            <p>Book your introduction and start onboarding securely.</p>
-            <p style="margin-top:1.5rem">
-              <a class="btn btn-primary" href="#" data-placeholder="moxo">Open the client portal</a>
-            </p>
-            <p style="margin-top:0.75rem;font-size:0.8rem;opacity:.8">[Replace with your Moxo booking / portal link, or embed the Moxo flow here.]</p>
-          </div>
+          <iframe
+            class="moxo-frame"
+            src="https://app.moxo.com/embed/de789728-f434-4be6-9a47-218400bf7d8d"
+            width="100%" height="600" frameborder="0"
+            style="border:none;border-radius:8px;"
+            title="Kaligirl Financial Services — new client onboarding (Moxo)">
+          </iframe>
         </div>
       </div>
     </section>
@@ -84,10 +77,11 @@
   <footer class="site-footer">
     <div class="wrap">
       <div class="footer-top">
-        <a class="brand" href="index.html">Kaligirl<span>.</span></a>
+        <a class="brand" href="index.html"><img class="brand-logo" src="assets/logo.png" alt="Kali Girl Financial Services" /></a>
         <ul class="footer-links">
           <li><a href="services.html">Services</a></li>
           <li><a href="contact.html">Contact</a></li>
+          <li><a href="login.html">Login</a></li>
           <li><a href="get-started.html">Get started</a></li>
           <li><a href="#" data-placeholder="adv">Form ADV / Disclosures</a></li>
         </ul>
