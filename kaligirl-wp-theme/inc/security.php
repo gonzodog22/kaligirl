@@ -169,8 +169,14 @@ add_action( 'login_form', 'kaligirl_honeypot_field' );
 
 // Print it into Paid Memberships Pro's checkout/registration form too.
 // Verified against PMP's pages/checkout.php: 'pmpro_checkout_boxes' fires
-// inside the checkout <form>, after the account fields.
-add_action( 'pmpro_checkout_boxes', 'kaligirl_honeypot_field' );
+// inside the checkout <form>, after the account fields — passing the
+// current $pmpro_level object as an argument. Wrapped in a closure that
+// takes no parameters so that object is never forwarded into
+// kaligirl_honeypot_field()'s $name param (which expects a string and
+// would fatal via esc_attr() otherwise).
+add_action( 'pmpro_checkout_boxes', function () {
+	kaligirl_honeypot_field();
+} );
 
 // Reject core wp-login.php authentication if the honeypot was filled.
 add_filter( 'authenticate', function ( $user, $username, $password ) {
