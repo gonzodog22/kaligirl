@@ -2,7 +2,8 @@
 
 Custom WordPress theme (not a page builder export) implementing the design in
 `design_handoff_wordpress_migration/`, wired to Paid Memberships Pro for login
-and membership gating and to Moxo for client onboarding.
+and membership gating. Get Started uses a custom intake form (see below)
+rather than the Moxo embed originally specified in the handoff.
 
 ## What's here
 
@@ -16,7 +17,7 @@ kaligirl-wp-theme/
 ├── page-services.php         # Template Name: Services
 ├── page-about.php            # Template Name: About
 ├── page-contact.php          # Template Name: Contact
-├── page-get-started.php      # Template Name: Get Started (Moxo iframe)
+├── page-get-started.php      # Template Name: Get Started (custom intake form + calendar embed)
 ├── page-login.php            # Template Name: Login (unused stub, see below)
 ├── page-account.php          # Template Name: Account (unused stub, see below)
 ├── page-library.php          # Template Name: Library (membership-gated placeholder)
@@ -109,19 +110,41 @@ what to do instead:
   site/secret keys as environment variables or wp-config constants (see
   Secrets below), per the security requirements.
 
-## Moxo
+## Get Started: custom intake form (replaces the earlier Moxo embed)
 
-The Get Started page (`page-get-started.php`) embeds the iframe exactly as
-given in the handoff:
+The Get Started page (`page-get-started.php`) no longer embeds Moxo. It's a
+public, unauthenticated custom intake form — collects contact info, a
+required "what brings you here" segment (Personal financial planning /
+Business or CFO services), segment-specific follow-up fields, an optional
+"how did you hear about us," and a consent checkbox — plus a Google
+Calendar booking embed so either segment can grab a real meeting slot
+directly. Deliberately **does not** collect SSN/DOB/account numbers/
+balances/income, and has no file upload — that stays behind authentication,
+later, once a lead is qualified.
 
-```html
-<iframe src="https://app.moxo.com/embed/de789728-f434-4be6-9a47-218400bf7d8d" width="100%" height="600" frameborder="0"></iframe>
-```
+Two placeholders need real values before launch:
 
-Moxo owns onboarding, e-signature, secure document exchange, and chat from
-here on — none of that is reimplemented in WordPress. The Account page is a
-placeholder for a similar Moxo-linked dashboard once the client's specific
-portal URL/session is available.
+1. **`KALIGIRL_INTAKE_WEBHOOK_URL`** at the top of `js/main.js` — the form
+   POSTs the submitted JSON straight to this URL from the browser (a
+   Zapier/Make/n8n catch hook, or your own endpoint); nothing server-side in
+   WordPress sees this data. The JSON payload always includes `segment`
+   explicitly, plus the shared fields, plus only the fields belonging to
+   whichever segment was selected.
+2. **`$kg_calendar_embed_url`** at the top of `page-get-started.php` — a
+   published Google Calendar "Appointment schedule" URL
+   (calendar.google.com/calendar/appointments), embedded as an iframe below
+   the form so visitors can book a slot without a second login.
+
+The form has an invisible honeypot field (`kaligirl_honeypot_field()`, same
+helper used elsewhere in the theme) — since submission goes straight to an
+external webhook rather than through WordPress, the honeypot check happens
+client-side in `js/main.js`: a filled honeypot field silently drops the
+submission with no feedback, rather than being logged server-side like the
+login/checkout honeypots are.
+
+Account is still a placeholder for a similar Moxo-linked (or other
+portal-linked) dashboard once a client's specific portal URL/session is
+available, per the design handoff — that part of the spec is unchanged.
 
 ## Security
 
