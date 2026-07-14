@@ -1,0 +1,151 @@
+/* ============================================================
+   Kaligirl Financial Services — foundation stylesheet
+   Design tokens live in :root so Claude Design / Code can read
+   and extend a single source of truth. Edit tokens, not values.
+   ============================================================ */
+
+:root {
+  /* Palette — calm stewardship, not corporate-blue-stock */
+  --ink:        #16241f;   /* near-black pine, primary text */
+  --pine:       #274a42;   /* brand primary */
+  --pine-deep:  #1c352f;
+  --paper:      #f5f3ec;   /* warm paper background */
+  --paper-2:    #eeeae0;   /* raised surfaces */
+  --brass:      #a9843f;   /* single restrained accent */
+  --brass-soft: #c7a86b;
+  --line:       #d8d2c4;   /* hairline rules */
+  --muted:      #5c6660;   /* secondary text */
+
+  /* Type */
+  --display: "Fraunces", Georgia, "Times New Roman", serif;
+  --body:    "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+
+  /* Scale */
+  --step--1: clamp(0.83rem, 0.79rem + 0.2vw, 0.94rem);
+  --step-0:  clamp(1rem, 0.95rem + 0.25vw, 1.13rem);
+  --step-1:  clamp(1.2rem, 1.1rem + 0.5vw, 1.5rem);
+  --step-2:  clamp(1.5rem, 1.3rem + 1vw, 2.1rem);
+  --step-3:  clamp(2rem, 1.6rem + 2vw, 3.2rem);
+  --step-4:  clamp(2.6rem, 1.9rem + 3.4vw, 4.6rem);
+
+  /* Space + shape */
+  --gutter: clamp(1.25rem, 5vw, 4rem);
+  --maxw: 68rem;
+  --radius: 3px;
+}
+
+* { box-sizing: border-box; }
+
+html { scroll-behavior: smooth; }
+
+body {
+  margin: 0;
+  font-family: var(--body);
+  font-size: var(--step-0);
+  line-height: 1.6;
+  color: var(--ink);
+  background: var(--paper);
+  -webkit-font-smoothing: antialiased;
+}
+
+h1, h2, h3 { font-family: var(--display); font-weight: 500; line-height: 1.1; letter-spacing: -0.01em; margin: 0 0 0.5em; }
+h1 { font-size: var(--step-4); }
+h2 { font-size: var(--step-3); }
+h3 { font-size: var(--step-1); }
+p { margin: 0 0 1rem; max-width: 60ch; }
+a { color: var(--pine); text-decoration-thickness: 1px; text-underline-offset: 2px; }
+
+.wrap { max-width: var(--maxw); margin-inline: auto; padding-inline: var(--gutter); }
+
+/* Eyebrow — the signature brass rule motif */
+.eyebrow {
+  font-family: var(--body);
+  font-size: var(--step--1);
+  text-transform: uppercase;
+  letter-spacing: 0.18em;
+  color: var(--brass);
+  display: inline-flex;
+  align-items: center;
+  gap: 0.75rem;
+  margin: 0 0 1rem;
+}
+.eyebrow::before { content: ""; width: 2rem; height: 1px; background: var(--brass); }
+
+/* ---------- Header ---------- */
+.site-header {
+  position: sticky; top: 0; z-index: 10;
+  background: color-mix(in srgb, var(--paper) 88%, transparent);
+  backdrop-filter: blur(8px);
+  border-bottom: 1px solid var(--line);
+}
+.nav { display: flex; align-items: center; justify-content: space-between; padding-block: 1rem; }
+.brand { font-family: var(--display); font-size: var(--step-1); font-weight: 600; color: var(--ink); text-decoration: none; letter-spacing: -0.02em; }
+.brand span { color: var(--brass); }
+.nav-links { display: flex; gap: 1.75rem; align-items: center; list-style: none; margin: 0; padding: 0; }
+.nav-links a { color: var(--ink); text-decoration: none; font-size: var(--step--1); letter-spacing: 0.02em; }
+.nav-links a:hover { color: var(--pine); }
+
+/* ---------- Buttons ---------- */
+.btn {
+  display: inline-block; font-family: var(--body); font-size: var(--step--1);
+  letter-spacing: 0.04em; text-decoration: none; cursor: pointer;
+  padding: 0.7rem 1.4rem; border-radius: var(--radius); border: 1px solid var(--pine);
+  transition: background .2s ease, color .2s ease, transform .2s ease;
+}
+.btn-primary { background: var(--pine); color: var(--paper); }
+.btn-primary:hover { background: var(--pine-deep); transform: translateY(-1px); }
+.btn-ghost { background: transparent; color: var(--pine); }
+.btn-ghost:hover { background: var(--pine); color: var(--paper); }
+
+/* ---------- Hero ---------- */
+.hero { padding-block: clamp(4rem, 12vh, 8rem) clamp(3rem, 8vh, 5rem); }
+.hero h1 { max-width: 16ch; }
+.hero .lede { font-size: var(--step-1); color: var(--muted); max-width: 46ch; margin-block: 1.5rem 2rem; }
+.hero-actions { display: flex; gap: 1rem; flex-wrap: wrap; }
+
+/* ---------- Sections ---------- */
+.section { padding-block: clamp(3.5rem, 9vh, 6rem); border-top: 1px solid var(--line); }
+.section-head { max-width: 46ch; margin-bottom: 3rem; }
+
+.grid-3 { display: grid; gap: 2rem; grid-template-columns: repeat(auto-fit, minmax(15rem, 1fr)); }
+.card { padding: 1.75rem; background: var(--paper); border: 1px solid var(--line); border-radius: var(--radius); }
+.card h3 { margin-bottom: 0.4rem; }
+.card p { color: var(--muted); margin: 0; font-size: var(--step--1); }
+
+/* ---------- Values / list ---------- */
+.principles { display: grid; gap: 0; }
+.principle { display: grid; grid-template-columns: 3rem 1fr; gap: 1.5rem; padding-block: 1.75rem; border-top: 1px solid var(--line); }
+.principle:last-child { border-bottom: 1px solid var(--line); }
+.principle .n { font-family: var(--display); color: var(--brass); font-size: var(--step-1); }
+.principle p { color: var(--muted); margin: 0.25rem 0 0; }
+
+/* ---------- CTA band ---------- */
+.cta-band { background: var(--pine); color: var(--paper); border-radius: var(--radius); padding: clamp(2.5rem, 6vw, 4rem); text-align: center; }
+.cta-band h2 { color: var(--paper); }
+.cta-band p { color: color-mix(in srgb, var(--paper) 80%, transparent); margin-inline: auto; }
+.cta-band .btn-primary { background: var(--paper); color: var(--pine); border-color: var(--paper); }
+.cta-band .btn-primary:hover { background: var(--brass-soft); border-color: var(--brass-soft); color: var(--ink); }
+
+/* ---------- Footer + disclosures ---------- */
+.site-footer { border-top: 1px solid var(--line); padding-block: 3rem; margin-top: 2rem; }
+.footer-top { display: flex; justify-content: space-between; gap: 2rem; flex-wrap: wrap; margin-bottom: 2rem; }
+.footer-links { display: flex; gap: 1.5rem; list-style: none; margin: 0; padding: 0; flex-wrap: wrap; }
+.footer-links a { color: var(--muted); text-decoration: none; font-size: var(--step--1); }
+.disclosure { font-size: 0.78rem; line-height: 1.55; color: var(--muted); max-width: 100%; border-top: 1px dashed var(--line); padding-top: 1.5rem; }
+.disclosure strong { color: var(--ink); }
+
+/* ---------- Utilities ---------- */
+.center { text-align: center; }
+.mt-0 { margin-top: 0; }
+
+/* Accessibility */
+:focus-visible { outline: 2px solid var(--brass); outline-offset: 3px; }
+@media (prefers-reduced-motion: reduce) {
+  * { animation: none !important; transition: none !important; scroll-behavior: auto !important; }
+}
+
+/* Mobile nav collapse (simple) */
+@media (max-width: 640px) {
+  .nav-links { gap: 1rem; font-size: 0.8rem; }
+  .nav-links .nav-cta { display: none; }
+}
