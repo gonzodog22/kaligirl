@@ -4,11 +4,17 @@
  *
  * The theme never implements its own auth, session, or membership logic —
  * all login/registration/gating is delegated to Paid Memberships Pro (PMP),
- * a free-core membership plugin. Login itself uses WordPress core's own
- * login form (PMP doesn't replace wp-login.php) — the theme's Login page
- * template just wraps that core form in the design's styled card. PMP owns
- * membership levels (Entry/Grow/Exceed) and page-level access restriction
- * (the "Require Membership" box on each protected page in wp-admin).
+ * a free-core membership plugin. Login and Account both point at PMP's own
+ * built-in Membership Account page ([pmpro_account]), which shows a login
+ * form to logged-out visitors and the account dashboard to members from
+ * the same URL. This is deliberate: a separate custom login page whose
+ * "already logged in" check doesn't exactly match the account page's
+ * membership check is a redirect-loop waiting to happen. The theme's own
+ * pixel-matched Login/Account templates (page-login.php / page-account.php)
+ * are kept in the theme but unused for now — see the note in each file for
+ * how to reconnect them later. PMP owns membership levels (Entry/Grow/
+ * Exceed) and page-level access restriction (the "Require Membership" box
+ * on each protected page in wp-admin).
  *
  * These helpers just adapt that logged-in/member state to the theme's
  * markup so header/footer/page templates don't need to know PMP's
@@ -41,21 +47,27 @@ function kaligirl_has_membership() {
 }
 
 /**
- * The theme's own Login page (a normal WP Page with the "Login" template
- * assigned) — not a plugin-owned URL, since PMP doesn't provide its own
- * login page.
+ * PMP's own Membership Account page — auto-created on activation, uses the
+ * [pmpro_account] shortcode, and (unlike a separate custom login page)
+ * shows a login form to guests and the account dashboard to members from
+ * the exact same URL. That single-URL behavior is what avoids the
+ * redirect-loop failure mode a second, separately-gated login page creates.
  */
-function kaligirl_login_url() {
-	return home_url( '/login/' );
+function kaligirl_account_url() {
+	if ( function_exists( 'pmpro_url' ) ) {
+		$url = pmpro_url( 'account' );
+		if ( $url ) {
+			return $url;
+		}
+	}
+	return home_url( '/account/' );
 }
 
 /**
- * The theme's own Account page (a normal WP Page with the "Account"
- * template assigned) — kept separate from PMP's built-in Membership
- * Account page so the design's custom Account layout is what renders here.
+ * Login and Account are the same PMP page for now (see file header note).
  */
-function kaligirl_account_url() {
-	return home_url( '/account/' );
+function kaligirl_login_url() {
+	return kaligirl_account_url();
 }
 
 function kaligirl_logout_url() {
