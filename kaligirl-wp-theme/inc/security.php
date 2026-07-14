@@ -162,11 +162,14 @@ function kaligirl_check_honeypot( $field = 'kg_hp_field' ) {
 }
 
 // Print the honeypot field into the core login form — both wp-login.php
-// directly and the theme's Login page, which renders the same form via
-// wp_login_form() (that function fires this same 'login_form' action).
+// directly and PMP's own Login page, which renders its login form via
+// pmpro_login_form() -> wp_login_form() (which fires this same
+// 'login_form' action; verified against PMP's includes/login.php).
 add_action( 'login_form', 'kaligirl_honeypot_field' );
 
 // Print it into Paid Memberships Pro's checkout/registration form too.
+// Verified against PMP's pages/checkout.php: 'pmpro_checkout_boxes' fires
+// inside the checkout <form>, after the account fields.
 add_action( 'pmpro_checkout_boxes', 'kaligirl_honeypot_field' );
 
 // Reject core wp-login.php authentication if the honeypot was filled.
@@ -180,15 +183,19 @@ add_filter( 'authenticate', function ( $user, $username, $password ) {
 	return $user;
 }, 30, 3 );
 
-// Reject PMP checkout/registration if the honeypot was filled.
-add_filter( 'pmpro_registration_checks', function ( $continue ) {
+// Reject PMP checkout/registration if the honeypot was filled. Verified
+// against PMP's includes/fields.php: 'pmpro_checkout_order_creation_checks'
+// is the real filter PMP itself uses for this kind of pre-order validation
+// (takes/returns a bool), and pmpro_setMessage() is PMP's own helper for
+// surfacing the error on the checkout page.
+add_filter( 'pmpro_checkout_order_creation_checks', function ( $okay ) {
 	if ( ! kaligirl_check_honeypot() ) {
-		global $pmpro_msg, $pmpro_msgt;
-		$pmpro_msg  = __( 'Something went wrong. Please try again.', 'kaligirl' );
-		$pmpro_msgt = 'pmpro_error';
+		if ( function_exists( 'pmpro_setMessage' ) ) {
+			pmpro_setMessage( __( 'Something went wrong. Please try again.', 'kaligirl' ), 'pmpro_error' );
+		}
 		return false;
 	}
-	return $continue;
+	return $okay;
 } );
 
 /* -------------------------------------------------------------------------
@@ -236,8 +243,8 @@ function kaligirl_verify_recaptcha( $token ) {
  * This transient-based limiter is a fallback for environments without
  * either, capping at the same thresholds: 10/min per IP unauthenticated,
  * 100/min per IP authenticated. It intentionally only guards
- * authentication endpoints (wp-login.php, the theme's Login page posting
- * to it, and PMP's checkout/registration POST) rather than every page
+ * authentication endpoints (wp-login.php, which PMP's own Login page posts
+ * through, and PMP's checkout/registration POST) rather than every page
  * load, so normal browsing is never throttled.
  * ---------------------------------------------------------------------- */
 
@@ -247,7 +254,8 @@ function kaligirl_is_rate_limited_request() {
 	}
 	// Paid Memberships Pro's checkout/registration form post (the level
 	// selection + account fields all submit through the checkout page).
-	if ( ! empty( $_POST ) && isset( $_REQUEST['level'] ) && isset( $_REQUEST['submit-checkout'] ) ) {
+	// Field names verified against PMP's own pages/checkout.php.
+	if ( ! empty( $_POST ) && isset( $_REQUEST['pmpro_level'] ) && isset( $_REQUEST['submit-checkout'] ) ) {
 		return true;
 	}
 	return false;

@@ -2,48 +2,27 @@
 /**
  * Template Name: Login
  *
- * Public. Wraps WordPress core's own login form (Paid Memberships Pro
- * doesn't replace wp-login.php) in the design's centered card layout —
- * see style.css's "Login form overrides" section for how core's login
- * form markup gets themed to match. Assign this template to a Page with
- * the slug/path `login`.
+ * Not currently assigned to any page. Login now goes through Paid
+ * Memberships Pro's own Login page ([pmpro_login] shortcode) instead of
+ * this custom one — see the long comment in inc/membership.php for why.
+ * Kept here only as a safe stub: if this template is ever assigned to a
+ * page again, it just forwards to PMP's real Login page rather than
+ * rendering a second, conflicting login form.
+ *
+ * IMPORTANT: don't assign this template to a page with the slug `login`.
+ * PMP treats any page at that slug as its own login page (see
+ * pmpro_is_login_page() in PMP's includes/login.php) regardless of which
+ * template is assigned, which layers PMP's login redirect behavior on top
+ * of whatever this template does — pick a different slug if this design
+ * gets revived later (e.g. `client-login`).
+ *
+ * The original pixel-matched login-card markup (wp_login_form() themed
+ * via .kg-login-form-wrap in style.css) is preserved in git history.
  */
 
 if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
-// Already-logged-in visitors have no reason to see a login form.
-if ( kaligirl_is_logged_in() ) {
-	wp_safe_redirect( kaligirl_account_url() );
-	exit;
-}
-
-get_header();
-?>
-<main>
-	<section class="login-wrap">
-		<h1>Log in</h1>
-		<p class="sub">Access your client account.</p>
-
-		<div class="kg-login-form-wrap">
-			<?php
-			// wp_login_form() fires the core 'login_form' action inside its own
-			// <form>, which is where inc/security.php hooks the honeypot field —
-			// no separate call needed here.
-			wp_login_form(
-				array(
-					'redirect'       => kaligirl_account_url(),
-					'label_username' => 'Email',
-					'label_password' => 'Password',
-					'label_log_in'   => 'Log in',
-					'remember'       => false,
-				)
-			);
-			?>
-		</div>
-
-		<p class="login-footer-note">New here? <a href="<?php echo esc_url( kaligirl_url( 'get-started' ) ); ?>">Get started</a></p>
-	</section>
-</main>
-<?php get_footer(); ?>
+wp_safe_redirect( kaligirl_login_url() );
+exit;

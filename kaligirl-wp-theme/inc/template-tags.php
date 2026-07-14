@@ -9,8 +9,8 @@ if ( ! defined( 'ABSPATH' ) ) {
 
 /**
  * Resolve the canonical URL for one of the theme's fixed sections.
- * Login/Account are the theme's own pages (see inc/membership.php) —
- * PMP doesn't own separate login/account URLs the way MemberPress did.
+ * Login/Account resolve to Paid Memberships Pro's own pages, not the
+ * theme's custom ones (see inc/membership.php for why).
  */
 function kaligirl_url( $key ) {
 	switch ( $key ) {

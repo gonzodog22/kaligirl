@@ -17,8 +17,8 @@ kaligirl-wp-theme/
 ├── page-about.php            # Template Name: About
 ├── page-contact.php          # Template Name: Contact
 ├── page-get-started.php      # Template Name: Get Started (Moxo iframe)
-├── page-login.php            # Template Name: Login (wraps core wp_login_form())
-├── page-account.php          # Template Name: Account (membership-gated)
+├── page-login.php            # Template Name: Login (unused stub, see below)
+├── page-account.php          # Template Name: Account (unused stub, see below)
 ├── page-library.php          # Template Name: Library (membership-gated placeholder)
 ├── page-lessons.php          # Template Name: Lessons (membership-gated placeholder)
 ├── page-tools.php            # Template Name: Tools (membership-gated placeholder)
@@ -38,20 +38,57 @@ kaligirl-wp-theme/
 2. Copy `kaligirl-wp-theme/` into `wp-content/themes/` and activate it under
    Appearance > Themes.
 3. Install and activate **Paid Memberships Pro** (free core plugin —
-   Plugins > Add New > search "Paid Memberships Pro").
+   Plugins > Add New > search "Paid Memberships Pro"). Activating it
+   auto-creates its own Membership Account page.
 4. Create pages for each section and assign the matching template under
    Page Attributes (WordPress also auto-matches these by slug, e.g. a page
    at `/services/` picks up `page-services.php` automatically):
    - `/` or "Home" → Home
    - `services`, `about`, `contact`, `get-started` → matching templates
-   - `account`, `library`, `lessons`, `tools` → matching templates (see gating below)
-   - `login` → the **Login** template (a plain page you create yourself — PMP
-     doesn't own a login page the way MemberPress did; the template wraps
-     WordPress core's own login form in this theme's centered card).
+   - `library`, `lessons`, `tools` → matching templates (see gating below)
+   - **Do not** create your own `account` or `login` pages using this
+     theme's Account/Login templates — see "Login and Account" below for
+     why, and what to do instead.
 5. Settings > Reading: leave "Your homepage displays" as-is — `front-page.php`
    renders the Home design regardless of that setting.
 6. Settings > Permalinks: use a non-default structure (e.g. "Post name") so
    the slug-based URLs above resolve as expected.
+
+## Login and Account (important — read before creating pages)
+
+This theme originally had its own pixel-matched Login and Account page
+templates (`page-login.php`, `page-account.php`). They're still in the
+theme, but **unassigned to any page for now** — both are stubs that just
+redirect to Paid Memberships Pro's own equivalent pages. Here's why, and
+what to do instead:
+
+- PMP's `[pmpro_account]` shortcode (its Membership Account page) has no
+  logged-out handling at all — it assumes you're already logged in.
+- PMP's `[pmpro_login]` shortcode (a separate Login page) is what actually
+  handles guests: login form when logged out, a "Welcome" widget when
+  logged in, from one URL, with PMP's own post-login redirect deciding
+  where to send someone next.
+- A **second**, separately-gated custom Login page — like this theme's
+  original one, which redirected away from itself whenever
+  `is_user_logged_in()` was true, while the Account page only let someone
+  stay if they held an active membership *level* — creates a mismatch:
+  log in without a level assigned yet, and the two pages bounce you between
+  each other forever ("too many redirects"). Routing both through PMP's own
+  pages avoids this because one plugin owns both ends of the redirect.
+
+**What to do:**
+- Confirm/set PMP's Login and Membership Account pages under **Memberships
+  > Page Settings** (create a page with the `[pmpro_login]` shortcode if
+  one doesn't already exist, publish it, then select it there).
+- Nav links for "Login" and "Account" in `header.php` already resolve to
+  these PMP pages automatically via `kaligirl_login_url()` /
+  `kaligirl_account_url()` in `inc/membership.php` — no header changes needed.
+- If you revive the custom design later: fix the mismatch above first (e.g.
+  make both pages check the same thing — either both check plain login
+  state, or both check membership level, not one of each), and avoid the
+  page slug `login` specifically — PMP treats any page at that slug as its
+  own login page and layers its own redirect behavior on top, regardless of
+  which template is assigned.
 
 ## Paid Memberships Pro configuration (in wp-admin, not code)
 
@@ -59,24 +96,18 @@ kaligirl-wp-theme/
   Grow / Exceed levels matching the Services pricing tiers. Pricing is TBD
   per the design handoff — use placeholder pricing now, finalize before
   launch.
-- **Page protection**: open each of `Account`, `Library`, `Lessons`, and
-  `Tools` in the page editor and use the **Require Membership** box PMP adds
-  to the page-edit screen — check the level(s) that should have access, so
-  only logged-in/subscribed members can load these URLs directly (not just
-  when reached via the Resources nav link). This is the primary access
-  control; `kaligirl_require_login()` in `inc/membership.php` (called at the
-  top of each of those templates) is a template-level backup in case that
-  setting is missing or misconfigured — the two are meant to overlap, not
-  substitute for each other.
-- Leave `Home`, `Services`, `About`, `Contact`, `Get Started`, and `Login`
-  unprotected.
+- **Page protection**: open each of `Library`, `Lessons`, and `Tools` in the
+  page editor and use the **Require Membership** box PMP adds to the
+  page-edit screen — check the level(s) that should have access. Note: PMP's
+  restriction actually filters `the_content`, which these custom-templated
+  pages never call, so this setting alone won't gate them — the real control
+  is `kaligirl_require_login()` in `inc/membership.php` (called at the top of
+  each template). Set the "Require Membership" box anyway for admin-UI
+  clarity/consistency, but don't rely on it alone for these three pages.
+- Leave `Home`, `Services`, `About`, `Contact`, and `Get Started` unprotected.
 - **reCAPTCHA**: Memberships > Settings > reCAPTCHA — enable v3 and supply
   site/secret keys as environment variables or wp-config constants (see
   Secrets below), per the security requirements.
-- Login itself is WordPress core's own login form (styled by this theme's
-  `page-login.php` + the "Login form overrides" section of `style.css`) —
-  PMP doesn't need to be configured for login, only for levels and page
-  protection.
 
 ## Moxo
 
@@ -107,8 +138,8 @@ hand-rolled in theme PHP:
   defense-in-depth layer, and documents the rest:
   - A **fallback rate limiter** (transient-based, scoped to login/registration
     endpoints only) for environments without a WAF/edge layer yet.
-  - **Honeypot fields** on the core login form (`wp-login.php` and the
-    theme's Login page, which renders the same form) and on Paid
+  - **Honeypot fields** on the core login form (`wp-login.php` and PMP's own
+    Login page, which renders the same form under the hood) and on Paid
     Memberships Pro's checkout/registration form, logged and blocked on
     trigger.
   - **Input sanitization helpers** (`kaligirl_sanitize_input()`,

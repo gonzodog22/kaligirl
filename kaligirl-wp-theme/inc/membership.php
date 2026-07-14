@@ -4,17 +4,31 @@
  *
  * The theme never implements its own auth, session, or membership logic —
  * all login/registration/gating is delegated to Paid Memberships Pro (PMP),
- * a free-core membership plugin. Login and Account both point at PMP's own
- * built-in Membership Account page ([pmpro_account]), which shows a login
- * form to logged-out visitors and the account dashboard to members from
- * the same URL. This is deliberate: a separate custom login page whose
- * "already logged in" check doesn't exactly match the account page's
- * membership check is a redirect-loop waiting to happen. The theme's own
- * pixel-matched Login/Account templates (page-login.php / page-account.php)
- * are kept in the theme but unused for now — see the note in each file for
- * how to reconnect them later. PMP owns membership levels (Entry/Grow/
- * Exceed) and page-level access restriction (the "Require Membership" box
- * on each protected page in wp-admin).
+ * a free-core membership plugin. Login and Account point at PMP's own
+ * pages rather than the theme's custom ones, for now:
+ *
+ *   - Login  -> PMP's Login page ([pmpro_login] shortcode). Verified
+ *     against PMP's own source: this shortcode is fully self-contained —
+ *     it shows a login form to guests and a "Welcome" widget to members
+ *     from the same URL, and PMP's own login_redirect filter sends people
+ *     to the right place after signing in.
+ *   - Account -> PMP's Membership Account page ([pmpro_account]
+ *     shortcode). Verified against PMP's own source: this shortcode has
+ *     NO guest-handling logic at all — it assumes you're already logged
+ *     in — so it must only ever be reached by someone who's already
+ *     passed through the Login page or an existing session.
+ *
+ * Routing both through PMP's real pages (instead of the theme's own
+ * page-login.php / page-account.php) is what fixes the redirect loop that
+ * showed up when those two custom pages disagreed about what counts as
+ * "logged in enough": the Login page redirected away on is_user_logged_in(),
+ * while the Account page's gate required an active membership level, so a
+ * logged-in user with no level bounced back and forth forever. PMP's own
+ * pages don't have that mismatch because a single plugin owns both ends of
+ * the redirect. The theme's own pixel-matched templates are kept in the
+ * theme but unused for now — see the note in each file for how to
+ * reconnect them later, once that mismatch is resolved for the custom
+ * design too.
  *
  * These helpers just adapt that logged-in/member state to the theme's
  * markup so header/footer/page templates don't need to know PMP's
@@ -47,11 +61,25 @@ function kaligirl_has_membership() {
 }
 
 /**
- * PMP's own Membership Account page — auto-created on activation, uses the
- * [pmpro_account] shortcode, and (unlike a separate custom login page)
- * shows a login form to guests and the account dashboard to members from
- * the exact same URL. That single-URL behavior is what avoids the
- * redirect-loop failure mode a second, separately-gated login page creates.
+ * PMP's Login page (configured under Memberships > Page Settings, or
+ * detected by the slug `login` if a page ID hasn't been set there yet).
+ * Falls back to core wp-login.php if PMP hasn't been set up with a Login
+ * page at all.
+ */
+function kaligirl_login_url() {
+	if ( function_exists( 'pmpro_url' ) ) {
+		$url = pmpro_url( 'login' );
+		if ( $url ) {
+			return $url;
+		}
+	}
+	return wp_login_url();
+}
+
+/**
+ * PMP's Membership Account page (auto-created on activation, configured
+ * under Memberships > Page Settings). Falls back to /account/ if PMP
+ * isn't active yet.
  */
 function kaligirl_account_url() {
 	if ( function_exists( 'pmpro_url' ) ) {
@@ -63,23 +91,19 @@ function kaligirl_account_url() {
 	return home_url( '/account/' );
 }
 
-/**
- * Login and Account are the same PMP page for now (see file header note).
- */
-function kaligirl_login_url() {
-	return kaligirl_account_url();
-}
-
 function kaligirl_logout_url() {
 	return wp_logout_url( home_url( '/' ) );
 }
 
 /**
- * Template-level gate for Account/Library/Lessons/Tools. PMP's own
- * "Require Membership" setting on each page (configured in wp-admin) is
- * the primary access control — this is the defense-in-depth check the
- * spec calls for "at the template level, not just by hiding a nav link",
- * in case that setting is missing or misconfigured.
+ * Template-level gate for Library/Lessons/Tools. PMP's own "Require
+ * Membership" setting on each page (configured in wp-admin) is the
+ * primary access control — this is the defense-in-depth check the spec
+ * calls for "at the template level, not just by hiding a nav link", in
+ * case that setting is missing or misconfigured. Note: PMP's page-level
+ * restriction filters `the_content`, which these custom-templated pages
+ * never call — so this check is not just a backup here, it's the only
+ * control that actually runs for pages built this way.
  *
  * Call at the very top of a gated template, before any output.
  */
