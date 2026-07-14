@@ -2,8 +2,9 @@
 /**
  * Template Name: Library
  *
- * MemberPress-gated placeholder. Protect via a MemberPress Rule in
- * wp-admin; kaligirl_require_login() is the template-level backup.
+ * Membership-gated placeholder. Protect via Paid Memberships Pro's
+ * "Require Membership" setting in wp-admin; kaligirl_require_login() is
+ * the template-level backup.
  */
 
 if ( ! defined( 'ABSPATH' ) ) {

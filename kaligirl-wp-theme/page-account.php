@@ -2,13 +2,14 @@
 /**
  * Template Name: Account
  *
- * MemberPress-gated. Protect this page's URL with a MemberPress Rule in
- * wp-admin (primary control) — the kaligirl_require_login() call below is
- * the template-level defense-in-depth backup the migration spec calls for,
- * in case a rule is missing or misconfigured.
+ * Membership-gated. Protect this page's URL with Paid Memberships Pro's
+ * "Require Membership" setting in wp-admin (primary control) — the
+ * kaligirl_require_login() call below is the template-level
+ * defense-in-depth backup the migration spec calls for, in case that
+ * setting is missing or misconfigured.
  *
  * Documents/Messages/Plan below are placeholders for the real
- * MemberPress/Moxo-linked dashboard content, per the design handoff.
+ * membership/Moxo-linked dashboard content, per the design handoff.
  */
 
 if ( ! defined( 'ABSPATH' ) ) {
@@ -26,7 +27,7 @@ $kg_user = wp_get_current_user();
 			<div>
 				<p class="kg-eyebrow">Client account</p>
 				<h1 style="font-size:clamp(2rem,1.7rem + 2vw,2.8rem);">Welcome back<?php echo $kg_user->display_name ? ', ' . esc_html( $kg_user->display_name ) : ''; ?>.</h1>
-				<p class="lede" style="font-size:1.05rem;">Your documents, messages, and plan live in the client portal. [This panel becomes your MemberPress account dashboard once on WordPress.]</p>
+				<p class="lede" style="font-size:1.05rem;">Your documents, messages, and plan live in the client portal. [This panel becomes your membership account dashboard once on WordPress.]</p>
 				<a href="<?php echo esc_url( kaligirl_logout_url() ); ?>" class="btn-outline">Log out</a>
 			</div>
 		</div>

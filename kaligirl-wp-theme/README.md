@@ -1,8 +1,8 @@
 # Kaligirl Financial Services — WordPress theme
 
 Custom WordPress theme (not a page builder export) implementing the design in
-`design_handoff_wordpress_migration/`, wired to MemberPress for login and
-membership gating and to Moxo for client onboarding.
+`design_handoff_wordpress_migration/`, wired to Paid Memberships Pro for login
+and membership gating and to Moxo for client onboarding.
 
 ## What's here
 
@@ -17,16 +17,16 @@ kaligirl-wp-theme/
 ├── page-about.php            # Template Name: About
 ├── page-contact.php          # Template Name: Contact
 ├── page-get-started.php      # Template Name: Get Started (Moxo iframe)
-├── page-login.php            # Template Name: Login (wraps MemberPress's login shortcode)
-├── page-account.php          # Template Name: Account (MemberPress-gated)
-├── page-library.php          # Template Name: Library (MemberPress-gated placeholder)
-├── page-lessons.php          # Template Name: Lessons (MemberPress-gated placeholder)
-├── page-tools.php            # Template Name: Tools (MemberPress-gated placeholder)
+├── page-login.php            # Template Name: Login (wraps core wp_login_form())
+├── page-account.php          # Template Name: Account (membership-gated)
+├── page-library.php          # Template Name: Library (membership-gated placeholder)
+├── page-lessons.php          # Template Name: Lessons (membership-gated placeholder)
+├── page-tools.php            # Template Name: Tools (membership-gated placeholder)
 ├── page.php / index.php      # Fallbacks for ad-hoc pages / anything else
 ├── template-parts/           # Shared content partials
 ├── inc/
 │   ├── template-tags.php     # Nav link + principle-row render helpers
-│   ├── memberpress.php       # Login/account URL + gating helpers
+│   ├── membership.php        # Login/account URL + gating helpers (PMP)
 │   └── security.php          # See "Security" below
 ├── js/main.js                # Mobile menu + Resources dropdown toggles
 └── assets/kaligirl-logo.png
@@ -37,36 +37,46 @@ kaligirl-wp-theme/
 1. Set up WordPress on hosting that supports custom PHP themes.
 2. Copy `kaligirl-wp-theme/` into `wp-content/themes/` and activate it under
    Appearance > Themes.
-3. Install and activate **MemberPress**.
+3. Install and activate **Paid Memberships Pro** (free core plugin —
+   Plugins > Add New > search "Paid Memberships Pro").
 4. Create pages for each section and assign the matching template under
    Page Attributes (WordPress also auto-matches these by slug, e.g. a page
    at `/services/` picks up `page-services.php` automatically):
    - `/` or "Home" → Home
    - `services`, `about`, `contact`, `get-started` → matching templates
    - `account`, `library`, `lessons`, `tools` → matching templates (see gating below)
-   - MemberPress's auto-created **Login** page → assign the **Login** template
-     so it renders inside this theme's centered card instead of a bare shortcode.
+   - `login` → the **Login** template (a plain page you create yourself — PMP
+     doesn't own a login page the way MemberPress did; the template wraps
+     WordPress core's own login form in this theme's centered card).
 5. Settings > Reading: leave "Your homepage displays" as-is — `front-page.php`
    renders the Home design regardless of that setting.
 6. Settings > Permalinks: use a non-default structure (e.g. "Post name") so
    the slug-based URLs above resolve as expected.
 
-## MemberPress configuration (in wp-admin, not code)
+## Paid Memberships Pro configuration (in wp-admin, not code)
 
-- **Membership levels**: create Entry / Grow / Exceed levels matching the
-  Services pricing tiers. Pricing is TBD per the design handoff — use
-  placeholder pricing now, finalize before launch.
-- **Rules**: MemberPress > Rules — protect `Account`, `Library`, `Lessons`,
-  and `Tools` pages so only logged-in/subscribed members can load them
-  directly (not just when reached via the Resources nav link). This is the
-  primary access control; `kaligirl_require_login()` in
-  `inc/memberpress.php` (called at the top of each of those templates) is a
-  template-level backup in case a Rule is missing or misconfigured — the two
-  are meant to overlap, not substitute for each other.
-- Leave `Home`, `Services`, `About`, `Contact`, `Get Started` unprotected.
-- **reCAPTCHA**: MemberPress > Settings > reCAPTCHA — enable v3 and supply
+- **Membership levels**: Memberships > Membership Levels — create Entry /
+  Grow / Exceed levels matching the Services pricing tiers. Pricing is TBD
+  per the design handoff — use placeholder pricing now, finalize before
+  launch.
+- **Page protection**: open each of `Account`, `Library`, `Lessons`, and
+  `Tools` in the page editor and use the **Require Membership** box PMP adds
+  to the page-edit screen — check the level(s) that should have access, so
+  only logged-in/subscribed members can load these URLs directly (not just
+  when reached via the Resources nav link). This is the primary access
+  control; `kaligirl_require_login()` in `inc/membership.php` (called at the
+  top of each of those templates) is a template-level backup in case that
+  setting is missing or misconfigured — the two are meant to overlap, not
+  substitute for each other.
+- Leave `Home`, `Services`, `About`, `Contact`, `Get Started`, and `Login`
+  unprotected.
+- **reCAPTCHA**: Memberships > Settings > reCAPTCHA — enable v3 and supply
   site/secret keys as environment variables or wp-config constants (see
   Secrets below), per the security requirements.
+- Login itself is WordPress core's own login form (styled by this theme's
+  `page-login.php` + the "Login form overrides" section of `style.css`) —
+  PMP doesn't need to be configured for login, only for levels and page
+  protection.
 
 ## Moxo
 
@@ -97,8 +107,10 @@ hand-rolled in theme PHP:
   defense-in-depth layer, and documents the rest:
   - A **fallback rate limiter** (transient-based, scoped to login/registration
     endpoints only) for environments without a WAF/edge layer yet.
-  - **Honeypot fields** on MemberPress's login/registration forms and core
-    `wp-login.php`, logged and blocked on trigger.
+  - **Honeypot fields** on the core login form (`wp-login.php` and the
+    theme's Login page, which renders the same form) and on Paid
+    Memberships Pro's checkout/registration form, logged and blocked on
+    trigger.
   - **Input sanitization helpers** (`kaligirl_sanitize_input()`,
     `kaligirl_sanitize_rich_text()`) for any field the theme or a future
     native form accepts — reject script tags/raw HTML/SQL fragments, and
@@ -106,7 +118,7 @@ hand-rolled in theme PHP:
     conventions throughout; there is no raw-input-into-query code in this
     theme.
   - **reCAPTCHA v3 verification helper** (`kaligirl_verify_recaptcha()`) for
-    any form not already covered by MemberPress's native reCAPTCHA setting.
+    any form not already covered by PMP's native reCAPTCHA setting.
   - **File upload restrictions** (images only, renamed on upload, 1GB cap) —
     guardrails in place now in case a native upload feature is added later;
     Moxo handles the site's actual document exchange today.

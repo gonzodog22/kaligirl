@@ -2,11 +2,11 @@
 /**
  * Template Name: Login
  *
- * Public. Wraps MemberPress's real login form ([mepr-login-form]) in the
- * design's centered card layout — see style.css's "MemberPress form
- * overrides" section for how the shortcode's markup gets themed to match.
- * Assign this template to the page MemberPress auto-created for login
- * (Pages > Login) so the URL and the styled wrapper are the same page.
+ * Public. Wraps WordPress core's own login form (Paid Memberships Pro
+ * doesn't replace wp-login.php) in the design's centered card layout —
+ * see style.css's "Login form overrides" section for how core's login
+ * form markup gets themed to match. Assign this template to a Page with
+ * the slug/path `login`.
  */
 
 if ( ! defined( 'ABSPATH' ) ) {
@@ -15,7 +15,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 
 // Already-logged-in visitors have no reason to see a login form.
 if ( kaligirl_is_logged_in() ) {
-	wp_safe_redirect( kaligirl_mepr_account_url() );
+	wp_safe_redirect( kaligirl_account_url() );
 	exit;
 }
 
@@ -26,22 +26,22 @@ get_header();
 		<h1>Log in</h1>
 		<p class="sub">Access your client account.</p>
 
-		<?php if ( shortcode_exists( 'mepr-login-form' ) ) : ?>
-			<div class="mepr-login-form-wrap">
-				<?php echo do_shortcode( '[mepr-login-form]' ); ?>
-			</div>
-		<?php else : ?>
-			<div class="login-card">
-				<p class="hint" style="margin:0 0 0.5rem;">MemberPress isn't active yet — install and activate it to enable real login. This is a non-functional preview of the styled form only.</p>
-				<label>Email
-					<input type="email" placeholder="you@email.com" disabled>
-				</label>
-				<label>Password
-					<input type="password" placeholder="••••••••" disabled>
-				</label>
-				<button type="button" disabled>Log in</button>
-			</div>
-		<?php endif; ?>
+		<div class="kg-login-form-wrap">
+			<?php
+			// wp_login_form() fires the core 'login_form' action inside its own
+			// <form>, which is where inc/security.php hooks the honeypot field —
+			// no separate call needed here.
+			wp_login_form(
+				array(
+					'redirect'       => kaligirl_account_url(),
+					'label_username' => 'Email',
+					'label_password' => 'Password',
+					'label_log_in'   => 'Log in',
+					'remember'       => false,
+				)
+			);
+			?>
+		</div>
 
 		<p class="login-footer-note">New here? <a href="<?php echo esc_url( kaligirl_url( 'get-started' ) ); ?>">Get started</a></p>
 	</section>

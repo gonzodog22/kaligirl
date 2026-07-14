@@ -42,7 +42,7 @@ add_action( 'wp_enqueue_scripts', 'kaligirl_assets' );
  * Includes.
  */
 require KALIGIRL_DIR . '/inc/template-tags.php';
-require KALIGIRL_DIR . '/inc/memberpress.php';
+require KALIGIRL_DIR . '/inc/membership.php';
 require KALIGIRL_DIR . '/inc/security.php';
 
 /**

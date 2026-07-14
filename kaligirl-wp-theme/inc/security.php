@@ -4,15 +4,16 @@
  *
  * Per the migration spec's security requirements section, the *primary*
  * controls for rate limiting and automated-challenge (CAPTCHA) enforcement
- * belong at the hosting/plugin level (Wordfence, Cloudflare, MemberPress's
- * built-in reCAPTCHA settings) — not hand-rolled in theme PHP. What's below
- * is the defense-in-depth layer that legitimately belongs in code: input
- * sanitization helpers, a honeypot mechanism for MemberPress's forms, a
- * lightweight fallback rate limiter for sites without an edge/WAF layer,
- * upload restrictions, secrets-from-environment helpers, and audit logging.
+ * belong at the hosting/plugin level (Wordfence, Cloudflare, Paid
+ * Memberships Pro's reCAPTCHA settings) — not hand-rolled in theme PHP.
+ * What's below is the defense-in-depth layer that legitimately belongs in
+ * code: input sanitization helpers, a honeypot mechanism for the core
+ * login form and PMP's checkout/registration form, a lightweight fallback
+ * rate limiter for sites without an edge/WAF layer, upload restrictions,
+ * secrets-from-environment helpers, and audit logging.
  *
  * See kaligirl-wp-theme/README.md for the plugin/hosting-level setup this
- * assumes (Wordfence rules, MemberPress reCAPTCHA, wp-config secrets).
+ * assumes (Wordfence rules, PMP reCAPTCHA, wp-config secrets).
  */
 
 if ( ! defined( 'ABSPATH' ) ) {
@@ -160,11 +161,13 @@ function kaligirl_check_honeypot( $field = 'kg_hp_field' ) {
 	return true;
 }
 
-// Print the honeypot field into MemberPress's login and registration forms.
-add_action( 'mepr-login-form-fields', 'kaligirl_honeypot_field' );
-add_action( 'mepr-register-form-fields', 'kaligirl_honeypot_field' );
-// Print it into wp-login.php too, for the account holders who go there directly.
+// Print the honeypot field into the core login form — both wp-login.php
+// directly and the theme's Login page, which renders the same form via
+// wp_login_form() (that function fires this same 'login_form' action).
 add_action( 'login_form', 'kaligirl_honeypot_field' );
+
+// Print it into Paid Memberships Pro's checkout/registration form too.
+add_action( 'pmpro_checkout_boxes', 'kaligirl_honeypot_field' );
 
 // Reject core wp-login.php authentication if the honeypot was filled.
 add_filter( 'authenticate', function ( $user, $username, $password ) {
@@ -177,23 +180,26 @@ add_filter( 'authenticate', function ( $user, $username, $password ) {
 	return $user;
 }, 30, 3 );
 
-// Reject MemberPress registration if the honeypot was filled.
-add_filter( 'mepr_validate_signup', function ( $errors ) {
+// Reject PMP checkout/registration if the honeypot was filled.
+add_filter( 'pmpro_registration_checks', function ( $continue ) {
 	if ( ! kaligirl_check_honeypot() ) {
-		$errors[] = __( 'Something went wrong. Please try again.', 'kaligirl' );
+		global $pmpro_msg, $pmpro_msgt;
+		$pmpro_msg  = __( 'Something went wrong. Please try again.', 'kaligirl' );
+		$pmpro_msgt = 'pmpro_error';
+		return false;
 	}
-	return $errors;
+	return $continue;
 } );
 
 /* -------------------------------------------------------------------------
  * reCAPTCHA v3 fallback verification
  *
- * MemberPress has native reCAPTCHA v3 support (MemberPress > Settings >
- * reCAPTCHA) — enable it there with site/secret keys pulled from environment
- * (see kaligirl_secret() above). kaligirl_verify_recaptcha() below is a
- * plain helper available to any additional public form the site adds later
- * (e.g. a future native contact form) that isn't already covered by
- * MemberPress's own reCAPTCHA integration.
+ * Paid Memberships Pro has native reCAPTCHA v3 support (Memberships >
+ * Settings > reCAPTCHA) — enable it there with site/secret keys pulled from
+ * environment (see kaligirl_secret() above). kaligirl_verify_recaptcha()
+ * below is a plain helper available to any additional public form the site
+ * adds later (e.g. a future native contact form) that isn't already covered
+ * by PMP's own reCAPTCHA integration.
  * ---------------------------------------------------------------------- */
 
 function kaligirl_verify_recaptcha( $token ) {
@@ -230,16 +236,18 @@ function kaligirl_verify_recaptcha( $token ) {
  * This transient-based limiter is a fallback for environments without
  * either, capping at the same thresholds: 10/min per IP unauthenticated,
  * 100/min per IP authenticated. It intentionally only guards
- * authentication endpoints (wp-login.php, MemberPress login/registration
- * POSTs) rather than every page load, so normal browsing is never throttled.
+ * authentication endpoints (wp-login.php, the theme's Login page posting
+ * to it, and PMP's checkout/registration POST) rather than every page
+ * load, so normal browsing is never throttled.
  * ---------------------------------------------------------------------- */
 
 function kaligirl_is_rate_limited_request() {
 	if ( isset( $GLOBALS['pagenow'] ) && 'wp-login.php' === $GLOBALS['pagenow'] ) {
 		return true;
 	}
-	// MemberPress login/registration/checkout form posts.
-	if ( ! empty( $_POST ) && ( isset( $_POST['mepr_process_login_form'] ) || isset( $_POST['mepr_process_signup_form'] ) ) ) {
+	// Paid Memberships Pro's checkout/registration form post (the level
+	// selection + account fields all submit through the checkout page).
+	if ( ! empty( $_POST ) && isset( $_REQUEST['level'] ) && isset( $_REQUEST['submit-checkout'] ) ) {
 		return true;
 	}
 	return false;
@@ -274,7 +282,7 @@ add_action( 'init', function () {
  *
  * Use these at every point the theme accepts user input (there is no native
  * contact form in this design — Contact routes to Get Started's Moxo embed
- * — but any field added later, or MemberPress custom fields, should run
+ * — but any field added later, or PMP custom checkout fields, should run
  * through these rather than being trusted or concatenated into queries).
  * ---------------------------------------------------------------------- */
 

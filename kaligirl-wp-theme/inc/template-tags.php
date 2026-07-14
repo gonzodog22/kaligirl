@@ -9,18 +9,17 @@ if ( ! defined( 'ABSPATH' ) ) {
 
 /**
  * Resolve the canonical URL for one of the theme's fixed sections.
- * Login/Account defer to MemberPress's own configured pages when available
- * (see inc/memberpress.php) so this stays correct even if an admin renames
- * the MemberPress login/account page slugs.
+ * Login/Account are the theme's own pages (see inc/membership.php) —
+ * PMP doesn't own separate login/account URLs the way MemberPress did.
  */
 function kaligirl_url( $key ) {
 	switch ( $key ) {
 		case 'home':
 			return home_url( '/' );
 		case 'login':
-			return kaligirl_mepr_login_url();
+			return kaligirl_login_url();
 		case 'account':
-			return kaligirl_mepr_account_url();
+			return kaligirl_account_url();
 		default:
 			return home_url( '/' . $key . '/' );
 	}

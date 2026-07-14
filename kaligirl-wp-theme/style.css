@@ -2,7 +2,7 @@
 Theme Name: Kaligirl Financial Services
 Theme URI: https://kaligirlfinancialservices.com
 Author: Kaligirl Financial Services
-Description: Custom WordPress theme for Kaligirl Financial Services, wired to MemberPress for login/membership gating and Moxo for client onboarding. Rebuilt pixel-for-pixel from the design_handoff_wordpress_migration reference.
+Description: Custom WordPress theme for Kaligirl Financial Services, wired to Paid Memberships Pro for login/membership gating and Moxo for client onboarding. Rebuilt pixel-for-pixel from the design_handoff_wordpress_migration reference.
 Version: 1.0.0
 Requires at least: 6.0
 Requires PHP: 7.4
@@ -707,14 +707,15 @@ img { max-width: 100%; }
 .site-footer__disclosure strong { color: var(--text-heading); }
 
 /* ==========================================================================
-   MemberPress form overrides (login/register), matched to .login-card
+   Login form overrides — themes WordPress core's own login form markup
+   (wp_login_form(), rendered on the theme's Login page template) to match
+   .login-card in the design. Paid Memberships Pro doesn't replace this
+   form, so no plugin-specific selectors are needed here.
    ========================================================================== */
-.mepr-login-form-wrap,
-.mp_wrapper {
+.kg-login-form-wrap {
   font-family: var(--font-body);
 }
-.mepr-login-form-wrap form,
-form.mepr-form {
+.kg-login-form-wrap form {
   display: flex;
   flex-direction: column;
   gap: 1rem;
@@ -723,17 +724,14 @@ form.mepr-form {
   border-radius: var(--radius-card);
   padding: 1.75rem;
 }
-.mepr-login-form-wrap label,
-form.mepr-form label {
+.kg-login-form-wrap p { margin: 0; }
+.kg-login-form-wrap label {
   font-size: 0.85rem;
   color: var(--text-body);
 }
-.mepr-login-form-wrap input[type="text"],
-.mepr-login-form-wrap input[type="email"],
-.mepr-login-form-wrap input[type="password"],
-form.mepr-form input[type="text"],
-form.mepr-form input[type="email"],
-form.mepr-form input[type="password"] {
+.kg-login-form-wrap input[type="text"],
+.kg-login-form-wrap input[type="email"],
+.kg-login-form-wrap input[type="password"] {
   display: block;
   width: 100%;
   margin-top: 0.4rem;
@@ -744,9 +742,7 @@ form.mepr-form input[type="password"] {
   font-family: var(--font-body);
   box-sizing: border-box;
 }
-.mepr-login-form-wrap input[type="submit"],
-form.mepr-form input[type="submit"],
-form.mepr-form button[type="submit"] {
+.kg-login-form-wrap .login-submit input[type="submit"] {
   background: var(--navy);
   color: #fff;
   padding: 0.8rem;
@@ -759,9 +755,7 @@ form.mepr-form button[type="submit"] {
   transition: background 0.25s ease, transform 0.25s ease;
   width: 100%;
 }
-.mepr-login-form-wrap input[type="submit"]:hover,
-form.mepr-form input[type="submit"]:hover,
-form.mepr-form button[type="submit"]:hover { background: var(--blue-light); transform: translateY(-2px); }
+.kg-login-form-wrap .login-submit input[type="submit"]:hover { background: var(--blue-light); transform: translateY(-2px); }
 
 /* ==========================================================================
    Utility
