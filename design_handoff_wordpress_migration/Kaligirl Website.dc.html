@@ -1,0 +1,570 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet data-dc-atomics="">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="">
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600&amp;family=Inter:wght@400;500;600;700&amp;display=swap" rel="stylesheet">
+  <style>
+    body { margin: 0; -webkit-font-smoothing: antialiased; }
+    a { text-decoration: none; }
+    * { box-sizing: border-box; }
+    @keyframes kg-fade { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: translateY(0); } }
+  </style>
+</helmet>
+
+<div style="font-family:'Inter',-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;color:#1b2333;background:#f8f9fb;min-height:100vh;">
+
+  <!-- HEADER -->
+  <header style="position:sticky;top:0;z-index:50;background:rgba(248,249,251,0.92);backdrop-filter:blur(10px);border-bottom:1px solid #e1e5ec;">
+    <div style="max-width:100rem;margin:0 auto;padding:0 clamp(1.25rem,5vw,3rem);display:flex;align-items:center;justify-content:space-between;gap:2.5rem;height:108px;">
+      <div style="display:flex;align-items:center;gap:3rem;">
+        <a href="#" onClick="{{ goHome }}" style="display:flex;align-items:center;">
+          <img src="assets/kaligirl-logo.png" alt="Kali Girl Financial Services" style="height:68px;width:auto;display:block;">
+        </a>
+        <sc-if value="{{ isLoggedOut }}" hint-placeholder-val="{{ true }}">
+          <nav aria-label="Primary" style="display:flex;align-items:center;gap:2.5rem;">
+            <a href="#" onClick="{{ goServices }}" style="color:{{ servicesColor }};font-size:1.2rem;font-weight:500;display:inline-block;padding-bottom:4px;border-bottom:{{ servicesUnderline }};transition:color 0.25s ease,transform 0.25s ease;" style-hover="color:#5b8fd6 !important;transform:translateY(-2px) !important;">Services</a>
+            <a href="#" onClick="{{ goAbout }}" style="color:{{ aboutColor }};font-size:1.2rem;font-weight:500;display:inline-block;padding-bottom:4px;border-bottom:{{ aboutUnderline }};transition:color 0.25s ease,transform 0.25s ease;" style-hover="color:#5b8fd6 !important;transform:translateY(-2px) !important;">About</a>
+            <a href="#" onClick="{{ goContact }}" style="color:{{ contactColor }};font-size:1.2rem;font-weight:500;display:inline-block;padding-bottom:4px;border-bottom:{{ contactUnderline }};transition:color 0.25s ease,transform 0.25s ease;" style-hover="color:#5b8fd6 !important;transform:translateY(-2px) !important;">Contact</a>
+          </nav>
+        </sc-if>
+      </div>
+
+      <sc-if value="{{ showDesktopNav }}" hint-placeholder-val="{{ true }}">
+        <sc-if value="{{ isLoggedOut }}" hint-placeholder-val="{{ true }}">
+          <nav aria-label="Account" style="display:flex;align-items:center;gap:1.5rem;">
+            <a href="#" onClick="{{ goLogin }}" style="color:{{ loginColor }};font-size:1.2rem;font-weight:500;display:inline-block;transition:color 0.25s ease,transform 0.25s ease;" style-hover="color:#5b8fd6 !important;transform:translateY(-2px) !important;">Login</a>
+            <a href="#" onClick="{{ goGetStarted }}" style="background:#2c3e63;color:#fff;padding:0.85rem 1.8rem;border-radius:100px;font-size:1.1rem;font-weight:600;transition:background 0.25s ease,transform 0.25s ease;" style-hover="background:#8fb3e8 !important; transform:translateY(-2px) !important;">Get started</a>
+          </nav>
+        </sc-if>
+        <sc-if value="{{ isLoggedIn }}" hint-placeholder-val="{{ false }}">
+          <nav aria-label="Account" style="display:flex;align-items:center;gap:1.5rem;">
+            <a href="#" onClick="{{ goAccount }}" style="color:{{ accountColor }};font-size:1.2rem;font-weight:500;line-height:1;display:inline-flex;align-items:center;padding-bottom:4px;border-bottom:{{ accountUnderline }};transition:color 0.25s ease,transform 0.25s ease;" style-hover="color:#5b8fd6 !important;transform:translateY(-2px) !important;">Account</a>
+            <div style="position:relative;display:flex;align-items:center;">
+              <button onClick="{{ toggleResourcesMenu }}" style="display:inline-flex;align-items:center;gap:0.4rem;background:none;border:none;cursor:pointer;color:#1b2333;font-size:1.2rem;font-weight:500;line-height:1;font-family:'Inter',sans-serif;padding:0 0 4px;border-bottom:2px solid transparent;">
+                Resources
+                <span style="width:0;height:0;border-left:5px solid transparent;border-right:5px solid transparent;border-top:6px solid #1b2333;display:inline-block;flex:none;transition:transform 0.2s ease;transform:{{ resourcesArrowTransform }};"></span>
+              </button>
+              <sc-if value="{{ resourcesMenuOpen }}" hint-placeholder-val="{{ false }}">
+                <div style="position:absolute;top:calc(100% + 12px);right:0;background:#fff;border:1px solid #e6e9ef;border-radius:12px;box-shadow:0 16px 32px rgba(28,40,66,0.14);padding:0.5rem;min-width:11rem;display:flex;flex-direction:column;gap:0.15rem;">
+                  <a href="#" onClick="{{ goLibrary }}" style="color:#1b2333;font-size:0.98rem;font-weight:500;padding:0.65rem 0.85rem;border-radius:8px;transition:background 0.2s ease;" style-hover="background:#eef4fc !important;">Library</a>
+                  <a href="#" onClick="{{ goLessons }}" style="color:#1b2333;font-size:0.98rem;font-weight:500;padding:0.65rem 0.85rem;border-radius:8px;transition:background 0.2s ease;" style-hover="background:#eef4fc !important;">Lessons</a>
+                  <a href="#" onClick="{{ goTools }}" style="color:#1b2333;font-size:0.98rem;font-weight:500;padding:0.65rem 0.85rem;border-radius:8px;transition:background 0.2s ease;" style-hover="background:#eef4fc !important;">Tools</a>
+                </div>
+              </sc-if>
+            </div>
+          </nav>
+        </sc-if>
+      </sc-if>
+
+      <sc-if value="{{ showMobileToggle }}" hint-placeholder-val="{{ false }}">
+        <button onClick="{{ toggleMenu }}" aria-label="Menu" style="background:none;border:none;display:flex;flex-direction:column;gap:5px;padding:8px;cursor:pointer;">
+          <span style="width:26px;height:2.5px;background:#1b2333;display:block;"></span>
+          <span style="width:26px;height:2.5px;background:#1b2333;display:block;"></span>
+          <span style="width:16px;height:2.5px;background:#1b2333;display:block;align-self:flex-end;"></span>
+        </button>
+      </sc-if>
+    </div>
+
+    <sc-if value="{{ mobileMenuOpen }}" hint-placeholder-val="{{ false }}">
+      <div style="display:flex;flex-direction:column;padding:0.5rem clamp(1.25rem,5vw,3rem) 1.5rem;gap:1.1rem;border-top:1px solid #e1e5ec;">
+        <sc-if value="{{ isLoggedOut }}" hint-placeholder-val="{{ true }}">
+          <a href="#" onClick="{{ goServices }}" style="color:{{ servicesColor }};font-size:1rem;font-weight:500;">Services</a>
+          <a href="#" onClick="{{ goAbout }}" style="color:{{ aboutColor }};font-size:1rem;font-weight:500;">About</a>
+          <a href="#" onClick="{{ goContact }}" style="color:{{ contactColor }};font-size:1rem;font-weight:500;">Contact</a>
+        </sc-if>
+        <sc-if value="{{ isLoggedIn }}" hint-placeholder-val="{{ false }}">
+          <a href="#" onClick="{{ goAccount }}" style="color:{{ accountColor }};font-size:1rem;font-weight:500;">Account</a>
+          <a href="#" onClick="{{ goLibrary }}" style="color:#1b2333;font-size:1rem;font-weight:500;">Library</a>
+          <a href="#" onClick="{{ goLessons }}" style="color:#1b2333;font-size:1rem;font-weight:500;">Lessons</a>
+          <a href="#" onClick="{{ goTools }}" style="color:#1b2333;font-size:1rem;font-weight:500;">Tools</a>
+        </sc-if>
+        <sc-if value="{{ isLoggedOut }}" hint-placeholder-val="{{ false }}">
+          <a href="#" onClick="{{ goLogin }}" style="color:{{ loginColor }};font-size:1rem;font-weight:500;transition:color 0.25s ease;" style-hover="color:#5b8fd6 !important;">Login</a>
+          <a href="#" onClick="{{ goGetStarted }}" style="background:#2c3e63;color:#fff;padding:0.75rem 1.4rem;border-radius:100px;font-size:0.95rem;font-weight:600;text-align:center;transition:background 0.25s ease,transform 0.25s ease;" style-hover="background:#8fb3e8 !important; transform:translateY(-2px) !important;">Get started</a>
+        </sc-if>
+      </div>
+    </sc-if>
+  </header>
+
+  <!-- ============ HOME ============ -->
+  <sc-if value="{{ isHome }}" hint-placeholder-val="{{ true }}">
+    <main data-screen-label="Home" key="{{ animKey }}">
+      <section style="max-width:100rem;margin:0 auto;padding:clamp(4.5rem,12vh,7rem) clamp(1.25rem,5vw,3rem) clamp(3rem,8vh,4.5rem);animation:kg-fade 0.5s ease both;display:grid;grid-template-columns:1.1fr 0.9fr;gap:clamp(2rem,5vw,4rem);align-items:center;">
+        <div>
+          <p style="font-size:0.82rem;text-transform:uppercase;letter-spacing:0.16em;color:#5b8fd6;font-weight:600;display:flex;align-items:center;gap:0.75rem;margin:0 0 1.25rem;"><span style="width:1.75rem;height:1px;background:#5b8fd6;display:inline-block;"></span>Financial services & fractional CFO · California</p>
+          <h1 style="font-family:'Fraunces',Georgia,serif;font-weight:500;font-size:clamp(3rem,2.4rem+4vw,5.5rem);line-height:1.08;letter-spacing:-0.01em;max-width:20ch;margin:0 0 1.5rem;">Financial advice that answers to you, and only you.</h1>
+          <p style="font-size:1.4rem;line-height:1.6;color:#5b6472;max-width:46ch;margin:0 0 2.25rem;">Independent, fee-based advice held to a fiduciary standard — no product sales, no hidden incentives.</p>
+          <div style="display:flex;gap:1rem;flex-wrap:wrap;">
+            <a href="#" onClick="{{ goGetStarted }}" style="background:#2c3e63;color:#fff;padding:0.85rem 1.6rem;border-radius:100px;font-size:0.95rem;font-weight:600;transition:background 0.25s ease,transform 0.25s ease;" style-hover="background:#8fb3e8 !important; transform:translateY(-2px) !important;">Book an introduction</a>
+            <a href="#" onClick="{{ goServices }}" style="border:1px solid #c7cedb;color:#2c3e63;padding:0.85rem 1.6rem;border-radius:100px;font-size:0.95rem;font-weight:600;transition:background 0.25s ease,border-color 0.25s ease;" style-hover="background:#eef4fc !important; border-color:#5b8fd6 !important;">See how we work</a>
+          </div>
+        </div>
+        <div style="aspect-ratio:4/5;border-radius:20px;border:1px solid #dde2ea;background:repeating-linear-gradient(45deg,#eef1f7,#eef1f7 12px,#e4e8f0 12px,#e4e8f0 24px);display:flex;align-items:center;justify-content:center;">
+          <span style="font-family:ui-monospace,Menlo,monospace;font-size:0.78rem;color:#8891a0;letter-spacing:0.02em;">advisor portrait</span>
+        </div>
+      </section>
+
+      <section style="border-top:1px solid #e6e9ef;">
+        <div style="max-width:100rem;margin:0 auto;padding:clamp(3.5rem,9vh,5.5rem) clamp(1.25rem,5vw,3rem);">
+          <div style="max-width:46ch;margin-bottom:3rem;">
+            <p style="font-size:0.82rem;text-transform:uppercase;letter-spacing:0.16em;color:#5b8fd6;font-weight:600;margin:0 0 1rem;">The standard we hold</p>
+            <h2 style="font-family:'Fraunces',Georgia,serif;font-weight:500;font-size:clamp(2.1rem,1.7rem+2vw,3.4rem);line-height:1.15;margin:0 0 1rem;">A fiduciary is legally bound to put your interests first.</h2>
+            <p style="color:#5b6472;font-size:1.15rem;line-height:1.65;margin:0;">Not every financial professional is. Here's what our obligation looks like in practice.</p>
+          </div>
+          <div style="display:grid;gap:0;">
+            <sc-for list="{{ principlesHome }}" as="p" hint-placeholder-count="3">
+              <div style="display:grid;grid-template-columns:3rem 1fr;gap:1.5rem;padding-block:1.75rem;border-top:1px solid #e6e9ef;">
+                <span style="font-family:'Fraunces',Georgia,serif;color:#5b8fd6;font-size:1.3rem;">{{ p.n }}</span>
+                <div>
+                  <h3 style="font-family:'Fraunces',Georgia,serif;font-weight:500;font-size:1.35rem;margin:0 0 0.4rem;">{{ p.title }}</h3>
+                  <p style="color:#5b6472;font-size:1.05rem;line-height:1.6;margin:0;">{{ p.body }}</p>
+                </div>
+              </div>
+            </sc-for>
+            <div style="border-top:1px solid #e6e9ef;"></div>
+          </div>
+        </div>
+      </section>
+
+      <section style="border-top:1px solid #e6e9ef;background:linear-gradient(180deg,#eef4fc,#f8f9fb);">
+        <div style="max-width:100rem;margin:0 auto;padding:clamp(3.5rem,9vh,5.5rem) clamp(1.25rem,5vw,3rem);">
+          <div style="display:flex;justify-content:space-between;align-items:flex-end;gap:2rem;flex-wrap:wrap;margin-bottom:3rem;">
+            <div style="max-width:46ch;">
+              <p style="font-size:0.82rem;text-transform:uppercase;letter-spacing:0.16em;color:#5b8fd6;font-weight:600;margin:0 0 1rem;">How we help</p>
+              <h2 style="font-family:'Fraunces',Georgia,serif;font-weight:500;font-size:clamp(2.1rem,1.7rem+2vw,3.4rem);line-height:1.15;margin:0;">Guidance for the decisions that matter most.</h2>
+            </div>
+            <div style="display:flex;align-items:flex-end;gap:6px;height:56px;flex:none;">
+              <div style="width:14px;height:38%;background:#a8c5e8;border-radius:4px;"></div>
+              <div style="width:14px;height:62%;background:#6f9bd6;border-radius:4px;"></div>
+              <div style="width:14px;height:100%;background:#2c3e63;border-radius:4px;"></div>
+            </div>
+          </div>
+          <div style="display:grid;gap:1.5rem;grid-template-columns:repeat(auto-fit,minmax(15rem,1fr));">
+            <sc-for list="{{ servicesHome }}" as="s" hint-placeholder-count="3">
+              <div style="padding:2rem 1.85rem;background:#fff;border:1px solid #e6e9ef;border-top:3px solid #5b8fd6;border-radius:14px;box-shadow:0 1px 2px rgba(28,40,66,0.04);transition:box-shadow 0.35s cubic-bezier(.2,.8,.2,1),transform 0.35s cubic-bezier(.2,.8,.2,1),border-color 0.35s ease;" style-hover="box-shadow:0 24px 40px rgba(44,62,99,0.2) !important; transform:translateY(-8px) scale(1.02) !important; border-top-color:#2c3e63 !important;">
+                <div style="width:44px;height:44px;border-radius:11px;background:#2c3e63;display:flex;align-items:center;justify-content:center;margin-bottom:1.1rem;transition:transform 0.35s cubic-bezier(.34,1.56,.64,1),background 0.35s ease;" style-hover="transform:scale(1.15) rotate(-6deg) !important; background:#5b8fd6 !important;">
+                  <div style="display:flex;align-items:flex-end;gap:3px;height:18px;">
+                    <div style="width:4px;height:45%;background:#9fc0ec;border-radius:2px;"></div>
+                    <div style="width:4px;height:75%;background:#c7dbf5;border-radius:2px;"></div>
+                    <div style="width:4px;height:100%;background:#fff;border-radius:2px;"></div>
+                  </div>
+                </div>
+                <h3 style="font-family:'Fraunces',Georgia,serif;font-weight:500;font-size:1.3rem;margin:0 0 0.5rem;transition:color 0.3s ease;" style-hover="color:#2c3e63 !important;">{{ s.title }}</h3>
+                <p style="color:#5b6472;font-size:1.05rem;line-height:1.6;margin:0;">{{ s.body }}</p>
+                <div style="height:2px;width:2rem;background:#5b8fd6;border-radius:2px;margin-top:1.1rem;transition:width 0.4s ease;" style-hover="width:100% !important;"></div>
+              </div>
+            </sc-for>
+          </div>
+        </div>
+      </section>
+
+      <section style="border-top:1px solid #e6e9ef;">
+        <div style="max-width:100rem;margin:0 auto;padding:clamp(3.5rem,9vh,5.5rem) clamp(1.25rem,5vw,3rem);">
+          <div style="background:linear-gradient(135deg,#2c3e63,#4f6fa8);color:#fff;border-radius:20px;padding:clamp(2.5rem,6vw,4rem);text-align:center;">
+            <p style="font-size:0.82rem;text-transform:uppercase;letter-spacing:0.16em;color:#bcd0ef;font-weight:600;margin:0 0 1rem;">Pre-launch · Now taking introductions</p>
+            <h2 style="font-family:'Fraunces',Georgia,serif;font-weight:500;font-size:clamp(2.1rem,1.7rem+1.8vw,3rem);margin:0 0 0.9rem;color:#fff;">Let's start with a conversation.</h2>
+            <p style="color:rgba(255,255,255,0.82);max-width:46ch;margin:0 auto 1.75rem;font-size:1.15rem;line-height:1.6;">The first meeting is a chance to understand your situation and see whether we're the right fit — no obligation, no pressure.</p>
+            <a href="#" onClick="{{ goGetStarted }}" style="background:#fff;color:#2c3e63;padding:0.85rem 1.75rem;border-radius:100px;font-size:0.95rem;font-weight:600;display:inline-block;transition:background 0.25s ease,color 0.25s ease;" style-hover="background:#dbe7f7 !important;">Book an introduction</a>
+          </div>
+        </div>
+      </section>
+    </main>
+  </sc-if>
+
+  <!-- ============ SERVICES ============ -->
+  <sc-if value="{{ isServices }}" hint-placeholder-val="{{ false }}">
+    <main data-screen-label="Services" key="{{ animKey }}">
+      <section style="max-width:100rem;margin:0 auto;padding:clamp(4rem,10vh,6rem) clamp(1.25rem,5vw,3rem) clamp(2.5rem,6vh,3.5rem);animation:kg-fade 0.5s ease both;">
+        <p style="font-size:0.82rem;text-transform:uppercase;letter-spacing:0.16em;color:#5b8fd6;font-weight:600;margin:0 0 1.25rem;">Services</p>
+        <h1 style="font-family:'Fraunces',Georgia,serif;font-weight:500;font-size:clamp(2.6rem,2.1rem+3vw,4.4rem);line-height:1.1;margin:0 0 1.25rem;">How we work with you.</h1>
+        <p style="font-size:1.3rem;line-height:1.6;color:#5b6472;max-width:48ch;margin:0;">Every engagement is grounded in the fiduciary standard: advice that serves your interests, with fees and methods disclosed up front — for individuals and for small businesses that need fractional CFO support.</p>
+      </section>
+
+      <section style="border-top:1px solid #e6e9ef;">
+        <div style="max-width:100rem;margin:0 auto;padding:clamp(3rem,7vh,4.5rem) clamp(1.25rem,5vw,3rem);">
+          <div style="display:grid;gap:0;">
+            <sc-for list="{{ principlesServices }}" as="p" hint-placeholder-count="3">
+              <div style="display:grid;grid-template-columns:3rem 1fr;gap:1.5rem;padding-block:1.75rem;border-top:1px solid #e6e9ef;">
+                <span style="font-family:'Fraunces',Georgia,serif;color:#5b8fd6;font-size:1.3rem;">{{ p.n }}</span>
+                <div>
+                  <h3 style="font-family:'Fraunces',Georgia,serif;font-weight:500;font-size:1.35rem;margin:0 0 0.4rem;">{{ p.title }}</h3>
+                  <p style="color:#5b6472;font-size:1.05rem;line-height:1.6;margin:0;">{{ p.body }}</p>
+                </div>
+              </div>
+            </sc-for>
+            <div style="border-top:1px solid #e6e9ef;"></div>
+          </div>
+        </div>
+      </section>
+
+      <section style="border-top:1px solid #e6e9ef;background:radial-gradient(circle at 85% 15%,#f3f7fd,#f8f9fb 55%);">
+        <div style="max-width:100rem;margin:0 auto;padding:clamp(3rem,7vh,4.5rem) clamp(1.25rem,5vw,3rem);">
+          <div style="max-width:46ch;margin-bottom:2.5rem;">
+            <p style="font-size:0.82rem;text-transform:uppercase;letter-spacing:0.16em;color:#5b8fd6;font-weight:600;margin:0 0 1rem;">Fee structure</p>
+            <h2 style="font-family:'Fraunces',Georgia,serif;font-weight:500;font-size:clamp(1.9rem,1.6rem+1.5vw,2.6rem);line-height:1.15;margin:0 0 1rem;">Pricing built around where you are.</h2>
+            <p style="color:#5b6472;font-size:1.05rem;line-height:1.6;margin:0;">Exact fees are confirmed in writing before any engagement begins.</p>
+          </div>
+          <div style="display:grid;gap:1.5rem;grid-template-columns:repeat(auto-fit,minmax(16rem,1fr));">
+            <sc-for list="{{ pricingTiers }}" as="t" hint-placeholder-count="3">
+              <div style="padding:2.25rem 1.85rem;background:#fff;border:1px solid #e6e9ef;border-top:3px solid #5b8fd6;border-radius:14px;box-shadow:0 1px 2px rgba(28,40,66,0.04);transition:box-shadow 0.35s ease,transform 0.35s ease;" style-hover="box-shadow:0 20px 36px rgba(44,62,99,0.14);transform:translateY(-6px);">
+                <h3 style="font-family:'Fraunces',Georgia,serif;font-weight:500;font-size:1.4rem;margin:0 0 0.5rem;">{{ t.name }}</h3>
+                <p style="color:#5b6472;font-size:0.98rem;line-height:1.55;margin:0 0 1.5rem;min-height:3.3rem;">{{ t.desc }}</p>
+                <p style="font-family:'Fraunces',Georgia,serif;font-size:1.6rem;font-weight:500;color:#2c3e63;margin:0;border-top:1px solid #e6e9ef;padding-top:1.25rem;">{{ t.price }}</p>
+              </div>
+            </sc-for>
+          </div>
+        </div>
+      </section>
+
+      <section style="border-top:1px solid #e6e9ef;">
+        <div style="max-width:100rem;margin:0 auto;padding:clamp(3rem,7vh,4.5rem) clamp(1.25rem,5vw,3rem);">
+          <div style="background:linear-gradient(135deg,#2c3e63,#4f6fa8);color:#fff;border-radius:20px;padding:clamp(2.25rem,5vw,3.5rem);text-align:center;">
+            <h2 style="font-family:'Fraunces',Georgia,serif;font-weight:500;font-size:clamp(1.9rem,1.6rem+1.3vw,2.6rem);margin:0 0 0.75rem;color:#fff;">Not sure which fits?</h2>
+            <p style="color:rgba(255,255,255,0.82);margin:0 0 1.5rem;font-size:1.15rem;">Start with an introduction and we'll figure it out together.</p>
+            <a href="#" onClick="{{ goGetStarted }}" style="background:#fff;color:#2c3e63;padding:0.85rem 1.75rem;border-radius:100px;font-size:0.95rem;font-weight:600;display:inline-block;transition:background 0.25s ease,color 0.25s ease;" style-hover="background:#dbe7f7 !important;">Book an introduction</a>
+          </div>
+        </div>
+      </section>
+    </main>
+  </sc-if>
+
+  <!-- ============ ABOUT ============ -->
+  <sc-if value="{{ isAbout }}" hint-placeholder-val="{{ false }}">
+    <main data-screen-label="About" key="{{ animKey }}">
+      <section style="max-width:100rem;margin:0 auto;padding:clamp(4rem,10vh,6rem) clamp(1.25rem,5vw,3rem) clamp(2.5rem,6vh,3.5rem);animation:kg-fade 0.5s ease both;">
+        <p style="font-size:0.82rem;text-transform:uppercase;letter-spacing:0.16em;color:#5b8fd6;font-weight:600;margin:0 0 1.25rem;">About</p>
+        <h1 style="font-family:'Fraunces',Georgia,serif;font-weight:500;font-size:clamp(2.6rem,2.1rem+3vw,4.4rem);line-height:1.1;margin:0 0 1.25rem;max-width:22ch;">Independent by design, fiduciary by standard.</h1>
+        <p style="font-size:1.3rem;line-height:1.6;color:#5b6472;max-width:52ch;margin:0;">Kaligirl Financial Services was founded on a simple premise: advice should serve the client, not a product line. [Founder bio and firm background — replace with approved copy.]</p>
+      </section>
+
+      <section style="border-top:1px solid #e6e9ef;">
+        <div style="max-width:100rem;margin:0 auto;padding:clamp(3rem,7vh,4.5rem) clamp(1.25rem,5vw,3rem);">
+          <div style="display:grid;gap:1.5rem;grid-template-columns:repeat(auto-fit,minmax(15rem,1fr));">
+            <div style="padding:1.85rem;background:#fff;border:1px solid #e6e9ef;border-radius:14px;">
+              <h3 style="font-family:'Fraunces',Georgia,serif;font-weight:500;font-size:1.1rem;margin:0 0 0.5rem;">Fiduciary-minded</h3>
+              <p style="color:#5b6472;font-size:1.05rem;line-height:1.6;margin:0;">Built to put your interests first, with a fiduciary certification underway.</p>
+            </div>
+            <div style="padding:1.85rem;background:#fff;border:1px solid #e6e9ef;border-radius:14px;">
+              <h3 style="font-family:'Fraunces',Georgia,serif;font-weight:500;font-size:1.1rem;margin:0 0 0.5rem;">Fee-only</h3>
+              <p style="color:#5b6472;font-size:1.05rem;line-height:1.6;margin:0;">No commissions, no product sales — compensation comes only from the clients we serve.</p>
+            </div>
+            <div style="padding:1.85rem;background:#fff;border:1px solid #e6e9ef;border-radius:14px;">
+              <h3 style="font-family:'Fraunces',Georgia,serif;font-weight:500;font-size:1.1rem;margin:0 0 0.5rem;">Based in Morgan Hill</h3>
+              <p style="color:#5b6472;font-size:1.05rem;line-height:1.6;margin:0;">Serving clients across California, in person and remotely.</p>
+            </div>
+          </div>
+          <div style="display:flex;align-items:center;gap:1rem;flex-wrap:wrap;margin-top:2.5rem;">
+            <span style="font-size:0.85rem;color:#8891a0;">Connects with:</span>
+            <span style="font-size:0.85rem;font-weight:600;color:#5b6472;padding:0.4rem 0.85rem;border:1px solid #e1e5ec;border-radius:100px;">QuickBooks</span>
+            <span style="font-size:0.85rem;font-weight:600;color:#5b6472;padding:0.4rem 0.85rem;border:1px solid #e1e5ec;border-radius:100px;">Xero</span>
+            <span style="font-size:0.85rem;font-weight:600;color:#5b6472;padding:0.4rem 0.85rem;border:1px solid #e1e5ec;border-radius:100px;">Plaid <span style="color:#8891a0;font-weight:500;">(coming soon)</span></span>
+          </div>
+        </div>
+      </section>
+    </main>
+  </sc-if>
+
+  <!-- ============ CONTACT ============ -->
+  <sc-if value="{{ isContact }}" hint-placeholder-val="{{ false }}">
+    <main data-screen-label="Contact" key="{{ animKey }}">
+      <section style="max-width:100rem;margin:0 auto;padding:clamp(4rem,10vh,6rem) clamp(1.25rem,5vw,3rem) clamp(2.5rem,6vh,3.5rem);animation:kg-fade 0.5s ease both;">
+        <p style="font-size:0.82rem;text-transform:uppercase;letter-spacing:0.16em;color:#5b8fd6;font-weight:600;margin:0 0 1.25rem;">Contact</p>
+        <h1 style="font-family:'Fraunces',Georgia,serif;font-weight:500;font-size:clamp(2.6rem,2.1rem+3vw,4.4rem);line-height:1.1;margin:0 0 1.25rem;">Get in touch.</h1>
+        <p style="font-size:1.3rem;line-height:1.6;color:#5b6472;max-width:48ch;margin:0;">Based in Morgan Hill, California, and working with clients across the state. Reach out and we'll follow up personally.</p>
+      </section>
+
+      <section style="border-top:1px solid #e6e9ef;">
+        <div style="max-width:100rem;margin:0 auto;padding:clamp(3rem,7vh,4.5rem) clamp(1.25rem,5vw,3rem);">
+          <div style="display:grid;gap:1.5rem;grid-template-columns:repeat(auto-fit,minmax(15rem,1fr));margin-bottom:2.5rem;">
+            <div style="padding:1.85rem;background:#fff;border:1px solid #e6e9ef;border-radius:14px;">
+              <h3 style="font-family:'Fraunces',Georgia,serif;font-weight:500;font-size:1.1rem;margin:0 0 0.5rem;">Email</h3>
+              <p style="color:#5b6472;font-size:1.05rem;line-height:1.6;margin:0;"><a href="mailto:hello@kaligirlfinancialservices.com" style="color:#2c3e63;transition:color 0.25s ease;" style-hover="color:#5b8fd6 !important;">hello@kaligirlfinancialservices.com</a></p>
+            </div>
+            <div style="padding:1.85rem;background:#fff;border:1px solid #e6e9ef;border-radius:14px;">
+              <h3 style="font-family:'Fraunces',Georgia,serif;font-weight:500;font-size:1.1rem;margin:0 0 0.5rem;">Location</h3>
+              <p style="color:#5b6472;font-size:1.05rem;line-height:1.6;margin:0;">Morgan Hill, CA<br>By appointment</p>
+            </div>
+            <div style="padding:1.85rem;background:#fff;border:1px solid #e6e9ef;border-radius:14px;">
+              <h3 style="font-family:'Fraunces',Georgia,serif;font-weight:500;font-size:1.1rem;margin:0 0 0.5rem;">Hours</h3>
+              <p style="color:#5b6472;font-size:1.05rem;line-height:1.6;margin:0;">Mon–Fri, 9 AM – 5 PM PT</p>
+            </div>
+          </div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:2.5rem;align-items:center;">
+            <div>
+              <h2 style="font-family:'Fraunces',Georgia,serif;font-weight:500;font-size:1.7rem;margin:0 0 1rem;">Want to get in touch directly?</h2>
+              <a href="#" onClick="{{ goGetStarted }}" style="background:#2c3e63;color:#fff;padding:0.85rem 1.6rem;border-radius:100px;font-size:0.95rem;font-weight:600;display:inline-block;transition:background 0.25s ease,transform 0.25s ease;" style-hover="background:#8fb3e8 !important; transform:translateY(-2px) !important;">Start with an introduction</a>
+            </div>
+            <div style="aspect-ratio:16/9;border-radius:16px;border:1px solid #dde2ea;background:repeating-linear-gradient(45deg,#eef1f7,#eef1f7 12px,#e4e8f0 12px,#e4e8f0 24px);display:flex;align-items:center;justify-content:center;">
+              <span style="font-family:ui-monospace,Menlo,monospace;font-size:0.78rem;color:#8891a0;letter-spacing:0.02em;">map / office location</span>
+            </div>
+          </div>
+        </div>
+      </section>
+    </main>
+  </sc-if>
+
+  <!-- ============ GET STARTED ============ -->
+  <sc-if value="{{ isGetStarted }}" hint-placeholder-val="{{ false }}">
+    <main data-screen-label="Get Started" key="{{ animKey }}">
+      <section style="max-width:100rem;margin:0 auto;padding:clamp(2rem,5vh,3rem) clamp(1.25rem,5vw,3rem) clamp(1.5rem,3vh,2rem);animation:kg-fade 0.5s ease both;">
+        <p style="font-size:0.82rem;text-transform:uppercase;letter-spacing:0.16em;color:#5b8fd6;font-weight:600;margin:0 0 1rem;">Get started</p>
+        <h1 style="font-family:'Fraunces',Georgia,serif;font-weight:500;font-size:clamp(2rem,1.7rem+1.6vw,2.9rem);line-height:1.1;margin:0 0 0.75rem;max-width:28ch;">Book your introduction right here.</h1>
+        <p style="font-size:1.1rem;line-height:1.55;color:#5b6472;max-width:60ch;margin:0;">Fill out the form below to get onboarded — it's secure, private, and goes straight to us.</p>
+      </section>
+
+      <section>
+        <div style="max-width:100rem;margin:0 auto;padding:0 clamp(1.25rem,5vw,3rem) clamp(2rem,5vh,3rem);">
+          <div style="border-radius:16px;overflow:hidden;border:1px solid #e6e9ef;">
+            <iframe src="https://app.moxo.com/embed/de789728-f434-4be6-9a47-218400bf7d8d" width="100%" height="600" frameborder="0" style="border:none;display:block;"></iframe>
+          </div>
+        </div>
+      </section>
+
+      <section style="border-top:1px solid #e6e9ef;">
+        <div style="max-width:100rem;margin:0 auto;padding:clamp(2.5rem,6vh,3.5rem) clamp(1.25rem,5vw,3rem);">
+          <div style="display:grid;gap:0;">
+            <sc-for list="{{ stepsGetStarted }}" as="p" hint-placeholder-count="3">
+              <div style="display:grid;grid-template-columns:3rem 1fr;gap:1.5rem;padding-block:1.75rem;border-top:1px solid #e6e9ef;">
+                <span style="font-family:'Fraunces',Georgia,serif;color:#5b8fd6;font-size:1.3rem;">{{ p.n }}</span>
+                <div>
+                  <h3 style="font-family:'Fraunces',Georgia,serif;font-weight:500;font-size:1.35rem;margin:0 0 0.4rem;">{{ p.title }}</h3>
+                  <p style="color:#5b6472;font-size:1.05rem;line-height:1.6;margin:0;">{{ p.body }}</p>
+                </div>
+              </div>
+            </sc-for>
+            <div style="border-top:1px solid #e6e9ef;"></div>
+          </div>
+        </div>
+      </section>
+    </main>
+  </sc-if>
+
+  <!-- ============ LOGIN ============ -->
+  <sc-if value="{{ isLogin }}" hint-placeholder-val="{{ false }}">
+    <main data-screen-label="Login" key="{{ animKey }}">
+      <section style="max-width:26rem;margin:0 auto;padding:clamp(4rem,10vh,6rem) clamp(1.25rem,5vw,3rem) clamp(3rem,8vh,4.5rem);animation:kg-fade 0.5s ease both;">
+        <h1 style="font-family:'Fraunces',Georgia,serif;font-weight:500;font-size:1.9rem;margin:0 0 0.5rem;text-align:center;">Log in</h1>
+        <p style="color:#5b6472;font-size:0.96rem;text-align:center;margin:0 0 2rem;">Access your client account.</p>
+        <div style="display:flex;flex-direction:column;gap:1rem;background:#fff;border:1px solid #e6e9ef;border-radius:14px;padding:1.75rem;">
+          <label style="font-size:0.85rem;color:#5b6472;">Email
+            <input type="email" placeholder="you@email.com" style="display:block;width:100%;margin-top:0.4rem;padding:0.7rem 0.9rem;border:1px solid #c7cedb;border-radius:8px;font-size:0.95rem;font-family:'Inter',sans-serif;box-sizing:border-box;">
+          </label>
+          <label style="font-size:0.85rem;color:#5b6472;">Password
+            <input type="password" placeholder="••••••••" style="display:block;width:100%;margin-top:0.4rem;padding:0.7rem 0.9rem;border:1px solid #c7cedb;border-radius:8px;font-size:0.95rem;font-family:'Inter',sans-serif;box-sizing:border-box;">
+          </label>
+          <button onClick="{{ handleLoginSubmit }}" style="background:#2c3e63;color:#fff;padding:0.8rem;border-radius:100px;font-size:0.95rem;font-weight:600;border:none;cursor:pointer;margin-top:0.5rem;transition:background 0.25s ease,transform 0.25s ease;" style-hover="background:#8fb3e8 !important; transform:translateY(-2px) !important;">Log in</button>
+          <p style="font-size:0.82rem;color:#8891a0;text-align:center;margin:0.25rem 0 0;">Demo only — connects to MemberPress login once on WordPress.</p>
+        </div>
+        <p style="text-align:center;font-size:0.9rem;color:#5b6472;margin-top:1.5rem;">New here? <a href="#" onClick="{{ goGetStarted }}" style="color:#2c3e63;font-weight:600;">Get started</a></p>
+      </section>
+    </main>
+  </sc-if>
+
+  <!-- ============ ACCOUNT (logged-in view) ============ -->
+  <sc-if value="{{ isAccount }}" hint-placeholder-val="{{ false }}">
+    <main data-screen-label="Account" key="{{ animKey }}">
+      <section style="max-width:100rem;margin:0 auto;padding:clamp(4rem,10vh,6rem) clamp(1.25rem,5vw,3rem) clamp(2.5rem,6vh,3.5rem);animation:kg-fade 0.5s ease both;">
+        <p style="font-size:0.82rem;text-transform:uppercase;letter-spacing:0.16em;color:#5b8fd6;font-weight:600;margin:0 0 1.25rem;">Client account</p>
+        <h1 style="font-family:'Fraunces',Georgia,serif;font-weight:500;font-size:clamp(2rem,1.7rem+2vw,2.8rem);line-height:1.1;margin:0 0 1.25rem;">Welcome back.</h1>
+        <p style="font-size:1.05rem;line-height:1.6;color:#5b6472;max-width:44ch;margin:0 0 2rem;">Your documents, messages, and plan live in the client portal. [This panel becomes your MemberPress account dashboard once on WordPress.]</p>
+        <a href="#" onClick="{{ handleLogout }}" style="border:1px solid #c7cedb;color:#2c3e63;padding:0.75rem 1.5rem;border-radius:100px;font-size:0.9rem;font-weight:600;display:inline-block;transition:background 0.25s ease,border-color 0.25s ease;" style-hover="background:#eef4fc !important; border-color:#5b8fd6 !important;">Log out</a>
+      </section>
+      <section style="border-top:1px solid #e6e9ef;">
+        <div style="max-width:100rem;margin:0 auto;padding:clamp(3rem,7vh,4.5rem) clamp(1.25rem,5vw,3rem);">
+          <div style="display:grid;gap:1.5rem;grid-template-columns:repeat(auto-fit,minmax(15rem,1fr));">
+            <div style="padding:1.85rem;background:#fff;border:1px solid #e6e9ef;border-radius:14px;">
+              <h3 style="font-family:'Fraunces',Georgia,serif;font-weight:500;font-size:1.1rem;margin:0 0 0.5rem;">Documents</h3>
+              <p style="color:#5b6472;font-size:1.05rem;line-height:1.6;margin:0;">Secure files shared between you and your advisor.</p>
+            </div>
+            <div style="padding:1.85rem;background:#fff;border:1px solid #e6e9ef;border-radius:14px;">
+              <h3 style="font-family:'Fraunces',Georgia,serif;font-weight:500;font-size:1.1rem;margin:0 0 0.5rem;">Messages</h3>
+              <p style="color:#5b6472;font-size:1.05rem;line-height:1.6;margin:0;">Direct line to your advisor between meetings.</p>
+            </div>
+            <div style="padding:1.85rem;background:#fff;border:1px solid #e6e9ef;border-radius:14px;">
+              <h3 style="font-family:'Fraunces',Georgia,serif;font-weight:500;font-size:1.1rem;margin:0 0 0.5rem;">Plan</h3>
+              <p style="color:#5b6472;font-size:1.05rem;line-height:1.6;margin:0;">Your current financial plan and next steps.</p>
+            </div>
+          </div>
+        </div>
+      </section>
+    </main>
+  </sc-if>
+
+  <!-- ============ RESOURCE PLACEHOLDER PAGES ============ -->
+  <sc-if value="{{ isResourcePage }}" hint-placeholder-val="{{ false }}">
+    <main data-screen-label="{{ resourcePageLabel }}" key="{{ animKey }}">
+      <section style="max-width:100rem;margin:0 auto;padding:clamp(5rem,14vh,8rem) clamp(1.25rem,5vw,3rem) clamp(4rem,12vh,6rem);animation:kg-fade 0.5s ease both;text-align:center;">
+        <p style="font-size:0.82rem;text-transform:uppercase;letter-spacing:0.16em;color:#5b8fd6;font-weight:600;margin:0 0 1.25rem;">Client resources</p>
+        <h1 style="font-family:'Fraunces',Georgia,serif;font-weight:500;font-size:clamp(2.2rem,1.9rem+2vw,3.2rem);line-height:1.1;margin:0 0 1rem;">{{ resourcePageLabel }}</h1>
+        <p style="font-size:1.1rem;line-height:1.6;color:#5b6472;max-width:44ch;margin:0 auto;">This area is coming soon. Once live, it'll live here for logged-in clients.</p>
+      </section>
+    </main>
+  </sc-if>
+
+  <!-- FOOTER -->
+  <footer style="border-top:1px solid #e6e9ef;margin-top:1rem;">
+    <div style="max-width:100rem;margin:0 auto;padding:clamp(2.5rem,6vh,3.5rem) clamp(1.25rem,5vw,3rem) 2.5rem;">
+      <div style="display:flex;justify-content:space-between;gap:2rem;flex-wrap:wrap;margin-bottom:2rem;">
+        <a href="#" onClick="{{ goHome }}" style="display:flex;align-items:center;">
+          <img src="assets/kaligirl-logo.png" alt="Kali Girl Financial Services" style="height:46px;width:auto;display:block;">
+        </a>
+        <ul style="display:flex;gap:1.5rem;list-style:none;margin:0;padding:0;flex-wrap:wrap;">
+          <li><a href="#" onClick="{{ goServices }}" style="color:#5b6472;font-size:0.9rem;transition:color 0.25s ease;" style-hover="color:#2c3e63 !important;">Services</a></li>
+          <li><a href="#" onClick="{{ goAbout }}" style="color:#5b6472;font-size:0.9rem;transition:color 0.25s ease;" style-hover="color:#2c3e63 !important;">About</a></li>
+          <li><a href="#" onClick="{{ goContact }}" style="color:#5b6472;font-size:0.9rem;transition:color 0.25s ease;" style-hover="color:#2c3e63 !important;">Contact</a></li>
+          <li><a href="#" data-placeholder="adv" onClick="{{ handleAdvClick }}" style="color:#5b6472;font-size:0.9rem;transition:color 0.25s ease;" style-hover="color:#2c3e63 !important;">Form ADV / Disclosures</a></li>
+        </ul>
+      </div>
+      <p style="font-size:0.78rem;line-height:1.6;color:#5b6472;max-width:100%;border-top:1px dashed #e1e5ec;padding-top:1.5rem;margin:0;">
+        <strong style="color:#1b2333;">Disclosure:</strong>
+        Kaligirl Financial Services is a general S corporation and is not currently a registered investment advisory firm. Fiduciary advisory services are not yet being offered. This website is for informational purposes only and does not constitute investment, tax, or legal advice.
+      </p>
+    </div>
+  </footer>
+
+</div>
+
+</x-dc>
+<script type="text/x-dc" data-dc-script>
+class Component extends DCLogic {
+  state = {
+    page: 'home',
+    mobileMenuOpen: false,
+    isNarrow: typeof window !== 'undefined' ? window.innerWidth < 1040 : false,
+    animKey: 0,
+    isLoggedIn: false,
+    resourcesMenuOpen: false,
+  };
+
+  componentDidMount() {
+    this._onResize = () => this.setState({ isNarrow: window.innerWidth < 1040 });
+    window.addEventListener('resize', this._onResize);
+  }
+
+  componentWillUnmount() {
+    window.removeEventListener('resize', this._onResize);
+  }
+
+  go(page) {
+    return (e) => {
+      if (e && e.preventDefault) e.preventDefault();
+      this.setState((s) => ({ page, mobileMenuOpen: false, animKey: s.animKey + 1 }));
+      if (typeof window !== 'undefined') window.scrollTo(0, 0);
+    };
+  }
+
+  goHomeAndLogout(e) {
+    if (e && e.preventDefault) e.preventDefault();
+    this.setState((s) => ({ page: 'home', isLoggedIn: false, mobileMenuOpen: false, resourcesMenuOpen: false, animKey: s.animKey + 1 }));
+    if (typeof window !== 'undefined') window.scrollTo(0, 0);
+  }
+
+  renderVals() {
+    const page = this.state.page;
+    const activeColor = '#1b2333';
+    const inactiveColor = '#5b6472';
+
+    return {
+      isHome: page === 'home',
+      isServices: page === 'services',
+      isAbout: page === 'about',
+      isContact: page === 'contact',
+      isGetStarted: page === 'get-started',
+      isLogin: page === 'login',
+      isAccount: page === 'account',
+      animKey: this.state.animKey,
+
+      isLoggedIn: this.state.isLoggedIn,
+      isLoggedOut: !this.state.isLoggedIn,
+      aboutColor: page === 'about' ? activeColor : inactiveColor,
+      loginColor: page === 'login' ? activeColor : inactiveColor,
+      accountColor: page === 'account' ? activeColor : inactiveColor,
+      goAbout: this.go('about'),
+      goLogin: this.go('login'),
+      goAccount: this.go('account'),
+      isResourcePage: page === 'library' || page === 'lessons' || page === 'tools',
+      resourcePageLabel: page === 'library' ? 'Library' : page === 'lessons' ? 'Lessons' : 'Tools',
+      goLibrary: (e) => { this.setState({ resourcesMenuOpen: false }); this.go('library')(e); },
+      goLessons: (e) => { this.setState({ resourcesMenuOpen: false }); this.go('lessons')(e); },
+      goTools: (e) => { this.setState({ resourcesMenuOpen: false }); this.go('tools')(e); },
+      resourcesMenuOpen: this.state.resourcesMenuOpen,
+      toggleResourcesMenu: () => this.setState((s) => ({ resourcesMenuOpen: !s.resourcesMenuOpen })),
+      resourcesArrowTransform: this.state.resourcesMenuOpen ? 'rotate(180deg)' : 'rotate(0deg)',
+      handleLoginSubmit: (e) => {
+        e.preventDefault();
+        this.setState((s) => ({ isLoggedIn: true, page: 'account', animKey: s.animKey + 1 }));
+      },
+      handleLogout: (e) => {
+        e.preventDefault();
+        this.setState((s) => ({ isLoggedIn: false, page: 'home', animKey: s.animKey + 1 }));
+      },
+
+      showDesktopNav: !this.state.isNarrow,
+      showMobileToggle: this.state.isNarrow,
+      mobileMenuOpen: this.state.isNarrow && this.state.mobileMenuOpen,
+      toggleMenu: () => this.setState((s) => ({ mobileMenuOpen: !s.mobileMenuOpen })),
+
+      homeColor: page === 'home' ? activeColor : inactiveColor,
+      servicesColor: page === 'services' ? activeColor : inactiveColor,
+      contactColor: page === 'contact' ? activeColor : inactiveColor,
+      servicesUnderline: page === 'services' ? '2px solid #5b8fd6' : '2px solid transparent',
+      aboutUnderline: page === 'about' ? '2px solid #5b8fd6' : '2px solid transparent',
+      contactUnderline: page === 'contact' ? '2px solid #5b8fd6' : '2px solid transparent',
+      accountUnderline: page === 'account' ? '2px solid #5b8fd6' : '2px solid transparent',
+
+      goHome: this.state.isLoggedIn ? this.goHomeAndLogout.bind(this) : this.go('home'),
+      goServices: this.go('services'),
+      goContact: this.go('contact'),
+      goGetStarted: this.go('get-started'),
+
+      handleMoxoClick: (e) => {
+        e.preventDefault();
+        alert('Client portal link goes here — connect your Moxo booking/portal URL.');
+      },
+      handleAdvClick: (e) => {
+        e.preventDefault();
+        alert('This link is a placeholder pending compliance-approved content.');
+      },
+
+      principlesHome: [
+        { n: '01', title: 'Advice, not products', body: "We don't earn commissions for selling you anything. Our guidance is the product, so our incentives stay pointed in the same direction as yours." },
+        { n: '02', title: 'Full transparency', body: 'Fees, methods, and any conflicts of interest are laid out plainly and documented — before you decide to work with us.' },
+        { n: '03', title: 'Built around your life', body: 'Every plan starts with your circumstances and goals, not an off-the-shelf template.' },
+      ],
+      servicesHome: [
+        { title: 'Financial planning', body: 'A coordinated look at your income, savings, and goals, turned into a plan you can actually follow.' },
+        { title: 'Investment guidance', body: 'Objective, fiduciary advice on how your assets are structured and managed over time.' },
+        { title: 'Financial decisions', body: 'A steady second opinion when life brings a big choice — with no agenda behind it.' },
+        { title: 'Fractional CFO', body: 'Hands-on financial leadership for small businesses, engaged on a case-by-case basis as you need it.' },
+      ],
+      pricingTiers: [
+        { name: 'Entry', desc: 'For individuals just starting to build a plan and get organized.', price: 'Price TBD' },
+        { name: 'Grow', desc: 'Ongoing planning and investment guidance as your finances get more complex.', price: 'Price TBD' },
+        { name: 'Exceed', desc: 'Tailored, comprehensive planning or fractional CFO services for small businesses.', price: 'Contact us' },
+      ],
+      principlesServices: [
+        { n: '01', title: 'Financial planning', body: 'A full picture of where you are and where you want to go — cash flow, savings, goals, and the trade-offs between them.' },
+        { n: '02', title: 'Investment guidance', body: 'Objective advice on how your assets are structured, without commissions or product sales shaping the recommendation.' },
+        { n: '03', title: 'Decision support', body: 'An independent second opinion for major financial choices, from someone whose only stake is your outcome.' },
+        { n: '04', title: 'Fractional CFO services', body: "For small businesses, hands-on financial leadership without a full-time hire — engaged on a case-by-case basis as your needs change." },
+      ],
+      stepsGetStarted: [
+        { n: '01', title: 'Reach out', body: "Tell us a little about your situation and what you're hoping to sort out." },
+        { n: '02', title: 'Introductory meeting', body: "A no-obligation conversation to understand your goals and confirm we're a good fit." },
+        { n: '03', title: 'Secure onboarding', body: 'Agreements and documents are exchanged and tracked through your private client portal.' },
+      ],
+    };
+  }
+}
+
+</script>
+</body>
+</html>
