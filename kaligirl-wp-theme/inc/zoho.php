@@ -108,7 +108,14 @@ function kaligirl_zoho_creator_lookup( $token, $access_token ) {
 	$rows = isset( $body['data'] ) && is_array( $body['data'] ) ? $body['data'] : array();
 
 	foreach ( $rows as $row ) {
-		if ( isset( $row['status'] ) && 'used' === $row['status'] ) {
+		// Case/whitespace-tolerant on purpose: if more than one Zoho
+		// automation writes this field (e.g. Route One's and Route Two's
+		// forms configured slightly differently), an exact-string match
+		// silently fails forever for whichever one writes "Used" instead
+		// of "used", or leaves a trailing space — with no way to tell that
+		// apart from a real invalid token from out here.
+		$status = isset( $row['status'] ) ? strtolower( trim( (string) $row['status'] ) ) : '';
+		if ( 'used' === $status ) {
 			return true;
 		}
 	}
