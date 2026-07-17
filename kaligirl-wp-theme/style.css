@@ -2,7 +2,7 @@
 Theme Name: Kaligirl Financial Services
 Theme URI: https://kaligirlfinancialservices.com
 Author: Kaligirl Financial Services
-Description: Custom WordPress theme for Kaligirl Financial Services, wired to Paid Memberships Pro for login/membership gating and Moxo for client onboarding. Rebuilt pixel-for-pixel from the design_handoff_wordpress_migration reference.
+Description: Custom WordPress theme for Kaligirl Financial Services, wired to Paid Memberships Pro for login/membership gating and to Zoho (Forms, Bookings, Billing) for the Get Started flow. Rebuilt pixel-for-pixel from the design_handoff_wordpress_migration reference.
 Version: 1.0.0
 Requires at least: 6.0
 Requires PHP: 7.4
@@ -568,14 +568,92 @@ img { max-width: 100%; }
 .integration-badge--soon .tag { color: var(--muted); font-weight: 500; }
 
 /* ==========================================================================
-   Get Started / Moxo embed
+   Get Started — fork page, Zoho Forms/Bookings/Billing embeds
    ========================================================================== */
-.moxo-embed {
+.embed-frame {
   border-radius: 16px;
   overflow: hidden;
   border: 1px solid var(--border);
 }
-.moxo-embed iframe { border: none; display: block; }
+.embed-frame iframe { border: none; display: block; }
+
+/* Personal/Business segmented toggle — a pair of visually-hidden radios
+   with styled labels, so it's keyboard-operable and screen-reader
+   sensible without hand-rolled ARIA state management. */
+.advising-toggle {
+  display: inline-flex;
+  padding: 0.3rem;
+  background: var(--blue-pale);
+  border-radius: var(--radius-pill);
+  margin-bottom: 1.75rem;
+}
+.advising-toggle input[type="radio"] {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(1px, 1px, 1px, 1px);
+}
+.advising-toggle label {
+  padding: 0.65rem 1.4rem;
+  border-radius: var(--radius-pill);
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: var(--text-body);
+  cursor: pointer;
+  transition: background 0.25s ease, color 0.25s ease;
+}
+.advising-toggle input[type="radio"]:checked + label {
+  background: var(--navy);
+  color: #fff;
+}
+.advising-toggle input[type="radio"]:focus-visible + label {
+  outline: 2px solid var(--blue);
+  outline-offset: 2px;
+}
+
+.route-buttons {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+}
+/* .btn-outline sets its own `display`, which (same-origin, same-specificity
+   tie broken by source order) would otherwise beat the browser's default
+   [hidden] { display: none } rule and leave a "hidden" button visible. */
+[data-kg-personal-only][hidden] { display: none !important; }
+
+.back-link {
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: var(--text-body);
+  font-size: 0.9rem;
+  font-family: var(--font-body);
+  padding: 0;
+  margin-bottom: 1.5rem;
+  transition: color 0.25s ease;
+}
+.back-link:hover { color: var(--blue); }
+
+.route-view__title {
+  font-family: var(--font-heading);
+  font-weight: 500;
+  font-size: clamp(1.6rem, 1.4rem + 1vw, 2.1rem);
+  margin: 0 0 0.5rem;
+}
+.route-view__lede {
+  color: var(--text-body);
+  font-size: 1.05rem;
+  line-height: 1.6;
+  margin: 0 0 1.5rem;
+}
+.route-view__continue {
+  font-size: 0.9rem;
+  color: var(--text-body);
+  margin: 1.25rem 0 0;
+}
+.route-view__continue a { color: var(--navy); font-weight: 600; transition: color 0.25s ease; }
+.route-view__continue a:hover { color: var(--blue); }
 
 /* ==========================================================================
    Login

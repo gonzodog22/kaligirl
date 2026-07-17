@@ -44,6 +44,7 @@ add_action( 'wp_enqueue_scripts', 'kaligirl_assets' );
 require KALIGIRL_DIR . '/inc/template-tags.php';
 require KALIGIRL_DIR . '/inc/membership.php';
 require KALIGIRL_DIR . '/inc/security.php';
+require KALIGIRL_DIR . '/inc/zoho.php';
 
 /**
  * Page templates registered by this theme (Appearance > Page Attributes > Template).

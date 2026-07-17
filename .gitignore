@@ -1,0 +1,10 @@
+# Live credentials — never committed. ZOHO_CLIENT_ID/SECRET/REFRESH_TOKEN
+# and any other secrets are wp-config.php constants provisioned directly on
+# the server, per the Get Started migration handoff's credentials section.
+wp-config.php
+.env
+.env.*
+
+# Editor/OS cruft
+.DS_Store
+Thumbs.db

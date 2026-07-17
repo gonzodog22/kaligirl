@@ -3,9 +3,9 @@
  * Template Name: Contact
  *
  * Note: the design has no native contact form on this page — "Contact"
- * routes visitors to Get Started's Moxo-embedded intake, which is where
- * actual submissions happen (and where Moxo's own security/CAPTCHA
- * applies). If a native contact form is ever added here, run its fields
+ * routes visitors to Get Started's fork page, which leads to Zoho's own
+ * hosted forms (security/CAPTCHA there is Zoho's responsibility, not
+ * ours). If a native contact form is ever added here, run its fields
  * through kaligirl_sanitize_input(), print kaligirl_honeypot_field(), and
  * verify kaligirl_verify_recaptcha() before processing — see inc/security.php.
  */

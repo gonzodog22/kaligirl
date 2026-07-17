@@ -38,7 +38,8 @@ if ( ! defined( 'DISALLOW_FILE_EDIT' ) ) {
 
 // Baseline security headers. X-Frame-Options here governs whether *other*
 // sites can iframe kaligirlfinancialservices.com — it has no effect on this
-// site embedding the Moxo iframe on Get Started, which is an outbound embed.
+// site's own outbound embeds (Zoho Forms/Bookings/Billing on Get Started,
+// /booking, /payment).
 add_action( 'send_headers', function () {
 	header( 'X-Content-Type-Options: nosniff' );
 	header( 'X-Frame-Options: SAMEORIGIN' );
@@ -100,9 +101,11 @@ add_action( 'init', 'kaligirl_security_log_bootstrap' );
 
 /**
  * Append one line to the audit log: failed logins, honeypot triggers, rate
- * limit blocks, repeated 404s. Kept as plain-text, append-only, outside the
- * theme/plugin tree, for periodic review (e.g. by whatever security plugin
- * or SIEM ingests it) per the migration spec's audit logging requirement.
+ * limit blocks, repeated 404s, and (see inc/zoho.php) failed/invalid
+ * /booking and /payment gate-token validations. Kept as plain-text,
+ * append-only, outside the theme/plugin tree, for periodic review (e.g. by
+ * whatever security plugin or SIEM ingests it) per the migration spec's
+ * audit logging requirement.
  */
 function kaligirl_security_log( $event, $detail = '' ) {
 	$dir = kaligirl_security_log_dir();
@@ -250,8 +253,10 @@ function kaligirl_verify_recaptcha( $token ) {
  * either, capping at the same thresholds: 10/min per IP unauthenticated,
  * 100/min per IP authenticated. It intentionally only guards
  * authentication endpoints (wp-login.php, which PMP's own Login page posts
- * through, and PMP's checkout/registration POST) rather than every page
- * load, so normal browsing is never throttled.
+ * through, and PMP's checkout/registration POST) plus the Zoho
+ * token-validation calls on /booking and /payment (each hit makes a real,
+ * billable-ish call out to Zoho's OAuth + Creator APIs) rather than every
+ * page load, so normal browsing is never throttled.
  * ---------------------------------------------------------------------- */
 
 function kaligirl_is_rate_limited_request() {
@@ -263,6 +268,15 @@ function kaligirl_is_rate_limited_request() {
 	// Field names verified against PMP's own pages/checkout.php.
 	if ( ! empty( $_POST ) && isset( $_REQUEST['pmpro_level'] ) && isset( $_REQUEST['submit-checkout'] ) ) {
 		return true;
+	}
+	// /booking and /payment, only when a token is actually present — that's
+	// the only case that triggers a real Zoho API round-trip; the no-token
+	// "invalid" path is a static message with no external call to protect.
+	if ( isset( $_GET['token'] ) ) {
+		$path = wp_parse_url( $_SERVER['REQUEST_URI'] ?? '', PHP_URL_PATH );
+		if ( $path && preg_match( '#^/(booking|payment)(/|$)#', $path ) ) {
+			return true;
+		}
 	}
 	return false;
 }
@@ -295,9 +309,10 @@ add_action( 'init', function () {
  * Input sanitization helpers
  *
  * Use these at every point the theme accepts user input (there is no native
- * contact form in this design — Contact routes to Get Started's Moxo embed
- * — but any field added later, or PMP custom checkout fields, should run
- * through these rather than being trusted or concatenated into queries).
+ * contact form in this design — Contact routes to Get Started's fork page,
+ * which leads to Zoho's own hosted forms — but any field added later, or
+ * PMP custom checkout fields, should run through these rather than being
+ * trusted or concatenated into queries).
  * ---------------------------------------------------------------------- */
 
 /**
@@ -330,10 +345,11 @@ function kaligirl_sanitize_rich_text( $value ) {
 /* -------------------------------------------------------------------------
  * File upload restrictions
  *
- * Moxo handles the site's actual document/file exchange, so WordPress
- * itself shouldn't need a public uploader. These filters are the guardrail
- * required by the spec in case a native upload feature (e.g. a profile
- * photo) is ever added: images only, renamed on upload, capped at 1GB.
+ * Zoho's own tools (Forms, Bookings, Billing) handle the site's actual
+ * document/file exchange, so WordPress itself shouldn't need a public
+ * uploader. These filters are the guardrail required by the spec in case a
+ * native upload feature (e.g. a profile photo) is ever added: images only,
+ * renamed on upload, capped at 1GB.
  * ---------------------------------------------------------------------- */
 
 add_filter( 'upload_mimes', function ( $mimes ) {

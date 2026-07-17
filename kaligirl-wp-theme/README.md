@@ -2,7 +2,10 @@
 
 Custom WordPress theme (not a page builder export) implementing the design in
 `design_handoff_wordpress_migration/`, wired to Paid Memberships Pro for login
-and membership gating and to Moxo for client onboarding.
+and membership gating (unrelated to the change below — left as-is; see the
+"Get Started flow" section for why). Get Started is a Zoho-native,
+token-gated flow per a later migration handoff that **drops Moxo entirely**
+— do not reintroduce the Moxo iframe.
 
 ## What's here
 
@@ -16,7 +19,9 @@ kaligirl-wp-theme/
 ├── page-services.php         # Template Name: Services
 ├── page-about.php            # Template Name: About
 ├── page-contact.php          # Template Name: Contact
-├── page-get-started.php      # Template Name: Get Started (Moxo iframe)
+├── page-get-started.php      # Template Name: Get Started (fork page — see "Get Started flow")
+├── page-booking.php          # Template Name: Booking (Route Two destination, token-gated)
+├── page-payment.php          # Template Name: Payment (Route One destination, token-gated, scaffolded)
 ├── page-login.php            # Template Name: Login (unused stub, see below)
 ├── page-account.php          # Template Name: Account (unused stub, see below)
 ├── page-library.php          # Template Name: Library (membership-gated placeholder)
@@ -27,8 +32,9 @@ kaligirl-wp-theme/
 ├── inc/
 │   ├── template-tags.php     # Nav link + principle-row render helpers
 │   ├── membership.php        # Login/account URL + gating helpers (PMP)
-│   └── security.php          # See "Security" below
-├── js/main.js                # Mobile menu + Resources dropdown toggles
+│   ├── security.php          # See "Security" below
+│   └── zoho.php              # Gate-token validation against Zoho Creator (see "Get Started flow")
+├── js/main.js                # Mobile menu + Resources dropdown, Get Started fork/token logic
 └── assets/kaligirl-logo.png
 ```
 
@@ -45,6 +51,10 @@ kaligirl-wp-theme/
    at `/services/` picks up `page-services.php` automatically):
    - `/` or "Home" → Home
    - `services`, `about`, `contact`, `get-started` → matching templates
+   - `booking`, `payment` → matching templates (URLs must be exactly
+     `/booking` and `/payment` — Zoho Forms' post-submission redirect and
+     this theme's fallback "Continue" links both point at those two paths
+     literally; see "Get Started flow" below)
    - `library`, `lessons`, `tools` → matching templates (see gating below)
    - **Do not** create your own `account` or `login` pages using this
      theme's Account/Login templates — see "Login and Account" below for
@@ -109,19 +119,87 @@ what to do instead:
   site/secret keys as environment variables or wp-config constants (see
   Secrets below), per the security requirements.
 
-## Moxo
+## Get Started flow (Zoho-native — Moxo is dropped)
 
-The Get Started page (`page-get-started.php`) embeds the iframe exactly as
-given in the handoff:
+Moxo was dropped from the plan (cost vs. what it offered at the needed
+tier). The Get Started page is now a **fork page**, not a form itself:
 
-```html
-<iframe src="https://app.moxo.com/embed/de789728-f434-4be6-9a47-218400bf7d8d" width="100%" height="600" frameborder="0"></iframe>
-```
+1. **`page-get-started.php`** — a Personal/Business Advising toggle (pure
+   UI, no gating logic) plus two buttons:
+   - **"Schedule an Introductory Consultation"** (Route Two) — always
+     visible in both toggle states.
+   - **"Find the Right Plan"** (Route One) — visible only in "Personal
+     Advising" mode; Business/CFO visitors never see it.
 
-Moxo owns onboarding, e-signature, secure document exchange, and chat from
-here on — none of that is reimplemented in WordPress. The Account page is a
-placeholder for a similar Moxo-linked dashboard once the client's specific
-portal URL/session is available.
+   Clicking either reveals that route's already-built Zoho Forms iframe
+   (not custom — these forms exist and work in Zoho already). Before each
+   iframe's `src` is set, `js/main.js` generates a one-time token
+   (`crypto.randomUUID()`, with an older-browser fallback) and appends it
+   as `?gated_token=...`. The same token is stashed in `sessionStorage` and
+   used to build a "Continue" link as a fallback path to `/booking` or
+   `/payment`.
+
+2. **`page-booking.php`** (Route Two destination) and **`page-payment.php`**
+   (Route One destination, scaffolded — Zoho Billing's hosted payment page
+   doesn't exist yet) both validate `?token=` **server-side** against Zoho
+   Creator's `intake-token-gate` datastore (`inc/zoho.php`,
+   `kaligirl_validate_gate_token()`) before rendering anything. No valid,
+   "used" token record → a friendly message and a link back to Get Started,
+   never the real Zoho Bookings/Billing embed. This is the actual security
+   boundary — nobody reaches either embed by guessing the URL, only by
+   completing a real Zoho Forms submission first.
+
+### Two things that need manual confirmation (not verifiable from code)
+
+1. **Zoho Forms' "Redirect URL on Submission" setting** (Form Settings >
+   Submission, in each form's Zoho dashboard) — check whether it can carry
+   `gated_token` forward dynamically to `/payment?token=...` /
+   `/booking?token=...`. If yes, configure it there as the primary path. If
+   it can only redirect to a static URL, the "Continue" link already built
+   into `page-get-started.php` (reads the same token back out of
+   `sessionStorage`) is the fallback — visitors click it manually after
+   submitting.
+2. **Zoho Bookings' own "post-booking redirect" setting** (configured in
+   Zoho Bookings, not this repo) should point at a `/thank-you` page on this
+   domain — confirm it's actually set during testing, don't assume it is.
+
+### Placeholders still needing real values
+
+- The literal Zoho referrer-tracking `<script>` block that ships with each
+  form's embed code isn't reproduced in `page-get-started.php` (wasn't
+  available at build time) — see the `<!-- TODO -->` HTML comments marking
+  exactly where to paste each one in, unmodified.
+- `$kg_zoho_billing_page_id` at the top of `page-payment.php` — the Zoho
+  Billing hosted payment page ID, once that page exists.
+- `ZOHO_CREATOR_ACCOUNT_OWNER` (see Secrets below) — the `{account-owner}`
+  segment of the Creator report URL.
+
+### Credentials (already provisioned on the server)
+
+`ZOHO_CLIENT_ID`, `ZOHO_CLIENT_SECRET`, and `ZOHO_REFRESH_TOKEN` are live
+`wp-config.php` constants, already set up — this repo only ever references
+the constant *names* via `kaligirl_secret()` (see Secrets below), never
+their values. `.gitignore` at the repo root excludes `wp-config.php`
+explicitly — confirmed present before this branch merges toward main, per
+the handoff's compliance note (these are live production credentials).
+
+### Rate limiting & audit logging for this flow
+
+`inc/security.php`'s fallback rate limiter also covers `/booking` and
+`/payment` whenever a `token` query param is present — each hit makes a
+real round-trip to Zoho's OAuth + Creator APIs, worth protecting the same
+way as login/checkout. Failed or invalid token validations log via
+`kaligirl_security_log()` as `token_validation_failed` /
+`token_validation_error` (a short, non-reversible fragment of the token is
+logged for correlation, not the full value).
+
+### MemberPress / PMP note
+
+The original spec's Login/Account/Library/Lessons/Tools gating (this repo
+already runs on Paid Memberships Pro, having migrated off MemberPress
+earlier) is **unrelated to this flow and was left untouched** — Get
+Started, `/booking`, and `/payment` are all public URLs gated by the Zoho
+token mechanism above, not by PMP membership state.
 
 ## Security
 
@@ -152,10 +230,12 @@ hand-rolled in theme PHP:
     any form not already covered by PMP's native reCAPTCHA setting.
   - **File upload restrictions** (images only, renamed on upload, 1GB cap) —
     guardrails in place now in case a native upload feature is added later;
-    Moxo handles the site's actual document exchange today.
+    Zoho's own tools (Forms, Bookings, Billing) handle the site's actual
+    document exchange today.
   - **Audit logging** (`kaligirl_security_log()`) to a directory outside the
     theme, protected by a deny-all `.htaccess`, capturing failed logins,
-    honeypot triggers, rate-limit blocks, and repeated 404s.
+    honeypot triggers, rate-limit blocks, repeated 404s, and (see "Get
+    Started flow" above) failed `/booking`/`/payment` token validations.
   - Baseline hardening: XML-RPC disabled, WP version hidden, file editor
     disabled, security response headers.
 
@@ -164,13 +244,21 @@ hand-rolled in theme PHP:
 No API keys, DB credentials, or JWT secrets are hardcoded anywhere in this
 theme. Use `kaligirl_secret( 'NAME', $default )` (in `inc/security.php`) to
 read any future secret from an environment variable first, falling back to
-a `wp-config.php` constant — never a committed value. Example
-`wp-config.php` snippet (add outside version control, e.g. via your host's
+a `wp-config.php` constant — never a committed value. `wp-config.php`
+itself is excluded via the repo-root `.gitignore`. Example `wp-config.php`
+snippet (add outside version control, e.g. via your host's
 environment/secrets manager):
 
 ```php
 define( 'KALIGIRL_RECAPTCHA_SITE_KEY', getenv( 'KALIGIRL_RECAPTCHA_SITE_KEY' ) ?: '' );
 define( 'KALIGIRL_RECAPTCHA_SECRET_KEY', getenv( 'KALIGIRL_RECAPTCHA_SECRET_KEY' ) ?: '' );
+
+// Get Started flow (see above) — already live on the server per the handoff.
+define( 'ZOHO_CLIENT_ID', getenv( 'ZOHO_CLIENT_ID' ) ?: '' );
+define( 'ZOHO_CLIENT_SECRET', getenv( 'ZOHO_CLIENT_SECRET' ) ?: '' );
+define( 'ZOHO_REFRESH_TOKEN', getenv( 'ZOHO_REFRESH_TOKEN' ) ?: '' );
+// Not itself sensitive, but kept out of hardcoded URLs the same way:
+define( 'ZOHO_CREATOR_ACCOUNT_OWNER', getenv( 'ZOHO_CREATOR_ACCOUNT_OWNER' ) ?: '' );
 ```
 
 ## Compliance placeholders — do not remove or treat as final
