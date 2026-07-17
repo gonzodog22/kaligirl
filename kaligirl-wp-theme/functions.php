@@ -26,6 +26,17 @@ add_action( 'after_setup_theme', 'kaligirl_setup' );
 /**
  * Styles & scripts.
  */
+/**
+ * Cache-bust a theme asset by its own file modification time rather than
+ * the static KALIGIRL_VERSION constant — otherwise every style.css/main.js
+ * edit ships under the exact same ?ver= query string, and browsers/CDNs
+ * that cached the previous version have no reason to fetch the new one.
+ */
+function kaligirl_asset_version( $relative_path ) {
+	$file = KALIGIRL_DIR . $relative_path;
+	return file_exists( $file ) ? (string) filemtime( $file ) : KALIGIRL_VERSION;
+}
+
 function kaligirl_assets() {
 	wp_enqueue_style(
 		'kaligirl-fonts',
@@ -33,8 +44,8 @@ function kaligirl_assets() {
 		array(),
 		null
 	);
-	wp_enqueue_style( 'kaligirl-style', get_stylesheet_uri(), array(), KALIGIRL_VERSION );
-	wp_enqueue_script( 'kaligirl-main', KALIGIRL_URI . '/js/main.js', array(), KALIGIRL_VERSION, true );
+	wp_enqueue_style( 'kaligirl-style', get_stylesheet_uri(), array(), kaligirl_asset_version( '/style.css' ) );
+	wp_enqueue_script( 'kaligirl-main', KALIGIRL_URI . '/js/main.js', array(), kaligirl_asset_version( '/js/main.js' ), true );
 }
 add_action( 'wp_enqueue_scripts', 'kaligirl_assets' );
 

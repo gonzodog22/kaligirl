@@ -4,19 +4,25 @@
  *
  * Fork page per the Get Started migration handoff (supersedes the earlier
  * Moxo iframe entirely — do not reintroduce it). A Personal/Business
- * toggle controls which of two buttons are visible; each leads to an
- * already-built Zoho Forms embed (not custom), gated by a one-time token
- * generated client-side (js/main.js) and appended to the iframe's src.
+ * sliding toggle controls which of two buttons are visible; each reveals
+ * an already-built Zoho Forms embed (not custom) on this same page, gated
+ * by a one-time token generated client-side (js/main.js) and appended to
+ * the iframe's src.
  *
  * - "Schedule an Introductory Consultation" (Route Two) — always visible,
  *   both toggle states — submits to /booking?token=... on completion.
  * - "Find the Right Plan" (Route One) — visible only in "Personal
  *   Advising" mode — submits to /payment?token=... on completion.
  *
- * Real security is server-side: /booking and /payment (page-booking.php,
- * page-payment.php) validate the token against Zoho Creator before
- * rendering anything (inc/zoho.php). This page's job is only to generate
- * the token and get it into the iframe URL and the fallback "Continue" link.
+ * The actual security boundary is NOT this page or the token generator —
+ * it's the server-side check in /booking and /payment (page-booking.php,
+ * page-payment.php via inc/zoho.php), which requires a matching token
+ * record in Zoho Creator with status "used". That status only gets set by
+ * a real Zoho Forms submission (on Zoho's side), so guessing or
+ * hand-crafting a token client-side doesn't get anyone in — there's
+ * nothing for an attacker to reach without a genuine submission having
+ * already happened. This page's job is only to generate the token and get
+ * it into the iframe URL and the fallback "Continue" link.
  *
  * TWO THINGS NEED MANUAL CONFIRMATION (see README + PR notes):
  * 1. Whether each Zoho Form's own "Redirect URL on Submission" setting can
@@ -72,6 +78,7 @@ $kg_steps = array(
 					<label for="kg-mode-personal">Personal Advising</label>
 					<input type="radio" id="kg-mode-business" name="kg-advising-mode" value="business">
 					<label for="kg-mode-business">Business Advising</label>
+					<span class="advising-toggle__thumb" aria-hidden="true"></span>
 				</div>
 
 				<div class="route-buttons">

@@ -577,11 +577,16 @@ img { max-width: 100%; }
 }
 .embed-frame iframe { border: none; display: block; }
 
-/* Personal/Business segmented toggle — a pair of visually-hidden radios
-   with styled labels, so it's keyboard-operable and screen-reader
-   sensible without hand-rolled ARIA state management. */
+/* Personal/Business sliding toggle — a pair of visually-hidden radios with
+   styled labels (keyboard-operable, no hand-rolled ARIA state) plus a
+   thumb `<span>` whose position is driven purely by :has()/:checked, no
+   JS needed for the slide itself. Both labels are equal-width grid cells
+   so the thumb's 50%/translateX(100%) math lines up exactly. */
 .advising-toggle {
-  display: inline-flex;
+  position: relative;
+  display: inline-grid;
+  grid-template-columns: 1fr 1fr;
+  min-width: 22rem;
   padding: 0.3rem;
   background: var(--blue-pale);
   border-radius: var(--radius-pill);
@@ -595,27 +600,50 @@ img { max-width: 100%; }
   clip: rect(1px, 1px, 1px, 1px);
 }
 .advising-toggle label {
-  padding: 0.65rem 1.4rem;
+  position: relative;
+  z-index: 1;
+  text-align: center;
+  padding: 0.65rem 1rem;
   border-radius: var(--radius-pill);
   font-size: 0.95rem;
   font-weight: 600;
   color: var(--text-body);
   cursor: pointer;
-  transition: background 0.25s ease, color 0.25s ease;
+  transition: color 0.25s ease;
 }
 .advising-toggle input[type="radio"]:checked + label {
-  background: var(--navy);
   color: #fff;
 }
 .advising-toggle input[type="radio"]:focus-visible + label {
   outline: 2px solid var(--blue);
   outline-offset: 2px;
 }
+.advising-toggle__thumb {
+  position: absolute;
+  z-index: 0;
+  top: 0.3rem;
+  left: 0.3rem;
+  width: calc(50% - 0.3rem);
+  height: calc(100% - 0.6rem);
+  background: var(--navy);
+  border-radius: var(--radius-pill);
+  transition: transform 0.25s ease;
+}
+.advising-toggle:has(#kg-mode-business:checked) .advising-toggle__thumb {
+  transform: translateX(100%);
+}
 
 .route-buttons {
   display: flex;
   flex-wrap: wrap;
   gap: 1rem;
+}
+/* Both route buttons share one visual size regardless of .btn-pill's vs.
+   .btn-outline's own (different) global padding/font-size defaults. */
+.route-buttons .btn-pill,
+.route-buttons .btn-outline {
+  padding: 0.85rem 1.8rem;
+  font-size: 0.95rem;
 }
 /* .btn-outline sets its own `display`, which (same-origin, same-specificity
    tie broken by source order) would otherwise beat the browser's default
