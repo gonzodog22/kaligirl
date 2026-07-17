@@ -173,34 +173,35 @@ tier). The Get Started page is now a **fork page**, not a form itself:
   the token, though, not the autofill fields below (see why in
   `page-booking.php`'s header comment).
 
-### Autofilling name/email/phone on the Bookings embed
+### Autofilling name/email/phone on the Bookings embed — reverted, not working yet
 
-`page-booking.php` also reads `?name=`, `?email=`, `?phone=` (all
-lowercase, no spaces — `$_GET` keys are case-sensitive) off the same
-redirect URL and appends them onto the Zoho Bookings widget's own URL as
-query params. Extend each Zoho Form's Redirect URL setting to:
+`page-booking.php` still reads `?name=`, `?email=`, `?phone=` off its own
+URL (harmless — this is the redirect URL Zoho Forms already sends people
+to, per the token setup above) but no longer passes them into the Zoho
+Bookings embed. Two attempts at guessing the right way to hand that data
+to `Bookings.inlineEmbed()` — appending `?name=...` after the `#/{id}`
+hash fragment, then before it — both either broke the widget outright
+("nothing found," because the query string corrupted the booking-page ID
+Zoho's router reads out of that fragment) or still didn't prefill anything.
+Zoho's own help docs blocked every fetch attempt this session, so there
+was no way to confirm the real mechanism rather than keep guessing against
+a live page — reverted to the plain, known-working embed URL with no
+query string at all.
 
-```
-https://kaligirlfinancialservices.com/booking?token={gated_token}&name={Name field}&email={Email field}&phone={Phone field}
-```
+**Next step to actually solve this**: check Zoho Bookings' own
+widget-customization screen in your dashboard (Settings > Booking Widget,
+or wherever the embed code for this specific service/staff booking page is
+generated) — it's account-specific and not blocked by a generic web
+fetch. Look for an explicit "prefill" or "custom fields" option there,
+or ask Zoho support directly what `Bookings.inlineEmbed()` accepts for
+customer details — once you have the real mechanism, it's a small,
+targeted edit to `page-booking.php` to wire it up (the sanitized
+`$kg_prefill_name`/`_email`/`_phone` variables are already there, just
+not used yet).
 
-— using Zoho's merge-field picker for each, same as the token. **Not
-independently confirmed against Zoho Bookings' own docs this session**
-(their help pages blocked every fetch attempt) — this is the standard,
-most-likely-correct mechanism (Zoho Bookings' public booking pages are
-documented elsewhere to accept exactly these three as prefill query
-params), but test it after deploying and report back if it doesn't
-actually prefill so the param names can be adjusted.
-
-You do **not** need to also store name/email/phone in the
-`intake-token-gate` Creator report for this to work — the redirect URL
-alone carries everything `page-booking.php` needs. Storing them there too
-would only be worth doing if you want the "Continue" fallback link to also
-autofill (by having `kaligirl_validate_gate_token()` fetch those fields
-from the same Creator row it already queries, instead of only ever reading
-them from the URL) — a real improvement (also gets PII out of the URL/
-server logs entirely) but extra Zoho-side automation work; not done here
-since the redirect-URL approach already covers the common case.
+You do **not** need to store name/email/phone in the `intake-token-gate`
+Creator report for this — whatever the real mechanism turns out to be,
+the redirect URL already carries everything `page-booking.php` needs.
 
 ### Still needs manual confirmation
 

@@ -12,22 +12,18 @@
  * /thank-you page on this domain, configured in Zoho Bookings itself —
  * confirm this is actually set during testing, don't assume it already is.
  *
- * Autofill: expects ?name=, ?email=, ?phone= alongside ?token= on the
- * redirect URL (configured in each Zoho Form's "Redirect URL on
- * Submission" setting via its own field-merge picker — same mechanism as
- * the token itself). Keys must be exactly these, lowercase, no spaces —
- * $_GET keys are case-sensitive. Appended onto the Zoho Bookings widget's
- * own URL as query params (Zoho Bookings' public booking pages are
- * documented elsewhere to accept name/email/phone this way) — NOT
- * confirmed against Zoho's own docs this session (their help pages
- * blocked every fetch attempt), so verify it actually prefills once
- * tested and adjust the param names below if it doesn't.
- *
- * The "Continue" fallback link (page-get-started.php, for when Zoho's
- * automatic redirect isn't configured) can only ever carry the token —
- * our JS never sees inside the cross-origin Zoho Forms iframe, so it has
- * no way to know the name/email/phone that was typed into it. That path
- * will land on this page correctly gated, just without autofill.
+ * Autofill (name/email/phone on the Bookings widget) is NOT implemented
+ * here — two attempts at guessing Zoho's undocumented query-param prefill
+ * mechanism both broke the widget outright ("nothing found"), and their
+ * help docs blocked every fetch attempt this session, so there was no way
+ * to verify the correct approach rather than keep guessing against a live
+ * page. Reverted to the plain, known-working embed URL. $_GET still reads
+ * ?name=/?email=/?phone= off this page's own URL below (harmless, doesn't
+ * touch the embed) so that data isn't lost once the real mechanism is
+ * confirmed — see README "Get Started flow" for how to find it (Zoho
+ * Bookings' own widget-customization screen in your dashboard is the
+ * fastest path, since it's account-specific and not blocked the way their
+ * public docs were).
  */
 
 if ( ! defined( 'ABSPATH' ) ) {
@@ -37,30 +33,11 @@ if ( ! defined( 'ABSPATH' ) ) {
 $kg_token       = isset( $_GET['token'] ) ? sanitize_text_field( wp_unslash( $_GET['token'] ) ) : '';
 $kg_token_valid = kaligirl_validate_gate_token( $kg_token );
 
-// Prefill data, all optional — only ever present when the visitor arrived
-// via Zoho's automatic redirect (the "Continue" fallback link can't supply
-// these; see file header).
-$kg_prefill = array();
-if ( ! empty( $_GET['name'] ) ) {
-	$kg_prefill['name'] = sanitize_text_field( wp_unslash( $_GET['name'] ) );
-}
-if ( ! empty( $_GET['email'] ) ) {
-	$kg_prefill['email'] = sanitize_email( wp_unslash( $_GET['email'] ) );
-}
-if ( ! empty( $_GET['phone'] ) ) {
-	$kg_prefill['phone'] = sanitize_text_field( wp_unslash( $_GET['phone'] ) );
-}
-
-// Query string must precede the #/ hash fragment, not follow it — the
-// fragment is the booking page ID Zoho's own router looks up, and
-// appending ?params after it (as an earlier version of this file did)
-// glues them onto the ID itself, so Zoho searches for a page literally
-// named "4946279000000039045?name=...&email=..." and finds nothing.
-$kg_booking_url = 'https://kaligirlfinancialservices.zohobookings.com/portal-embed';
-if ( ! empty( $kg_prefill ) ) {
-	$kg_booking_url .= '?' . http_build_query( $kg_prefill );
-}
-$kg_booking_url .= '#/4946279000000039045';
+// Captured but not yet used (see file header) — kept so nothing needs to
+// change on the Zoho Forms redirect-URL side once prefill is figured out.
+$kg_prefill_name  = isset( $_GET['name'] ) ? sanitize_text_field( wp_unslash( $_GET['name'] ) ) : '';
+$kg_prefill_email = isset( $_GET['email'] ) ? sanitize_email( wp_unslash( $_GET['email'] ) ) : '';
+$kg_prefill_phone = isset( $_GET['phone'] ) ? sanitize_text_field( wp_unslash( $_GET['phone'] ) ) : '';
 
 get_header();
 ?>
@@ -95,7 +72,7 @@ get_header();
 	<script>
 	window.onload = function() {
 	  Bookings.inlineEmbed({
-	    url: "<?php echo esc_js( $kg_booking_url ); ?>",
+	    url: "https://kaligirlfinancialservices.zohobookings.com/portal-embed#/4946279000000039045",
 	    parent: "#inline-container",
 	    height: "600px"
 	  });
