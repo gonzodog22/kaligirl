@@ -51,10 +51,16 @@ if ( ! empty( $_GET['phone'] ) ) {
 	$kg_prefill['phone'] = sanitize_text_field( wp_unslash( $_GET['phone'] ) );
 }
 
-$kg_booking_url = 'https://kaligirlfinancialservices.zohobookings.com/portal-embed#/4946279000000039045';
+// Query string must precede the #/ hash fragment, not follow it — the
+// fragment is the booking page ID Zoho's own router looks up, and
+// appending ?params after it (as an earlier version of this file did)
+// glues them onto the ID itself, so Zoho searches for a page literally
+// named "4946279000000039045?name=...&email=..." and finds nothing.
+$kg_booking_url = 'https://kaligirlfinancialservices.zohobookings.com/portal-embed';
 if ( ! empty( $kg_prefill ) ) {
 	$kg_booking_url .= '?' . http_build_query( $kg_prefill );
 }
+$kg_booking_url .= '#/4946279000000039045';
 
 get_header();
 ?>
