@@ -91,6 +91,26 @@
 			if ( iframe ) {
 				var baseSrc = iframe.getAttribute( 'data-kg-form-src' );
 				iframe.src = baseSrc + '?gated_token=' + encodeURIComponent( token );
+
+				// Zoho's own "Redirect URL on Submission" navigates *within
+				// the iframe's own frame*, not the top-level page — so after
+				// a real submission, our /booking or /payment page would
+				// otherwise render nested inside this small form iframe
+				// instead of taking over the whole tab. Same-origin policy
+				// blocks us from reading the iframe's location while it's
+				// still showing Zoho's domain (the try/catch below just
+				// swallows that, silently, every load until it changes) —
+				// but once Zoho's redirect lands the iframe on our own
+				// domain, reading it succeeds, and that's our signal to
+				// force a full top-level navigation to the same URL.
+				iframe.addEventListener( 'load', function () {
+					try {
+						var landedUrl = iframe.contentWindow.location.href;
+						window.top.location.href = landedUrl;
+					} catch ( e ) {
+						// Still cross-origin (on Zoho's domain) — expected; ignore.
+					}
+				} );
 			}
 
 			var continueLink = view.querySelector( '[data-kg-continue-link]' );

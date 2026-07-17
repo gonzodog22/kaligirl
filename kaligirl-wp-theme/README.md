@@ -139,6 +139,17 @@ tier). The Get Started page is now a **fork page**, not a form itself:
    used to build a "Continue" link as a fallback path to `/booking` or
    `/payment`.
 
+   **Iframe breakout on redirect:** Zoho's "Redirect URL on Submission"
+   navigates *within the form's own iframe*, not the top-level page — left
+   alone, `/booking`/`/payment` would render nested inside that small form
+   iframe instead of taking over the tab. `js/main.js` listens for the
+   iframe's `load` event and tries to read `iframe.contentWindow.location`;
+   that throws (cross-origin) while it's still showing Zoho's domain, but
+   succeeds the instant Zoho's redirect lands it on our own domain — at
+   which point it forces a real `window.top.location` navigation to that
+   same URL. Confirmed working: submitting a form now takes over the whole
+   tab instead of loading `/booking` nested inside the form iframe.
+
 2. **`page-booking.php`** (Route Two destination) and **`page-payment.php`**
    (Route One destination, scaffolded — Zoho Billing's hosted payment page
    doesn't exist yet) both validate `?token=` **server-side** against Zoho
@@ -149,19 +160,22 @@ tier). The Get Started page is now a **fork page**, not a form itself:
    boundary — nobody reaches either embed by guessing the URL, only by
    completing a real Zoho Forms submission first.
 
-### Two things that need manual confirmation (not verifiable from code)
+### Confirmed working
 
-1. **Zoho Forms' "Redirect URL on Submission" setting** (Form Settings >
-   Submission, in each form's Zoho dashboard) — check whether it can carry
-   `gated_token` forward dynamically to `/payment?token=...` /
-   `/booking?token=...`. If yes, configure it there as the primary path. If
-   it can only redirect to a static URL, the "Continue" link already built
-   into `page-get-started.php` (reads the same token back out of
-   `sessionStorage`) is the fallback — visitors click it manually after
-   submitting.
-2. **Zoho Bookings' own "post-booking redirect" setting** (configured in
-   Zoho Bookings, not this repo) should point at a `/thank-you` page on this
-   domain — confirm it's actually set during testing, don't assume it is.
+- **Zoho Forms' "Redirect URL on Submission"** does carry `gated_token`
+  forward dynamically — configured per-form as a static
+  `https://kaligirlfinancialservices.com/booking?token=` (or `/payment?token=`)
+  prefix plus the `gated_token` field inserted via Zoho's own merge-field
+  picker in that setting. Tested end to end, including the iframe-breakout
+  fix above. The "Continue" link in `page-get-started.php` (reads the same
+  token back out of `sessionStorage`) still exists as a manual fallback in
+  case this ever isn't configured on a given form.
+
+### Still needs manual confirmation
+
+- **Zoho Bookings' own "post-booking redirect" setting** (configured in
+  Zoho Bookings, not this repo) should point at a `/thank-you` page on this
+  domain — confirm it's actually set during testing, don't assume it is.
 
 ### Placeholders still needing real values
 

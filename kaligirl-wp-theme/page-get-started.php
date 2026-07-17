@@ -24,6 +24,15 @@
  * already happened. This page's job is only to generate the token and get
  * it into the iframe URL and the fallback "Continue" link.
  *
+ * Zoho's own "Redirect URL on Submission" navigates *inside the form's own
+ * iframe* — left alone, that would render the full /booking or /payment
+ * page (header, footer, and all) nested inside this small form iframe
+ * instead of taking over the tab. js/main.js watches for the iframe
+ * landing on our own domain (same-origin access starts working at that
+ * exact moment, having thrown until then) and forces a real top-level
+ * navigation to that same URL — see the iframe `load` listener in
+ * loadRoute().
+ *
  * TWO THINGS NEED MANUAL CONFIRMATION (see README + PR notes):
  * 1. Whether each Zoho Form's own "Redirect URL on Submission" setting can
  *    carry `gated_token` forward dynamically to /payment or /booking. If
