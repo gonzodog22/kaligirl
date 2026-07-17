@@ -11,6 +11,23 @@
  * Needs a real Zoho Bookings "post-booking redirect" setting pointed at a
  * /thank-you page on this domain, configured in Zoho Bookings itself —
  * confirm this is actually set during testing, don't assume it already is.
+ *
+ * Autofill: expects ?name=, ?email=, ?phone= alongside ?token= on the
+ * redirect URL (configured in each Zoho Form's "Redirect URL on
+ * Submission" setting via its own field-merge picker — same mechanism as
+ * the token itself). Keys must be exactly these, lowercase, no spaces —
+ * $_GET keys are case-sensitive. Appended onto the Zoho Bookings widget's
+ * own URL as query params (Zoho Bookings' public booking pages are
+ * documented elsewhere to accept name/email/phone this way) — NOT
+ * confirmed against Zoho's own docs this session (their help pages
+ * blocked every fetch attempt), so verify it actually prefills once
+ * tested and adjust the param names below if it doesn't.
+ *
+ * The "Continue" fallback link (page-get-started.php, for when Zoho's
+ * automatic redirect isn't configured) can only ever carry the token —
+ * our JS never sees inside the cross-origin Zoho Forms iframe, so it has
+ * no way to know the name/email/phone that was typed into it. That path
+ * will land on this page correctly gated, just without autofill.
  */
 
 if ( ! defined( 'ABSPATH' ) ) {
@@ -19,6 +36,25 @@ if ( ! defined( 'ABSPATH' ) ) {
 
 $kg_token       = isset( $_GET['token'] ) ? sanitize_text_field( wp_unslash( $_GET['token'] ) ) : '';
 $kg_token_valid = kaligirl_validate_gate_token( $kg_token );
+
+// Prefill data, all optional — only ever present when the visitor arrived
+// via Zoho's automatic redirect (the "Continue" fallback link can't supply
+// these; see file header).
+$kg_prefill = array();
+if ( ! empty( $_GET['name'] ) ) {
+	$kg_prefill['name'] = sanitize_text_field( wp_unslash( $_GET['name'] ) );
+}
+if ( ! empty( $_GET['email'] ) ) {
+	$kg_prefill['email'] = sanitize_email( wp_unslash( $_GET['email'] ) );
+}
+if ( ! empty( $_GET['phone'] ) ) {
+	$kg_prefill['phone'] = sanitize_text_field( wp_unslash( $_GET['phone'] ) );
+}
+
+$kg_booking_url = 'https://kaligirlfinancialservices.zohobookings.com/portal-embed#/4946279000000039045';
+if ( ! empty( $kg_prefill ) ) {
+	$kg_booking_url .= '?' . http_build_query( $kg_prefill );
+}
 
 get_header();
 ?>
@@ -53,7 +89,7 @@ get_header();
 	<script>
 	window.onload = function() {
 	  Bookings.inlineEmbed({
-	    url: "https://kaligirlfinancialservices.zohobookings.com/portal-embed#/4946279000000039045",
+	    url: "<?php echo esc_js( $kg_booking_url ); ?>",
 	    parent: "#inline-container",
 	    height: "600px"
 	  });

@@ -169,7 +169,38 @@ tier). The Get Started page is now a **fork page**, not a form itself:
   picker in that setting. Tested end to end, including the iframe-breakout
   fix above. The "Continue" link in `page-get-started.php` (reads the same
   token back out of `sessionStorage`) still exists as a manual fallback in
-  case this ever isn't configured on a given form.
+  case this ever isn't configured on a given form — it only ever carries
+  the token, though, not the autofill fields below (see why in
+  `page-booking.php`'s header comment).
+
+### Autofilling name/email/phone on the Bookings embed
+
+`page-booking.php` also reads `?name=`, `?email=`, `?phone=` (all
+lowercase, no spaces — `$_GET` keys are case-sensitive) off the same
+redirect URL and appends them onto the Zoho Bookings widget's own URL as
+query params. Extend each Zoho Form's Redirect URL setting to:
+
+```
+https://kaligirlfinancialservices.com/booking?token={gated_token}&name={Name field}&email={Email field}&phone={Phone field}
+```
+
+— using Zoho's merge-field picker for each, same as the token. **Not
+independently confirmed against Zoho Bookings' own docs this session**
+(their help pages blocked every fetch attempt) — this is the standard,
+most-likely-correct mechanism (Zoho Bookings' public booking pages are
+documented elsewhere to accept exactly these three as prefill query
+params), but test it after deploying and report back if it doesn't
+actually prefill so the param names can be adjusted.
+
+You do **not** need to also store name/email/phone in the
+`intake-token-gate` Creator report for this to work — the redirect URL
+alone carries everything `page-booking.php` needs. Storing them there too
+would only be worth doing if you want the "Continue" fallback link to also
+autofill (by having `kaligirl_validate_gate_token()` fetch those fields
+from the same Creator row it already queries, instead of only ever reading
+them from the URL) — a real improvement (also gets PII out of the URL/
+server logs entirely) but extra Zoho-side automation work; not done here
+since the redirect-URL approach already covers the common case.
 
 ### Still needs manual confirmation
 
