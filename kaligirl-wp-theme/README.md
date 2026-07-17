@@ -197,6 +197,22 @@ their values. `.gitignore` at the repo root excludes `wp-config.php`
 explicitly — confirmed present before this branch merges toward main, per
 the handoff's compliance note (these are live production credentials).
 
+### Known intermittent failure: token not "used" yet at validation time
+
+Observed in testing: the same flow, same form, sometimes lands on `/booking`
+fine and sometimes shows the "invalid link" message — with no code change
+between attempts. Most likely cause: if the Creator record's `status` gets
+set to `"used"` by a Zoho Flow/automation step (rather than a fully
+synchronous action tied directly to the form submission), there's a real
+window where the browser's redirect can arrive at `/booking`/`/payment`
+*before* that write finishes — eventual-consistency lag on Zoho's side, not
+something fixable from WordPress. `kaligirl_validate_gate_token()`
+(`inc/zoho.php`) now retries the Creator lookup up to 3 times with a short
+delay (0s, 1s, 2s — ~3s worst case) before giving up, which should absorb
+typical automation lag. If it's still flaky after this, check on the Zoho
+side exactly how/when the `IntakeTokens_Report` record gets written
+relative to the form's redirect firing.
+
 ### Rate limiting & audit logging for this flow
 
 `inc/security.php`'s fallback rate limiter also covers `/booking` and

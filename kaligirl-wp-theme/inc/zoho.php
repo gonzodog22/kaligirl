@@ -80,22 +80,12 @@ function kaligirl_zoho_access_token() {
 }
 
 /**
- * True if $token is a real, "used" record in the Zoho Creator token-gate
- * datastore. This is the only thing that gates /booking and /payment —
- * call at the very top of each template, before any output, and don't
- * render the Bookings/Billing embed unless this returns true.
+ * One lookup against the Creator report. Returns true (found + "used"),
+ * false (queried fine, just not there/not used yet), or null (the request
+ * itself failed — network/auth error, distinct from "not found" so the
+ * retry loop below doesn't burn attempts on a connectivity blip).
  */
-function kaligirl_validate_gate_token( $token ) {
-	$token = is_string( $token ) ? trim( $token ) : '';
-	if ( '' === $token ) {
-		return false;
-	}
-
-	$access_token = kaligirl_zoho_access_token();
-	if ( empty( $access_token ) ) {
-		return false;
-	}
-
+function kaligirl_zoho_creator_lookup( $token, $access_token ) {
 	$report_url = sprintf(
 		'https://creator.zoho.com/api/v2.1/%s/intake-token-gate/report/IntakeTokens_Report?criteria=(token=="%s")',
 		rawurlencode( kaligirl_zoho_creator_account_owner() ),
@@ -109,13 +99,9 @@ function kaligirl_validate_gate_token( $token ) {
 		),
 	) );
 
-	// A short, non-reversible fragment for log correlation without writing
-	// the full single-use token into a plaintext log file.
-	$token_fragment = substr( $token, 0, 8 ) . '…';
-
 	if ( is_wp_error( $response ) ) {
-		kaligirl_security_log( 'token_validation_error', $token_fragment . ' ' . $response->get_error_message() );
-		return false;
+		kaligirl_security_log( 'token_validation_error', substr( $token, 0, 8 ) . '… ' . $response->get_error_message() );
+		return null;
 	}
 
 	$body = json_decode( wp_remote_retrieve_body( $response ), true );
@@ -125,6 +111,55 @@ function kaligirl_validate_gate_token( $token ) {
 		if ( isset( $row['status'] ) && 'used' === $row['status'] ) {
 			return true;
 		}
+	}
+
+	return false;
+}
+
+/**
+ * True if $token is a real, "used" record in the Zoho Creator token-gate
+ * datastore. This is the only thing that gates /booking and /payment —
+ * call at the very top of each template, before any output, and don't
+ * render the Bookings/Billing embed unless this returns true.
+ *
+ * Retries a couple of times with a short delay before giving up: if the
+ * "used" record is written by a Zoho Flow/automation step rather than a
+ * fully synchronous action tied to the form submission itself, there's a
+ * real window where the browser's redirect to /booking or /payment can
+ * arrive before that write finishes — this is eventual-consistency lag on
+ * Zoho's side, not something we can eliminate from here, only ride out.
+ */
+function kaligirl_validate_gate_token( $token ) {
+	$token = is_string( $token ) ? trim( $token ) : '';
+	if ( '' === $token ) {
+		return false;
+	}
+
+	$access_token = kaligirl_zoho_access_token();
+	if ( empty( $access_token ) ) {
+		return false;
+	}
+
+	$token_fragment = substr( $token, 0, 8 ) . '…';
+	$delays_seconds = array( 0, 1, 2 ); // ~3s of total added latency, worst case.
+
+	foreach ( $delays_seconds as $i => $delay ) {
+		if ( $delay > 0 ) {
+			sleep( $delay );
+		}
+
+		$result = kaligirl_zoho_creator_lookup( $token, $access_token );
+
+		if ( true === $result ) {
+			return true;
+		}
+		if ( null === $result ) {
+			// The request itself failed — no point retrying with the same
+			// access token/network state; fail without burning more time.
+			break;
+		}
+		// $result === false: queried fine, just not "used" yet — worth a
+		// retry unless this was already the last attempt.
 	}
 
 	kaligirl_security_log( 'token_validation_failed', $token_fragment );
