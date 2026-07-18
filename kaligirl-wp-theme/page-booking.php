@@ -12,14 +12,22 @@
  * /thank-you page on this domain, configured in Zoho Bookings itself —
  * confirm this is actually set during testing, don't assume it already is.
  *
- * That redirect, like Zoho Forms' on Get Started, fires *inside whatever
- * iframe the Bookings widget itself creates* rather than the top-level
- * page — left alone, /thank-you would render nested inside this small
- * embed. js/main.js's kaligirlWatchEmbedContainerForIframes() watches
- * #inline-container (below) for iframes the widget injects and breaks
- * out to a real top-level navigation the instant one lands on our domain
- * — same mechanism as the Get Started forms, just applied to a
- * dynamically-injected iframe instead of one we wrote ourselves.
+ * That redirect (if the widget uses an iframe at all — unconfirmed; the
+ * embed's own name, "inlineEmbed," suggests it may render same-origin DOM
+ * content instead) would otherwise fire *inside whatever iframe the
+ * Bookings widget creates* rather than the top-level page, so /thank-you
+ * would render nested inside this small embed. js/main.js runs two
+ * mechanisms in parallel to cover either case:
+ *   1. kaligirlWatchEmbedContainerForIframes() — watches #inline-container
+ *      for any iframe the widget injects and breaks out on same-origin
+ *      load, same trick as the Get Started forms.
+ *   2. kaligirlListenForBookingComplete() — listens for a
+ *      window.postMessage() from Zoho's domain (the standard way an
+ *      embedded widget notifies its host page of an event, whether or not
+ *      it uses an iframe) and redirects on a best-effort match. Also logs
+ *      every such message to the console — if this is still nested after
+ *      a real test, check the console output from that test to see the
+ *      actual message shape and tighten the match condition.
  *
  * Autofill (Name/Email/Phone on the Bookings widget): reads ?Name=,
  * ?Email=, ?Phone= off this page's own URL (same redirect URL Zoho Forms

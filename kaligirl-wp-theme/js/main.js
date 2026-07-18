@@ -80,6 +80,48 @@
 	}
 
 	/**
+	 * Fallback for when the iframe-breakout trick above finds nothing to
+	 * attach to — plausible if Bookings.inlineEmbed() renders its calendar
+	 * as same-origin DOM content rather than a true cross-origin iframe
+	 * ("inline embed" as opposed to a sandboxed iframe embed), in which
+	 * case there's no iframe boundary at all for that trick to detect.
+	 *
+	 * The standard mechanism for an embedded widget to notify its host
+	 * page of an event like "booking completed" is window.postMessage() —
+	 * this listens for any message from a Zoho domain and:
+	 *   1. Always logs it to the console, so a real test run reveals the
+	 *      exact shape Zoho actually sends (open dev tools, complete a
+	 *      booking, check the Console tab, report back what's there).
+	 *   2. Best-effort redirects to /thank-you if the message looks like a
+	 *      success/completion signal — a broad keyword match, since the
+	 *      real field/event name isn't confirmed (Zoho's docs blocked every
+	 *      fetch attempt). Tighten this once the logged shape is known.
+	 */
+	function kaligirlListenForBookingComplete() {
+		window.addEventListener( 'message', function ( event ) {
+			if ( ! /zohobookings\.com|nimbuspop\.com/.test( event.origin ) ) {
+				return;
+			}
+
+			// eslint-disable-next-line no-console
+			console.log( 'Zoho Bookings postMessage:', event.origin, event.data );
+
+			var raw = event.data;
+			var text = typeof raw === 'string' ? raw : ( function () {
+				try {
+					return JSON.stringify( raw );
+				} catch ( e ) {
+					return '';
+				}
+			} )();
+
+			if ( /book(ed|ing).*(success|complet|confirm)|success.*book|appointment.*(confirm|schedul)/i.test( text ) ) {
+				window.top.location.href = '/thank-you';
+			}
+		} );
+	}
+
+	/**
 	 * Get Started fork page: Personal/Business toggle, Route One/Two form
 	 * reveal, and one-time gate-token generation per route — appended to
 	 * each Zoho Forms iframe's src, and carried into a fallback "Continue"
@@ -227,7 +269,13 @@
 		// /booking's Zoho Bookings widget (page-booking.php) — same
 		// iframe-containment problem as the Get Started forms: a completed
 		// booking's redirect to /thank-you would otherwise render nested
-		// inside this small embed instead of taking over the tab.
-		kaligirlWatchEmbedContainerForIframes( document.getElementById( 'inline-container' ) );
+		// inside this small embed instead of taking over the tab. Runs
+		// both: the iframe-breakout trick in case Bookings does use a
+		// nested iframe, and the postMessage listener in case it doesn't
+		// (see kaligirlListenForBookingComplete() for why both exist).
+		if ( document.getElementById( 'inline-container' ) ) {
+			kaligirlWatchEmbedContainerForIframes( document.getElementById( 'inline-container' ) );
+			kaligirlListenForBookingComplete();
+		}
 	} );
 } )();

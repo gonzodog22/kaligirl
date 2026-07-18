@@ -154,15 +154,27 @@ tier). The Get Started page is now a **fork page**, not a form itself:
    Confirmed working: submitting a form now takes over the whole tab
    instead of loading `/booking` nested inside the form iframe.
 
-   The same problem shows up one step later: the Zoho **Bookings** widget
-   on `/booking` (see below) injects its own iframe(s) to actually show
-   the calendar, and completing a booking would otherwise render
-   `/thank-you` nested inside *that* small embed too. Since we don't write
-   that iframe ourselves (Zoho's JS SDK creates it), `js/main.js`
-   (`kaligirlWatchEmbedContainerForIframes()`) uses a `MutationObserver` on
-   `#inline-container` to catch whatever iframe(s) appear — including ones
-   swapped in partway through a multi-step booking flow — and applies the
-   same breakout to each.
+   The same problem shows up one step later on the Zoho **Bookings**
+   widget on `/booking` — but the iframe-breakout trick alone **did not
+   work there** in testing (it never even fired). Most likely explanation:
+   `Bookings.inlineEmbed()` — "inline embed," as opposed to a sandboxed
+   iframe embed — probably renders its calendar as same-origin DOM content
+   rather than a true iframe, so there's no iframe for that trick to find.
+   `js/main.js` now runs two mechanisms in parallel on `/booking`:
+   1. `kaligirlWatchEmbedContainerForIframes()` — the same `MutationObserver`
+      trick, kept in case the widget *does* use an iframe in some
+      configuration.
+   2. `kaligirlListenForBookingComplete()` — listens for a
+      `window.postMessage()` from a Zoho domain (the standard way an
+      embedded widget notifies its host page of an event, iframe or not)
+      and redirects to `/thank-you` on a best-effort keyword match.
+      **Not confirmed against the real message shape** — Zoho's docs
+      blocked every fetch attempt this session, same as the prefill
+      mechanism earlier. Every matching-origin message is also logged to
+      the browser console specifically so this can be tightened after one
+      real test: open dev tools, complete a real booking, check the
+      Console tab for a line starting `Zoho Bookings postMessage:`, and
+      report back what's there if it's still not redirecting.
 
 2. **`page-booking.php`** (Route Two destination) and **`page-payment.php`**
    (Route One destination, scaffolded — Zoho Billing's hosted payment page
