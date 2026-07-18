@@ -21,7 +21,8 @@ kaligirl-wp-theme/
 ├── page-contact.php          # Template Name: Contact
 ├── page-get-started.php      # Template Name: Get Started (fork page — see "Get Started flow")
 ├── page-booking.php          # Template Name: Booking (Route Two destination, token-gated)
-├── page-payment.php          # Template Name: Payment (Route One destination, token-gated, scaffolded)
+├── page-payment.php          # Template Name: Payment (Route One destination, token-gated, scaffolded — payments not wired up yet)
+├── page-thank-you.php        # Template Name: Thank You (post-booking confirmation, no gating)
 ├── page-login.php            # Template Name: Login (unused stub, see below)
 ├── page-account.php          # Template Name: Account (unused stub, see below)
 ├── page-library.php          # Template Name: Library (membership-gated placeholder)
@@ -55,6 +56,8 @@ kaligirl-wp-theme/
      `/booking` and `/payment` — Zoho Forms' post-submission redirect and
      this theme's fallback "Continue" links both point at those two paths
      literally; see "Get Started flow" below)
+   - `thank-you` → the **Thank You** template (URL must be exactly
+     `/thank-you` — point Zoho Bookings' post-booking redirect setting at it)
    - `library`, `lessons`, `tools` → matching templates (see gating below)
    - **Do not** create your own `account` or `login` pages using this
      theme's Account/Login templates — see "Login and Account" below for
@@ -206,8 +209,22 @@ the redirect URL already carries everything `page-booking.php` needs.
 ### Still needs manual confirmation
 
 - **Zoho Bookings' own "post-booking redirect" setting** (configured in
-  Zoho Bookings, not this repo) should point at a `/thank-you` page on this
-  domain — confirm it's actually set during testing, don't assume it is.
+  Zoho Bookings, not this repo) should point at `/thank-you` on this
+  domain. `page-thank-you.php` exists and is unrelated to the token
+  gating above (no gating logic — anyone landing there after a real
+  booking, or by finding the URL directly, sees the same simple "check
+  your email" message) — create a page at that slug with the **Thank
+  You** template, then point Zoho Bookings' redirect setting at it.
+
+### Payments — deliberately not built yet
+
+`page-payment.php` is still the placeholder scaffold from the original
+handoff (a bare `checkout.zoho.com/embed/{page-id}` iframe with no real
+page id). Zoho Payments turns out to need a proper session-based widget
+integration instead (JS SDK + a server-side "Payment Session Create" API
+call, not a static hosted-page iframe) — holding off until the Payments
+account/API credentials and the per-plan amount logic are sorted out; see
+chat history for the credentials list once that's ready to pick back up.
 
 ### Placeholders still needing real values
 
