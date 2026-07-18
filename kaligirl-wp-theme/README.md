@@ -176,31 +176,32 @@ tier). The Get Started page is now a **fork page**, not a form itself:
   the token, though, not the autofill fields below (see why in
   `page-booking.php`'s header comment).
 
-### Autofilling name/email/phone on the Bookings embed — reverted, not working yet
+### Autofilling Name/Email/Phone on the Bookings embed — confirmed working
 
-`page-booking.php` still reads `?name=`, `?email=`, `?phone=` off its own
-URL (harmless — this is the redirect URL Zoho Forms already sends people
-to, per the token setup above) but no longer passes them into the Zoho
-Bookings embed. Two attempts at guessing the right way to hand that data
-to `Bookings.inlineEmbed()` — appending `?name=...` after the `#/{id}`
-hash fragment, then before it — both either broke the widget outright
-("nothing found," because the query string corrupted the booking-page ID
-Zoho's router reads out of that fragment) or still didn't prefill anything.
-Zoho's own help docs blocked every fetch attempt this session, so there
-was no way to confirm the real mechanism rather than keep guessing against
-a live page — reverted to the plain, known-working embed URL with no
-query string at all.
+`page-booking.php` reads `?Name=`, `?Email=`, `?Phone=` off its own URL
+(capitalized — exactly these, `$_GET` keys are case-sensitive) and
+appends them onto the Zoho Bookings widget's own URL as a query string
+placed **after** the `#/4946279000000039045` hash fragment. This is the
+opposite of normal URL structure (query strings normally precede a
+fragment) and opposite of what an earlier version of this file did, but
+it's confirmed by testing: placing it before the hash does **not**
+prefill the widget, placing it after does. Don't move it back.
 
-**Next step to actually solve this**: check Zoho Bookings' own
-widget-customization screen in your dashboard (Settings > Booking Widget,
-or wherever the embed code for this specific service/staff booking page is
-generated) — it's account-specific and not blocked by a generic web
-fetch. Look for an explicit "prefill" or "custom fields" option there,
-or ask Zoho support directly what `Bookings.inlineEmbed()` accepts for
-customer details — once you have the real mechanism, it's a small,
-targeted edit to `page-booking.php` to wire it up (the sanitized
-`$kg_prefill_name`/`_email`/`_phone` variables are already there, just
-not used yet).
+Zoho Bookings maps the phone field to one literally named `Contact
+Number` (with a space) — sent as-is, not renamed to something
+space-free, because that's the exact field name that prefills correctly.
+
+Extend each Zoho Form's Redirect URL setting (via Zoho's own field-merge
+picker, same as the token) to include all three:
+
+```
+https://kaligirlfinancialservices.com/booking?token={gated_token}&Name={Name field}&Email={Email field}&Phone={Phone field}
+```
+
+`kg_email` is validated with `is_email()` after sanitizing — an
+invalid/malformed email is silently dropped from the prefill rather than
+passed through, so the widget just shows that one field blank instead of
+prefilling garbage.
 
 You do **not** need to store name/email/phone in the `intake-token-gate`
 Creator report for this — whatever the real mechanism turns out to be,
