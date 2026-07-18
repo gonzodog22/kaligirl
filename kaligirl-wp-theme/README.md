@@ -145,13 +145,24 @@ tier). The Get Started page is now a **fork page**, not a form itself:
    **Iframe breakout on redirect:** Zoho's "Redirect URL on Submission"
    navigates *within the form's own iframe*, not the top-level page — left
    alone, `/booking`/`/payment` would render nested inside that small form
-   iframe instead of taking over the tab. `js/main.js` listens for the
-   iframe's `load` event and tries to read `iframe.contentWindow.location`;
-   that throws (cross-origin) while it's still showing Zoho's domain, but
-   succeeds the instant Zoho's redirect lands it on our own domain — at
-   which point it forces a real `window.top.location` navigation to that
-   same URL. Confirmed working: submitting a form now takes over the whole
-   tab instead of loading `/booking` nested inside the form iframe.
+   iframe instead of taking over the tab. `js/main.js`
+   (`kaligirlBreakoutIframeOnSameOrigin()`) listens for the iframe's `load`
+   event and tries to read `iframe.contentWindow.location`; that throws
+   (cross-origin) while it's still showing Zoho's domain, but succeeds the
+   instant Zoho's redirect lands it on our own domain — at which point it
+   forces a real `window.top.location` navigation to that same URL.
+   Confirmed working: submitting a form now takes over the whole tab
+   instead of loading `/booking` nested inside the form iframe.
+
+   The same problem shows up one step later: the Zoho **Bookings** widget
+   on `/booking` (see below) injects its own iframe(s) to actually show
+   the calendar, and completing a booking would otherwise render
+   `/thank-you` nested inside *that* small embed too. Since we don't write
+   that iframe ourselves (Zoho's JS SDK creates it), `js/main.js`
+   (`kaligirlWatchEmbedContainerForIframes()`) uses a `MutationObserver` on
+   `#inline-container` to catch whatever iframe(s) appear — including ones
+   swapped in partway through a multi-step booking flow — and applies the
+   same breakout to each.
 
 2. **`page-booking.php`** (Route Two destination) and **`page-payment.php`**
    (Route One destination, scaffolded — Zoho Billing's hosted payment page

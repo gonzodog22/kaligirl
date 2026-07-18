@@ -24,6 +24,62 @@
 	}
 
 	/**
+	 * Zoho's own post-submission/post-booking redirects navigate *within
+	 * whatever iframe is showing Zoho's content*, not the top-level page —
+	 * so landing on one of our own pages (e.g. /booking or /thank-you)
+	 * would otherwise render nested inside that small embed instead of
+	 * taking over the whole tab. Same-origin policy blocks reading the
+	 * iframe's location while it's still showing Zoho's domain (the
+	 * try/catch below just swallows that, silently, on every load until it
+	 * changes) — but once Zoho's redirect lands the iframe on our own
+	 * domain, reading it succeeds, and that's our signal to force a real
+	 * top-level navigation to the same URL. Shared by the Get Started form
+	 * iframes and the Zoho Bookings widget on /booking.
+	 */
+	function kaligirlBreakoutIframeOnSameOrigin( iframe ) {
+		iframe.addEventListener( 'load', function () {
+			try {
+				var landedUrl = iframe.contentWindow.location.href;
+				window.top.location.href = landedUrl;
+			} catch ( e ) {
+				// Still cross-origin (on Zoho's domain) — expected; ignore.
+			}
+		} );
+	}
+
+	/**
+	 * Zoho Bookings' inlineEmbed() injects its own iframe(s) into the
+	 * target container asynchronously (and possibly more than once across
+	 * a multi-step booking flow), so we can't just grab one iframe once —
+	 * watch the container and apply the breakout above to whatever shows
+	 * up, for as long as the container exists.
+	 */
+	function kaligirlWatchEmbedContainerForIframes( container ) {
+		if ( ! container ) {
+			return;
+		}
+
+		container.querySelectorAll( 'iframe' ).forEach( kaligirlBreakoutIframeOnSameOrigin );
+
+		var observer = new MutationObserver( function ( mutations ) {
+			mutations.forEach( function ( mutation ) {
+				mutation.addedNodes.forEach( function ( node ) {
+					if ( node.nodeType !== 1 ) {
+						return;
+					}
+					if ( node.tagName === 'IFRAME' ) {
+						kaligirlBreakoutIframeOnSameOrigin( node );
+					}
+					if ( node.querySelectorAll ) {
+						node.querySelectorAll( 'iframe' ).forEach( kaligirlBreakoutIframeOnSameOrigin );
+					}
+				} );
+			} );
+		} );
+		observer.observe( container, { childList: true, subtree: true } );
+	}
+
+	/**
 	 * Get Started fork page: Personal/Business toggle, Route One/Two form
 	 * reveal, and one-time gate-token generation per route — appended to
 	 * each Zoho Forms iframe's src, and carried into a fallback "Continue"
@@ -91,26 +147,7 @@
 			if ( iframe ) {
 				var baseSrc = iframe.getAttribute( 'data-kg-form-src' );
 				iframe.src = baseSrc + '?gated_token=' + encodeURIComponent( token );
-
-				// Zoho's own "Redirect URL on Submission" navigates *within
-				// the iframe's own frame*, not the top-level page — so after
-				// a real submission, our /booking or /payment page would
-				// otherwise render nested inside this small form iframe
-				// instead of taking over the whole tab. Same-origin policy
-				// blocks us from reading the iframe's location while it's
-				// still showing Zoho's domain (the try/catch below just
-				// swallows that, silently, every load until it changes) —
-				// but once Zoho's redirect lands the iframe on our own
-				// domain, reading it succeeds, and that's our signal to
-				// force a full top-level navigation to the same URL.
-				iframe.addEventListener( 'load', function () {
-					try {
-						var landedUrl = iframe.contentWindow.location.href;
-						window.top.location.href = landedUrl;
-					} catch ( e ) {
-						// Still cross-origin (on Zoho's domain) — expected; ignore.
-					}
-				} );
+				kaligirlBreakoutIframeOnSameOrigin( iframe );
 			}
 
 			var continueLink = view.querySelector( '[data-kg-continue-link]' );
@@ -186,5 +223,11 @@
 		}
 
 		kaligirlInitGetStarted();
+
+		// /booking's Zoho Bookings widget (page-booking.php) — same
+		// iframe-containment problem as the Get Started forms: a completed
+		// booking's redirect to /thank-you would otherwise render nested
+		// inside this small embed instead of taking over the tab.
+		kaligirlWatchEmbedContainerForIframes( document.getElementById( 'inline-container' ) );
 	} );
 } )();

@@ -12,6 +12,15 @@
  * /thank-you page on this domain, configured in Zoho Bookings itself —
  * confirm this is actually set during testing, don't assume it already is.
  *
+ * That redirect, like Zoho Forms' on Get Started, fires *inside whatever
+ * iframe the Bookings widget itself creates* rather than the top-level
+ * page — left alone, /thank-you would render nested inside this small
+ * embed. js/main.js's kaligirlWatchEmbedContainerForIframes() watches
+ * #inline-container (below) for iframes the widget injects and breaks
+ * out to a real top-level navigation the instant one lands on our domain
+ * — same mechanism as the Get Started forms, just applied to a
+ * dynamically-injected iframe instead of one we wrote ourselves.
+ *
  * Autofill (Name/Email/Phone on the Bookings widget): reads ?Name=,
  * ?Email=, ?Phone= off this page's own URL (same redirect URL Zoho Forms
  * already sends people to, alongside ?token=) and appends them onto the
