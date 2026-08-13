@@ -167,12 +167,58 @@
 			businessOnlyEls.forEach( function ( el ) {
 				el.hidden = isPersonal;
 			} );
+			// Route Two already visible and the toggle just switched which
+			// side is showing — lazily init that side's booking widget if
+			// this is the first time it's been revealed. (Declared below;
+			// hoisted, so this forward reference is fine.)
+			if ( routeTwoView && ! routeTwoView.hidden ) {
+				kaligirlEnsureBookingWidget( isPersonal ? 'personal' : 'business' );
+			}
 		}
 
 		modeRadios.forEach( function ( radio ) {
 			radio.addEventListener( 'change', applyMode );
 		} );
 		applyMode();
+
+		/**
+		 * Route Two's not-yet-booked state shows a Zoho Bookings widget
+		 * instead of a form — lazily initialized the first time its
+		 * container actually becomes relevant (view shown, or toggle
+		 * switched to it while already showing), rather than eagerly at
+		 * page load like the Forms scripts elsewhere on this page, since an
+		 * inline calendar widget measured while its container is
+		 * display:none can size itself incorrectly. No-ops harmlessly if
+		 * this page is in the $kg_from_booking state instead (no
+		 * #inline-container-* markup exists there at all).
+		 */
+		var kaligirlBookingWidgetsLoaded = {};
+		function kaligirlEnsureBookingWidget( mode ) {
+			if ( kaligirlBookingWidgetsLoaded[ mode ] ) {
+				return;
+			}
+			var containerId = 'inline-container-' + mode;
+			var container = document.getElementById( containerId );
+			if ( ! container || typeof Bookings === 'undefined' ) {
+				return;
+			}
+			kaligirlBookingWidgetsLoaded[ mode ] = true;
+
+			var widgetUrl = 'business' === mode
+				? 'https://kaligirlfinancialservices.zohobookings.com/portal-embed#/4946279000000136026'
+				: 'https://kaligirlfinancialservices.zohobookings.com/portal-embed#/4946279000000039045';
+
+			Bookings.inlineEmbed( {
+				url: widgetUrl,
+				parent: '#' + containerId,
+				height: '600px'
+			} );
+
+			// Same iframe-containment problem as the Forms embeds: if this
+			// widget's own booking-completion redirect fires inside a
+			// nested iframe, break out to a real top-level navigation.
+			kaligirlWatchEmbedContainerForIframes( container );
+		}
 
 		/**
 		 * Generates (or reuses, if this route's view was already opened once
@@ -260,6 +306,9 @@
 				var view = route === 'one' ? routeOneView : routeTwoView;
 				loadRoute( route, view );
 				showView( view );
+				if ( route === 'two' ) {
+					kaligirlEnsureBookingWidget( getAdvisingMode() );
+				}
 			} );
 		} );
 

@@ -350,20 +350,51 @@ redirect (see "Autofilling Name/Email/Phone" above); those still matter
 for the fork-first path where someone fills the form before booking, so
 don't drop them when adding token/flow.
 
-### Route Two, booking-first variant
+### Route Two is booking-first (book, then answer questions)
 
-Route Two can also be entered in the opposite order — book first, answer
-the rest of the questions after — for whichever Zoho Bookings service is
-configured to redirect back to `/get-started` on completion. Zoho
-Bookings' own post-booking redirect setting supports merge fields for the
-customer's own submitted info (native Bookings vocabulary:
-`customer_name`, `customer_first_name`, `customer_last_name`,
-`customer_contact_no`, `customer_email` — confirmed against a real
-completed booking's redirect URL). `page-get-started.php` reads these off
-`$_GET`; if `customer_email` is present and valid, the Personal/Business
-fork is skipped entirely and Route Two's form is shown immediately,
+Clicking "Schedule an Introductory Consultation" does **not** show a form
+first — it shows a Zoho Bookings widget directly on `/get-started`
+(Personal or Business, per the toggle), embedded via `Bookings.inlineEmbed()`
+into `#inline-container-personal` / `#inline-container-business`. Only
+*after* that booking completes does the matching Zoho Form appear, to
+collect the rest of the questions.
+
+The widget is initialized **lazily** by `kaligirlEnsureBookingWidget()` in
+`js/main.js` — the first time its container actually becomes visible
+(button click, or a toggle switch while Route Two is already open), not
+eagerly at page load like the Forms scripts. This matters because an
+inline calendar widget measured while its container is `display:none` can
+size itself incorrectly; the Forms embeds don't have this problem since
+they're just an iframe with a fixed height style, not a widget that
+measures its container.
+
+The loop closes via Zoho Bookings' own "redirect after booking" setting
+(configured per-service in Zoho Bookings, not this repo) pointing back at
+this *exact same* `/get-started` URL. Zoho's own post-booking redirect
+merge fields (native Bookings vocabulary: `customer_name`,
+`customer_first_name`, `customer_last_name`, `customer_contact_no`,
+`customer_email`, `service_uuid` — confirmed against a real completed
+booking's redirect URL) land in `$_GET`; if `customer_email` is present
+and valid, `page-get-started.php` sets `$kg_from_booking = true`, which
+swaps the booking-widget markup out entirely for the matching Zoho Form,
 pre-populated via `data-kg-booking-prefill` (a JSON blob of whatever
 customer_* values were present) on that view.
+
+**Confirmed set up:** the Personal service's ("Personal Financial
+Consultation - Getting Started", `service_uuid` `4946279000000136007`,
+widget ID `4946279000000039045`) redirect-to-`/get-started` is confirmed
+working from a real test.
+
+**Still needs confirming:** whether the Business service's (widget ID
+`4946279000000136026`) own "redirect after booking" setting is *also*
+pointed at `/get-started` — it needs to be, the same way Personal's is,
+for the loop to close on that side too. And once you've tested a real
+Business booking, send me that redirect URL (same as you did for
+Personal) so I can add its `service_uuid` to `$kg_booking_routes` in
+`page-get-started.php` — without that entry, a completed Business booking
+will still correctly show the Business form, just with the generic
+"Schedule an Introductory Consultation" heading instead of
+business-specific copy.
 
 Route Two's form embed is the **real Zoho-provided embed script**
 (dynamic iframe creation + UTM/referrer tracking + auto-resize

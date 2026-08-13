@@ -4,15 +4,22 @@
  *
  * Fork page per the Get Started migration handoff (supersedes the earlier
  * Moxo iframe entirely — do not reintroduce it). A Personal/Business
- * sliding toggle controls which of two buttons are visible; each reveals
- * an already-built Zoho Forms embed (not custom) on this same page, gated
- * by a one-time token generated client-side (js/main.js) and appended to
- * the iframe's src.
+ * sliding toggle controls which of two buttons are visible.
  *
  * - "Schedule an Introductory Consultation" (Route Two) — always visible,
- *   both toggle states — submits to /booking?token=... on completion.
+ *   both toggle states — is booking-first: clicking it shows a Zoho
+ *   Bookings widget (Personal or Business, per the toggle) directly on
+ *   this page, not a form. Once that booking completes, Zoho's own
+ *   redirect lands back on this exact URL with customer_* and
+ *   service_uuid params, which flips $kg_from_booking to true and swaps the booking
+ *   widget for the matching Zoho Form (Personal "GetStarted" or Business
+ *   "LetsreviewyourfinancestogetherBusiness") to collect the rest of the
+ *   questions — gated by a one-time token generated client-side
+ *   (js/main.js) and appended to that form's iframe src, which then
+ *   submits to /booking?token=...&flow=...
  * - "Find the Right Plan" (Route One) — visible only in "Personal
- *   Advising" mode — submits to /payment?token=... on completion.
+ *   Advising" mode — still forms-first, unrelated to the above — submits
+ *   to /payment?token=... on completion.
  *
  * The actual security boundary is NOT this page or the token generator —
  * it's the server-side check in /booking and /payment (page-booking.php,
@@ -168,6 +175,33 @@ $kg_steps = array(
 				<button type="button" class="back-link" data-kg-back-to-fork>&larr; Back</button>
 				<h2 class="route-view__title"><?php echo esc_html( $kg_from_booking ? $kg_booking_route['title'] : 'Schedule an Introductory Consultation' ); ?></h2>
 				<p class="route-view__lede"><?php echo esc_html( $kg_from_booking ? $kg_booking_route['lede'] : "A no-obligation conversation to see if we're a good fit." ); ?></p>
+				<?php if ( ! $kg_from_booking ) : ?>
+				<!--
+					Not booked yet — show a Zoho Bookings widget first (gated
+					by the same Personal/Business toggle above), not the form.
+					js/main.js's kaligirlEnsureBookingWidget() lazily calls
+					Bookings.inlineEmbed() into whichever container becomes
+					relevant once this view is actually shown — deferred
+					rather than eager like the Forms scripts below, since an
+					inline calendar widget initialized inside a display:none
+					container can misjudge its own size. Each Bookings
+					service's own "redirect after booking" setting (Zoho-side,
+					not this file) points back at this same /get-started URL,
+					which is what flips $kg_from_booking to true above and
+					swaps this whole block for the matching form below.
+				-->
+				<div data-kg-personal-only>
+					<div class="embed-frame">
+						<div id="inline-container-personal"></div>
+					</div>
+				</div>
+				<div data-kg-business-only>
+					<div class="embed-frame">
+						<div id="inline-container-business"></div>
+					</div>
+				</div>
+				<script src="https://bookings.nimbuspop.com/assets/embed.js"></script>
+				<?php else : ?>
 				<!--
 					Route Two shows a different Zoho Form depending on the
 					Personal/Business toggle above — js/main.js's applyMode()
@@ -417,7 +451,8 @@ $kg_steps = array(
 					</script>
 				</div>
 				</div>
-				<p class="route-view__continue">Already submitted the form above? <a href="#" data-kg-continue-link data-kg-destination="<?php echo $kg_from_booking ? '/thank-you' : '/booking'; ?>">Continue &rarr;</a></p>
+				<p class="route-view__continue">Already submitted the form above? <a href="#" data-kg-continue-link data-kg-destination="/thank-you">Continue &rarr;</a></p>
+				<?php endif; ?>
 			</div>
 
 		</div>
