@@ -108,6 +108,11 @@ $kg_booking_routes       = array(
 		'lede'  => "You're booked — just a few more questions to help us prepare.",
 		'mode'  => 'personal',
 	),
+	'4946279000000136026' => array(
+		'title' => 'Business Advisory',
+		'lede'  => "You're booked — just a few more questions to help us prepare.",
+		'mode'  => 'business',
+	),
 );
 
 if ( isset( $kg_booking_routes[ $kg_booking_service_uuid ] ) ) {
