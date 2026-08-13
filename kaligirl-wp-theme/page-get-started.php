@@ -41,6 +41,13 @@
  * and Route Two's form is shown immediately with those values appended to
  * the form iframe's src for prefill. See loadRoute() in main.js.
  *
+ * Different Zoho Bookings *services* redirect here for different reasons
+ * (Personal Financial Consulting vs. others still being wired up), so the
+ * heading/copy shown is looked up by that service's own service_uuid (also
+ * in the redirect) via $kg_booking_routes below — add an entry per service
+ * as its booking link is provided; unmapped service_uuids fall back to
+ * generic copy.
+ *
  * THINGS THAT NEED MANUAL CONFIRMATION (see README + PR notes):
  * 1. Whether each Zoho Form's own "Redirect URL on Submission" setting can
  *    carry `gated_token` forward dynamically to /payment or /booking. If
@@ -74,6 +81,27 @@ foreach ( array( 'customer_name', 'customer_first_name', 'customer_last_name', '
 	$kg_booking_prefill[ $kg_field ] = $kg_value;
 }
 $kg_from_booking = ! empty( $kg_booking_prefill['customer_email'] );
+
+// Which booking-first landing to show depends on which Zoho Bookings
+// *service* was booked — Zoho includes that service's own service_uuid in
+// the redirect automatically, so use it as the routing key rather than
+// treating every booking-first arrival as the same generic route. Add an
+// entry here for each additional booking-first service as its link is
+// provided; anything not yet mapped falls back to the generic copy below.
+$kg_booking_service_uuid = isset( $_GET['service_uuid'] ) ? sanitize_text_field( wp_unslash( $_GET['service_uuid'] ) ) : '';
+$kg_booking_routes       = array(
+	'4946279000000136007' => array(
+		'title' => 'Personal Financial Consulting',
+		'lede'  => "You're booked — just a few more questions to help us prepare.",
+	),
+);
+$kg_booking_route_default = array(
+	'title' => 'Schedule an Introductory Consultation',
+	'lede'  => "You're booked — just a few more questions to help us prepare.",
+);
+$kg_booking_route = isset( $kg_booking_routes[ $kg_booking_service_uuid ] )
+	? $kg_booking_routes[ $kg_booking_service_uuid ]
+	: $kg_booking_route_default;
 
 $kg_steps = array(
 	array(
@@ -138,8 +166,8 @@ $kg_steps = array(
 
 			<div data-kg-view="route-two"<?php echo $kg_from_booking ? '' : ' hidden'; ?> data-kg-booking-prefill="<?php echo esc_attr( wp_json_encode( (object) $kg_booking_prefill ) ); ?>">
 				<button type="button" class="back-link" data-kg-back-to-fork>&larr; Back</button>
-				<h2 class="route-view__title">Schedule an Introductory Consultation</h2>
-				<p class="route-view__lede"><?php echo $kg_from_booking ? "You're booked — just a few more questions to help us prepare." : "A no-obligation conversation to see if we're a good fit."; ?></p>
+				<h2 class="route-view__title"><?php echo esc_html( $kg_from_booking ? $kg_booking_route['title'] : 'Schedule an Introductory Consultation' ); ?></h2>
+				<p class="route-view__lede"><?php echo esc_html( $kg_from_booking ? $kg_booking_route['lede'] : "A no-obligation conversation to see if we're a good fit." ); ?></p>
 				<div class="embed-frame">
 					<!--
 						Zoho's own embed script for this form (verbatim, unmodified
