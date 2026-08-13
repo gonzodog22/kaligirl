@@ -38,6 +38,14 @@
  * again. Zoho Bookings maps Phone to a field literally named
  * "Contact Number" (with a space) — kept as-is since that's the field
  * name that pre-fills correctly.
+ *
+ * Which Bookings widget: Route Two's Personal and Business forms
+ * (page-get-started.php) are two different Zoho Forms feeding two
+ * different Zoho Bookings services, so this page also reads ?flow= (set
+ * by js/main.js's continue-link handler from the Personal/Business toggle
+ * state, and ideally also set as a static value in each form's own
+ * "Redirect URL on Submission" setting on the Zoho side) to pick which
+ * widget ID to embed. Unrecognized/missing values fall back to personal.
  */
 
 if ( ! defined( 'ABSPATH' ) ) {
@@ -71,7 +79,13 @@ if ( ! empty( $_GET['Phone'] ) ) {
 	);
 }
 
-$kg_booking_url = 'https://kaligirlfinancialservices.zohobookings.com/portal-embed#/4946279000000039045';
+$kg_flow           = isset( $_GET['flow'] ) ? sanitize_text_field( wp_unslash( $_GET['flow'] ) ) : 'personal';
+$kg_booking_widget = array(
+	'personal' => '4946279000000039045',
+	'business' => '4946279000000136026',
+);
+$kg_widget_id   = isset( $kg_booking_widget[ $kg_flow ] ) ? $kg_booking_widget[ $kg_flow ] : $kg_booking_widget['personal'];
+$kg_booking_url = 'https://kaligirlfinancialservices.zohobookings.com/portal-embed#/' . $kg_widget_id;
 
 if ( ! empty( $kg_prefill ) ) {
 	$kg_booking_query = http_build_query(

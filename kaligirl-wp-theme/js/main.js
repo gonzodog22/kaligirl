@@ -147,17 +147,25 @@
 			} );
 		}
 
-		// Personal/Business toggle only controls whether the Personal-only
-		// "Find the Right Plan" button is visible — Route Two's button is
-		// always visible in both states.
+		// Personal/Business toggle controls: which of Route One's button
+		// (Personal-only) is visible, and — inside Route Two — which of the
+		// two Zoho Forms embeds (Personal vs Business) is shown.
 		var modeRadios = document.querySelectorAll( 'input[name="kg-advising-mode"]' );
 		var personalOnlyEls = document.querySelectorAll( '[data-kg-personal-only]' );
+		var businessOnlyEls = document.querySelectorAll( '[data-kg-business-only]' );
+
+		function getAdvisingMode() {
+			var checked = document.querySelector( 'input[name="kg-advising-mode"]:checked' );
+			return ( ! checked || checked.value === 'personal' ) ? 'personal' : 'business';
+		}
 
 		function applyMode() {
-			var checked = document.querySelector( 'input[name="kg-advising-mode"]:checked' );
-			var isPersonal = ! checked || checked.value === 'personal';
+			var isPersonal = getAdvisingMode() === 'personal';
 			personalOnlyEls.forEach( function ( el ) {
 				el.hidden = ! isPersonal;
+			} );
+			businessOnlyEls.forEach( function ( el ) {
+				el.hidden = isPersonal;
 			} );
 		}
 
@@ -198,9 +206,13 @@
 			// <iframe> tag, so its src (already carrying Zoho's own
 			// UTM/referrer params) isn't known until that script has run.
 			// Append our own params on top of it instead of replacing it
-			// outright, so Zoho's own tracking params survive intact.
-			var dynamicIframe = view.querySelector( 'div[id^="zf_div_"] iframe' );
-			if ( dynamicIframe ) {
+			// outright, so Zoho's own tracking params survive intact. Route
+			// Two now holds *two* such forms (Personal/Business, toggled by
+			// applyMode() above) — augment every one found, not just one,
+			// so whichever is visible is already prefilled by the time the
+			// toggle reveals it.
+			var dynamicIframes = view.querySelectorAll( 'div[id^="zf_div_"] iframe' );
+			dynamicIframes.forEach( function ( dynamicIframe ) {
 				kaligirlBreakoutIframeOnSameOrigin( dynamicIframe );
 
 				var extraParams = 'gated_token=' + encodeURIComponent( token );
@@ -218,14 +230,18 @@
 					}
 				}
 				dynamicIframe.src += ( dynamicIframe.src.indexOf( '?' ) > -1 ? '&' : '?' ) + extraParams;
-			}
+			} );
 
 			var continueLink = view.querySelector( '[data-kg-continue-link]' );
 			if ( continueLink ) {
 				var destination = continueLink.getAttribute( 'data-kg-destination' );
 				continueLink.addEventListener( 'click', function ( e ) {
 					e.preventDefault();
-					window.location.href = destination + '?token=' + encodeURIComponent( token );
+					// Route Two's destination needs to know which of the two
+					// forms (Personal/Business) was actually filled out, so
+					// /booking can embed the matching Zoho Bookings widget.
+					var flowParam = ( routeKey === 'two' ) ? '&flow=' + getAdvisingMode() : '';
+					window.location.href = destination + '?token=' + encodeURIComponent( token ) + flowParam;
 				} );
 			}
 		}

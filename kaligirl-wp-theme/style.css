@@ -920,6 +920,7 @@ img { max-width: 100%; }
    tie broken by source order) would otherwise beat the browser's default
    [hidden] { display: none } rule and leave a "hidden" button visible. */
 [data-kg-personal-only][hidden] { display: none !important; }
+[data-kg-business-only][hidden] { display: none !important; }
 
 .back-link {
   background: none;

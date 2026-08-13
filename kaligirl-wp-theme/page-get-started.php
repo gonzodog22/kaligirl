@@ -168,6 +168,17 @@ $kg_steps = array(
 				<button type="button" class="back-link" data-kg-back-to-fork>&larr; Back</button>
 				<h2 class="route-view__title"><?php echo esc_html( $kg_from_booking ? $kg_booking_route['title'] : 'Schedule an Introductory Consultation' ); ?></h2>
 				<p class="route-view__lede"><?php echo esc_html( $kg_from_booking ? $kg_booking_route['lede'] : "A no-obligation conversation to see if we're a good fit." ); ?></p>
+				<!--
+					Route Two shows a different Zoho Form depending on the
+					Personal/Business toggle above — js/main.js's applyMode()
+					(the same function that already hides "Find the Right Plan"
+					in Business mode) toggles which of these two is visible.
+					Both scripts run at page load regardless (they inject into
+					hidden divs same as everything else here), and loadRoute()
+					augments every div[id^="zf_div_"] iframe it finds, not just
+					one, so both are ready the instant either becomes visible.
+				-->
+				<div data-kg-personal-only>
 				<div class="embed-frame">
 					<!--
 						Zoho's own embed script for this form (verbatim, unmodified
@@ -289,6 +300,122 @@ $kg_steps = array(
 
 					})();
 					</script>
+				</div>
+				</div>
+
+				<div data-kg-business-only>
+				<div class="embed-frame">
+					<!-- Zoho's own embed script for the Business variant of this form (verbatim, unmodified). -->
+					<div id="zf_div_uVgk75TZ_faL_CS1CqIoxwOqXFtdAbK_gCSC5hqdDjY"></div>
+					<script type="text/javascript">
+					(function() {
+						try{
+							var f = document.createElement("iframe");
+
+								var ifrmSrc = 'https://forms.zohopublic.com/ryankaligirlfina1/form/LetsreviewyourfinancestogetherBusiness/formperma/uVgk75TZ_faL_CS1CqIoxwOqXFtdAbK_gCSC5hqdDjY?zf_rszfm=1';
+
+
+					        try{
+								if ( typeof ZFAdvLead != "undefined" && typeof zfutm_zfAdvLead != "undefined" ) {
+									for( var prmIdx = 0 ; prmIdx < ZFAdvLead.utmPNameArr.length ; prmIdx ++ ) {
+									    var utmPm = ZFAdvLead.utmPNameArr[ prmIdx ];
+									    utmPm = ( ZFAdvLead.isSameDomian && ( ZFAdvLead.utmcustPNameArr.indexOf(utmPm) == -1 ) ) ? "zf_" + utmPm : utmPm;
+									    var utmVal = zfutm_zfAdvLead.zfautm_gC_enc( ZFAdvLead.utmPNameArr[ prmIdx ] );
+									    if ( typeof utmVal !== "undefined" ) {
+									      if ( utmVal != "" ) {
+									        if(ifrmSrc.indexOf('?') > 0){
+									             ifrmSrc = ifrmSrc+'&'+utmPm+'='+utmVal;
+									        }else{
+									            ifrmSrc = ifrmSrc+'?'+utmPm+'='+utmVal;
+									        }
+									      }
+									    }
+									}
+								}
+								if ( typeof ZFLead !== "undefined" && typeof zfutm_zfLead !== "undefined" ) {
+									for( var prmIdx = 0 ; prmIdx < ZFLead.utmPNameArr.length ; prmIdx ++ ) {
+							        	var utmPm = ZFLead.utmPNameArr[ prmIdx ];
+							        	var utmVal = zfutm_zfLead.zfutm_gC_enc( ZFLead.utmPNameArr[ prmIdx ] );
+								        if ( typeof utmVal !== "undefined" ) {
+								          if ( utmVal != "" ){
+								            if(ifrmSrc.indexOf('?') > 0){
+								              ifrmSrc = ifrmSrc+'&'+utmPm+'='+utmVal;//No I18N
+								            }else{
+								              ifrmSrc = ifrmSrc+'?'+utmPm+'='+utmVal;//No I18N
+								            }
+								          }
+								        }
+							      	}
+								}
+								if (!((new RegExp("[?&]referrername=")).test(ifrmSrc))) {
+					            var rfr = window.location.href;
+
+					            try {
+					                rfr = window.self !== window.top ?
+					                    window.top.location.href :
+					                    (/^https?:\/\/[\w.-]+\.[a-zA-Z]{2,}/i.test(rfr) ? rfr : "");
+					            } catch (e) {}
+
+					            if (rfr && rfr !== "") {
+					                if (rfr.length > 1800) {
+					                    var queryIndex = rfr.indexOf('?');
+					                    if (queryIndex > -1) {
+					                        rfr = rfr.substring(0, queryIndex);
+					                    }
+					                    if (rfr.length > 1800) {
+					                        rfr = rfr.substring(0, 1800);
+					                    }
+					                }
+					                ifrmSrc += ((ifrmSrc.indexOf('?') > 0) ? '&' : '?') + 'referrername=' + encodeURIComponent(rfr);
+					            }
+					        }
+							}catch(e){}
+
+
+							f.src = ifrmSrc;
+							f.style.border="none";
+							f.style.height="150px";
+							f.style.width="99%";
+							f.style.transition="all 0.5s ease";
+							f.setAttribute("aria-label", 'Let\x27s review your finances together \- Business');
+
+							var d = document.getElementById("zf_div_uVgk75TZ_faL_CS1CqIoxwOqXFtdAbK_gCSC5hqdDjY");
+							d.appendChild(f);
+							window.addEventListener('message', function (){
+								var evntData = event.data;
+								if( evntData && evntData.constructor == String ){
+									var zf_ifrm_data = evntData.split("|");
+									if ( zf_ifrm_data.length == 2 || zf_ifrm_data.length == 3 ) {
+										var zf_perma = zf_ifrm_data[0];
+										var zf_ifrm_ht_nw = ( parseInt(zf_ifrm_data[1], 10) + 15 ) + "px";
+										var iframe = document.getElementById("zf_div_uVgk75TZ_faL_CS1CqIoxwOqXFtdAbK_gCSC5hqdDjY").getElementsByTagName("iframe")[0];
+										if ( (iframe.src).indexOf('formperma') > 0 && (iframe.src).indexOf(zf_perma) > 0 ) {
+											var prevIframeHeight = iframe.style.height;
+											var zf_tout = false;
+											if( zf_ifrm_data.length == 3 ) {
+											    iframe.scrollIntoView();
+											    zf_tout = true;
+											}
+
+											if ( prevIframeHeight != zf_ifrm_ht_nw ) {
+												if( zf_tout ) {
+												    setTimeout(function(){
+												        iframe.style.height = zf_ifrm_ht_nw;
+												    },500);
+												} else {
+												    iframe.style.height = zf_ifrm_ht_nw;
+												}
+											}
+										}
+									}
+								}
+							}, false);
+					    }catch(e){}
+
+
+					})();
+					</script>
+				</div>
 				</div>
 				<p class="route-view__continue">Already submitted the form above? <a href="#" data-kg-continue-link data-kg-destination="<?php echo $kg_from_booking ? '/thank-you' : '/booking'; ?>">Continue &rarr;</a></p>
 			</div>

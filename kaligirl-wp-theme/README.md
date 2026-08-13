@@ -285,6 +285,37 @@ You do **not** need to store name/email/phone in the `intake-token-gate`
 Creator report for this — whatever the real mechanism turns out to be,
 the redirect URL already carries everything `page-booking.php` needs.
 
+### Route Two, Personal vs. Business forms
+
+Route Two now holds **two** Zoho Forms embeds, not one — a Personal form
+(the original "GetStarted" form) and a Business form
+("LetsreviewyourfinancestogetherBusiness"), each Zoho's own real embed
+script (verbatim, unmodified). Which one is visible is controlled by the
+same Personal/Business toggle that already hides "Find the Right Plan" in
+Business mode — `data-kg-personal-only` / `data-kg-business-only` wrap
+each form's container, and `applyMode()` in `js/main.js` toggles both.
+Both scripts still run at page load regardless of which is visible
+(same as everything else on this page), and `loadRoute()` augments every
+`div[id^="zf_div_"] iframe` it finds in the view, not just one, so
+whichever form the toggle reveals is already carrying `gated_token`.
+
+The "Continue" fallback link (and, ideally, each form's own Zoho-side
+"Redirect URL on Submission" setting) now needs a `&flow=personal` or
+`&flow=business` alongside `?token=...`, since Personal and Business feed
+**different** Zoho Bookings services. `js/main.js` appends this
+automatically based on the toggle's state at the moment Continue is
+clicked. `page-booking.php` reads `?flow=` and picks the matching
+widget ID from a small map (`personal` → `4946279000000039045`,
+`business` → `4946279000000136026`); anything unrecognized or missing
+falls back to `personal`.
+
+**Manual step still needed:** since each form has its own separate "Redirect
+URL on Submission" setting in Zoho, set the Business form's to a static
+`https://kaligirlfinancialservices.com/booking?token={gated_token}&flow=business`
+(and confirm the Personal form's still has `&flow=personal`, or omit it
+there since that's the default) — don't rely on the Continue link alone
+for this, same reasoning as the token-forwarding note above.
+
 ### Route Two, booking-first variant
 
 Route Two can also be entered in the opposite order — book first, answer
