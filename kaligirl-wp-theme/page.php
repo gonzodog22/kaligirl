@@ -13,7 +13,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 get_header();
 ?>
 <main>
-	<section class="kg-section--no-border">
+	<section class="kg-section--no-border hero-wash">
 		<div class="kg-container hero hero--tight">
 			<div>
 				<?php

@@ -7,6 +7,55 @@ and membership gating (unrelated to the change below — left as-is; see the
 token-gated flow per a later migration handoff that **drops Moxo entirely**
 — do not reintroduce the Moxo iframe.
 
+## Visual redesign — "Terracotta" theme (v2.0)
+
+The theme was re-skinned to match a second design handoff (new
+`design_handoff_wordpress_migration/README.md` + `Kaligirl Website.dc.html`,
+"Terracotta" color theme instead of the original "Ocean" one). What changed:
+
+- **Design tokens** (`style.css` `:root`): renamed to semantic names
+  (`--primary`, `--primary-hover`, `--accent`, `--accent-soft`,
+  `--cta-band-hover`, `--text-heading`, `--bg`, `--header-bg`, `--card-bg`,
+  `--shadow-mega`) with new Terracotta values. If you add new CSS, use these
+  tokens, not hardcoded hex values — a few pre-existing hardcoded gradients
+  (home "How we help", Services "Fee structure") were converted to tokens as
+  part of this pass; watch for the same mistake in future additions.
+- **Mega menus**: "Services" and "Resources" in the logged-out desktop nav
+  are now hover-triggered mega menus (`.mega-trigger` / `.mega-menu` in
+  `header.php` + `style.css`, hover-open/120ms-close-delay logic in
+  `js/main.js`'s `kaligirlInitMegaMenus()`). Mobile menu gets the same links
+  as plain indented sub-links instead. This is a **different, unrelated**
+  "Resources" from the logged-in-only Library/Lessons/Tools dropdown, which
+  is untouched.
+- **Two new interactive pages**: `page-personal-consulting.php` and
+  `page-business-advisory.php` — a grid of topic cards that expands in
+  place into a single detail card on click (no page navigation), via
+  `kaligirlInitConsultingCards()` in `js/main.js` and the
+  `.consulting-*` CSS component. Card copy (title/body/detail) is defined
+  as a PHP array at the top of each template — edit there, not in the
+  template tags helper, since this content is specific to these two pages.
+- **New public Resources page**: `page-resources.php` — a "coming soon"
+  placeholder per the design handoff, linked from the Resources mega menu.
+- **`.hero-wash` utility**: the radial-gradient background wash behind
+  every page's hero section is now a shared class
+  (`kg-section--no-border hero-wash`) instead of one-off inline styles.
+  Applied to Home, Services, About, Contact, Get Started, Booking, Payment,
+  and the two new consulting pages. Deliberately *not* applied to the
+  invalid-token error states (`.resource-hero`) or the Thank You page,
+  matching the design handoff.
+- **Footer gradient**: `.site-footer` now fades from `--bg` into
+  `--header-bg`, matching the new design's footer.
+- **Get Started page — explicitly NOT redesigned architecturally.** Per
+  explicit instruction, the Personal/Business toggle, Route One/Two
+  buttons, the two embedded Zoho Forms, and the token-gated
+  booking/payment/thank-you flow are all preserved exactly as before — only
+  colors/typography inherit the new tokens automatically via the CSS
+  variable cascade. The new design handoff's mockup shows a simpler
+  single-Zoho-Bookings-widget Get Started page; that was **not** adopted.
+- MemberPress/PMP is unrelated to this redesign round too and was left
+  untouched, consistent with the original "you make the call" decision
+  documented in the "MemberPress / PMP note" section below.
+
 ## What's here
 
 ```
@@ -23,6 +72,9 @@ kaligirl-wp-theme/
 ├── page-booking.php          # Template Name: Booking (Route Two destination, token-gated)
 ├── page-payment.php          # Template Name: Payment (Route One destination, token-gated, scaffolded — payments not wired up yet)
 ├── page-thank-you.php        # Template Name: Thank You (post-booking confirmation, no gating)
+├── page-personal-consulting.php # Template Name: Personal Financial Consulting (click-to-expand cards)
+├── page-business-advisory.php   # Template Name: Business Advisory (click-to-expand cards)
+├── page-resources.php        # Template Name: Resources (public, "coming soon" placeholder)
 ├── page-login.php            # Template Name: Login (unused stub, see below)
 ├── page-account.php          # Template Name: Account (unused stub, see below)
 ├── page-library.php          # Template Name: Library (membership-gated placeholder)

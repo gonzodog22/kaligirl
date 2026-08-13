@@ -45,7 +45,7 @@ $kg_services = array(
 );
 ?>
 <main>
-	<section class="kg-section--no-border">
+	<section class="kg-section--no-border hero-wash">
 		<div class="kg-container hero">
 			<div>
 				<p class="kg-eyebrow"><span class="kg-eyebrow__rule"></span>Financial services &amp; fractional CFO · California</p>
@@ -73,7 +73,7 @@ $kg_services = array(
 		</div>
 	</section>
 
-	<section class="kg-section" style="background:linear-gradient(180deg,#eef4fc,#f8f9fb);">
+	<section class="kg-section" style="background:linear-gradient(180deg,var(--accent-soft),var(--bg));">
 		<div class="kg-container section-pad">
 			<div class="section-head section-head--split" style="max-width:none;">
 				<div class="section-head" style="margin-bottom:0;">

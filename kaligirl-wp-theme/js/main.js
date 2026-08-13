@@ -218,6 +218,113 @@
 		} );
 	}
 
+	/**
+	 * Services/Resources mega menus: hover to open, with a short close-delay
+	 * on mouse-leave (matches the design spec's 120ms debounce) so moving
+	 * the cursor from the nav link down into the panel doesn't flicker-close
+	 * it. Each trigger/panel pair is matched by a shared data-kg-mega-* key.
+	 */
+	function kaligirlInitMegaMenus() {
+		var triggers = document.querySelectorAll( '[data-kg-mega-trigger]' );
+		if ( ! triggers.length ) {
+			return;
+		}
+
+		var closeTimers = {};
+
+		function openMenu( key ) {
+			window.clearTimeout( closeTimers[ key ] );
+			document.querySelectorAll( '[data-kg-mega-panel]' ).forEach( function ( panel ) {
+				if ( panel.getAttribute( 'data-kg-mega-panel' ) !== key ) {
+					panel.classList.remove( 'is-open' );
+				}
+			} );
+			var panel = document.querySelector( '[data-kg-mega-panel="' + key + '"]' );
+			if ( panel ) {
+				panel.classList.add( 'is-open' );
+			}
+		}
+
+		function scheduleClose( key ) {
+			closeTimers[ key ] = window.setTimeout( function () {
+				var panel = document.querySelector( '[data-kg-mega-panel="' + key + '"]' );
+				if ( panel ) {
+					panel.classList.remove( 'is-open' );
+				}
+			}, 120 );
+		}
+
+		triggers.forEach( function ( trigger ) {
+			var key = trigger.getAttribute( 'data-kg-mega-trigger' );
+			var panel = document.querySelector( '[data-kg-mega-panel="' + key + '"]' );
+
+			trigger.addEventListener( 'mouseenter', function () {
+				openMenu( key );
+			} );
+			trigger.addEventListener( 'mouseleave', function () {
+				scheduleClose( key );
+			} );
+
+			if ( panel ) {
+				panel.addEventListener( 'mouseenter', function () {
+					openMenu( key );
+				} );
+				panel.addEventListener( 'mouseleave', function () {
+					scheduleClose( key );
+				} );
+			}
+		} );
+	}
+
+	/**
+	 * Personal/Business consulting pages: a grid of topic cards that
+	 * expands in place into a single detail card on click — no page
+	 * navigation, just show/hide state, matching the design's
+	 * grid <-> selectedCard interaction. Generic over both pages: each
+	 * detail panel's data-kg-consulting-detail index matches the card that
+	 * opens it.
+	 */
+	function kaligirlInitConsultingCards() {
+		var gridWrap = document.querySelector( '[data-kg-consulting="grid"]' );
+		if ( ! gridWrap ) {
+			return; // Not on a consulting page.
+		}
+
+		var cards = document.querySelectorAll( '[data-kg-consulting-card]' );
+		var details = document.querySelectorAll( '[data-kg-consulting-detail]' );
+
+		function showDetail( index ) {
+			gridWrap.hidden = true;
+			details.forEach( function ( detail ) {
+				detail.hidden = detail.getAttribute( 'data-kg-consulting-detail' ) !== index;
+			} );
+		}
+
+		function showGrid() {
+			gridWrap.hidden = false;
+			details.forEach( function ( detail ) {
+				detail.hidden = true;
+			} );
+		}
+
+		cards.forEach( function ( card ) {
+			var index = card.getAttribute( 'data-kg-consulting-card' );
+			card.addEventListener( 'click', function () {
+				showDetail( index );
+			} );
+			card.addEventListener( 'keydown', function ( e ) {
+				if ( e.key === 'Enter' || e.key === ' ' ) {
+					e.preventDefault();
+					showDetail( index );
+				}
+			} );
+		} );
+
+		document.querySelectorAll( '[data-kg-consulting-back]' ).forEach( function ( button ) {
+			button.addEventListener( 'click', showGrid );
+		} );
+	}
+
 	document.addEventListener( 'DOMContentLoaded', function () {
 		var mobileToggle = document.querySelector( '[data-kg-mobile-toggle]' );
 		var mobileMenu = document.querySelector( '[data-kg-mobile-menu]' );
@@ -265,6 +372,8 @@
 		}
 
 		kaligirlInitGetStarted();
+		kaligirlInitMegaMenus();
+		kaligirlInitConsultingCards();
 
 		// /booking's Zoho Bookings widget (page-booking.php) — same
 		// iframe-containment problem as the Get Started forms: a completed

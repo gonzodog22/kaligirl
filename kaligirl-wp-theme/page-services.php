@@ -51,7 +51,7 @@ $kg_pricing = array(
 );
 ?>
 <main>
-	<section class="kg-section--no-border">
+	<section class="kg-section--no-border hero-wash">
 		<div class="kg-container hero hero--tight">
 			<div>
 				<p class="kg-eyebrow">Services</p>
@@ -67,7 +67,7 @@ $kg_pricing = array(
 		</div>
 	</section>
 
-	<section class="kg-section" style="background:radial-gradient(circle at 85% 15%,#f3f7fd,#f8f9fb 55%);">
+	<section class="kg-section" style="background:radial-gradient(circle at 85% 15%,#f3f7fd,var(--bg) 55%);">
 		<div class="kg-container section-pad--sm">
 			<div class="section-head">
 				<p class="kg-eyebrow">Fee structure</p>

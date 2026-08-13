@@ -36,7 +36,7 @@ get_header();
 		</div>
 	</section>
 <?php else : ?>
-	<section class="kg-section--no-border">
+	<section class="kg-section--no-border hero-wash">
 		<div class="kg-container hero hero--narrow">
 			<div>
 				<p class="kg-eyebrow" style="margin-bottom:1rem;">Get started</p>
