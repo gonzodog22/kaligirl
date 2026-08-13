@@ -111,6 +111,9 @@ kaligirl-wp-theme/
      `/booking` and `/payment` — Zoho Forms' post-submission redirect and
      this theme's fallback "Continue" links both point at those two paths
      literally; see "Get Started flow" below)
+   - `loading` → the **Loading** template (URL that each Zoho Bookings
+     service's "redirect after booking" setting should point at instead of
+     `/get-started` directly — see "Route Two is booking-first" below)
    - `thank-you` → the **Thank You** template (URL must be exactly
      `/thank-you` — point Zoho Bookings' post-booking redirect setting at it)
    - `library`, `lessons`, `tools` → matching templates (see gating below)
@@ -401,6 +404,28 @@ for the loop to close on that side too. And once you've tested a real
 Business booking, send me that redirect URL (same as you did for
 Personal) so I can add its `service_uuid` to `$kg_booking_routes` in
 `page-get-started.php`.
+
+**`/loading` — intermediate transition page (`page-loading.php`):**
+Zoho's own confirmation screen, shown inside the small embedded widget
+after a booking completes and before Zoho fires its redirect, is entirely
+inside their cross-origin iframe — invisible and uncontrollable from our
+side (confirmed: no `postMessage` is sent either). What *is* controllable
+is what we redirect to once Zoho's redirect does land on our domain — the
+full `/get-started` page (header, nav, hero, both Route Two forms) is
+heavy enough that it was visibly rendering nested in that small widget
+for a moment before `kaligirlBreakoutIframeOnSameOrigin()` could catch
+and hide it, which read as broken rather than intentional. `/loading` is
+a deliberately bare page (no `get_header()`/`get_footer()`, no theme
+assets) that reads the same `customer_*`/`service_uuid`/`service_name`
+params, shows a branded spinner for 1.5s, then forwards to `/get-started`
+with those same params intact — turning that moment into a short,
+predictable, on-brand transition instead.
+
+**Manual step needed:** point each Zoho Bookings service's "redirect
+after booking" setting at `/loading` instead of `/get-started` directly
+(same base-URL swap for both the Personal and Business services — Zoho
+still appends its own merge fields automatically either way, no
+reconfiguration of those needed).
 
 **Which form shows on return, not just which heading:** since the
 Personal/Business toggle radios default to "Personal" in the raw HTML,
