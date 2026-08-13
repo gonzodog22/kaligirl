@@ -299,22 +299,56 @@ Both scripts still run at page load regardless of which is visible
 `div[id^="zf_div_"] iframe` it finds in the view, not just one, so
 whichever form the toggle reveals is already carrying `gated_token`.
 
-The "Continue" fallback link (and, ideally, each form's own Zoho-side
-"Redirect URL on Submission" setting) now needs a `&flow=personal` or
-`&flow=business` alongside `?token=...`, since Personal and Business feed
-**different** Zoho Bookings services. `js/main.js` appends this
-automatically based on the toggle's state at the moment Continue is
-clicked. `page-booking.php` reads `?flow=` and picks the matching
-widget ID from a small map (`personal` → `4946279000000039045`,
-`business` → `4946279000000136026`); anything unrecognized or missing
-falls back to `personal`.
+The "Continue" fallback link (based on live toggle state at click time)
+and each form's own Zoho-side "Redirect URL on Submission" setting (based
+on which form it is, fixed at prefill time — see below) both now carry
+`&flow=personal` or `&flow=business` alongside `?token=...`, since
+Personal and Business feed **different** Zoho Bookings services.
+`page-booking.php` reads `?flow=` and picks the matching widget ID from a
+small map (`personal` → `4946279000000039045`, `business` →
+`4946279000000136026`); anything unrecognized or missing falls back to
+`personal`.
 
-**Manual step still needed:** since each form has its own separate "Redirect
-URL on Submission" setting in Zoho, set the Business form's to a static
-`https://kaligirlfinancialservices.com/booking?token={gated_token}&flow=business`
-(and confirm the Personal form's still has `&flow=personal`, or omit it
-there since that's the default) — don't rely on the Continue link alone
-for this, same reasoning as the token-forwarding note above.
+**Manual setup needed — both forms, two fields each:**
+
+Zoho Forms' "Redirect URL on Submission" only accepts a literal base URL
+(`https://kaligirlfinancialservices.com/booking`) — the `?field=${zf:X}`
+parts get appended by Zoho's own merge-field picker as you add fields to
+it (the resulting leading `?&` is normal, that's just how the picker
+builds an empty query string, not a bug). For the picker to have a
+`${zf:X}` to insert, each form needs its own hidden/single-line text
+field, prefilled from our iframe's URL, for each value being forwarded:
+
+| Purpose | Prefill "Get value from URL parameter" name | Merge-tag used in the redirect |
+|---|---|---|
+| Gate token | `gated_token` | `${zf:<that field's Link Name>}` |
+| Flow (personal/business) | `flow` | `${zf:<that field's Link Name>}` |
+
+`js/main.js`'s `loadRoute()` already appends both `gated_token=...` and
+`flow=personal`/`flow=business` (chosen structurally by which
+`data-kg-personal-only`/`data-kg-business-only` wrapper the form's iframe
+sits in — **not** from the toggle's current state, since both forms get
+prefilled together at page load before the visitor has necessarily
+touched the toggle) onto both forms' iframe src. So: confirm each form
+has a field with "Prefill using URL parameter" set to `gated_token`, and
+add a second field prefilled from `flow`, on **both** the Personal
+("GetStarted") and Business ("LetsreviewyourfinancestogetherBusiness")
+forms — each form's own Link Name for these fields is independent (Zoho
+auto-numbers them per form), so check each form's actual Link Names
+rather than assuming they're both literally `SingleLine2`/`SingleLine3`.
+
+The Personal form's redirect (mirroring the Business one, same shape):
+
+```
+https://kaligirlfinancialservices.com/booking?&token=${zf:SingleLine2}&flow=${zf:SingleLine3}
+```
+
+(swap in the staging domain while testing, same as everywhere else in
+this doc). This is in addition to — not instead of — the existing
+`Name`/`Email`/`Contact Number` merge tags on the Personal form's
+redirect (see "Autofilling Name/Email/Phone" above); those still matter
+for the fork-first path where someone fills the form before booking, so
+don't drop them when adding token/flow.
 
 ### Route Two, booking-first variant
 

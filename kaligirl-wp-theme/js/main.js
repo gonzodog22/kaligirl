@@ -215,7 +215,15 @@
 			dynamicIframes.forEach( function ( dynamicIframe ) {
 				kaligirlBreakoutIframeOnSameOrigin( dynamicIframe );
 
-				var extraParams = 'gated_token=' + encodeURIComponent( token );
+				// Which form this is (Personal vs Business) is fixed by
+				// which wrapper it lives in, not by whatever the toggle
+				// currently shows — both forms get prefilled together here,
+				// before the visitor has necessarily touched the toggle at
+				// all, so reading "the current mode" would wrongly tag both
+				// forms with whichever mode happens to be selected by
+				// default.
+				var iframeFlow = dynamicIframe.closest( '[data-kg-business-only]' ) ? 'business' : 'personal';
+				var extraParams = 'gated_token=' + encodeURIComponent( token ) + '&flow=' + iframeFlow;
 				var prefillRaw = view.getAttribute( 'data-kg-booking-prefill' );
 				if ( prefillRaw ) {
 					try {
