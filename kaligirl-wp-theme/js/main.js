@@ -366,6 +366,23 @@
 		if ( routeTwoView && ! routeTwoView.hidden ) {
 			loadRoute( 'two', routeTwoView );
 		}
+
+		// TEMP diagnostic — remove once we know whether Zoho Bookings sends
+		// a postMessage on booking completion. If it does, this reveals the
+		// real shape so a "Redirecting you now..." cover can be shown over
+		// the widget the instant that specific message arrives, instead of
+		// visitors seeing Zoho's own confirmation screen for a second or
+		// two before the redirect we can already detect (see
+		// kaligirlBreakoutIframeOnSameOrigin) actually fires. Not wiring up
+		// a cover based on a guess, since triggering on the wrong message
+		// (e.g. a routine resize ping) would hide the calendar too early.
+		window.addEventListener( 'message', function ( event ) {
+			if ( ! /zohobookings\.com|nimbuspop\.com/.test( event.origin ) ) {
+				return;
+			}
+			// eslint-disable-next-line no-console
+			console.log( 'kaligirl booking widget postMessage:', event.origin, event.data );
+		} );
 	}
 
 	/**
