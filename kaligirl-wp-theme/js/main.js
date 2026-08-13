@@ -185,11 +185,39 @@
 				window.sessionStorage.setItem( storageKey, token );
 			}
 
-			var iframe = view.querySelector( 'iframe[data-kg-form-src]' );
-			if ( iframe ) {
-				var baseSrc = iframe.getAttribute( 'data-kg-form-src' );
-				iframe.src = baseSrc + '?gated_token=' + encodeURIComponent( token );
-				kaligirlBreakoutIframeOnSameOrigin( iframe );
+			// Route One: a plain static <iframe data-kg-form-src> in the markup.
+			var staticIframe = view.querySelector( 'iframe[data-kg-form-src]' );
+			if ( staticIframe ) {
+				var baseSrc = staticIframe.getAttribute( 'data-kg-form-src' );
+				staticIframe.src = baseSrc + '?gated_token=' + encodeURIComponent( token );
+				kaligirlBreakoutIframeOnSameOrigin( staticIframe );
+			}
+
+			// Route Two: Zoho's own embed script creates the iframe itself
+			// (into a div[id^="zf_div_"]) rather than us writing a static
+			// <iframe> tag, so its src (already carrying Zoho's own
+			// UTM/referrer params) isn't known until that script has run.
+			// Append our own params on top of it instead of replacing it
+			// outright, so Zoho's own tracking params survive intact.
+			var dynamicIframe = view.querySelector( 'div[id^="zf_div_"] iframe' );
+			if ( dynamicIframe ) {
+				kaligirlBreakoutIframeOnSameOrigin( dynamicIframe );
+
+				var extraParams = 'gated_token=' + encodeURIComponent( token );
+				var prefillRaw = view.getAttribute( 'data-kg-booking-prefill' );
+				if ( prefillRaw ) {
+					try {
+						var prefill = JSON.parse( prefillRaw );
+						Object.keys( prefill ).forEach( function ( key ) {
+							if ( prefill[ key ] ) {
+								extraParams += '&' + encodeURIComponent( key ) + '=' + encodeURIComponent( prefill[ key ] );
+							}
+						} );
+					} catch ( e ) {
+						// Malformed/empty JSON — no prefill data to add, carry on.
+					}
+				}
+				dynamicIframe.src += ( dynamicIframe.src.indexOf( '?' ) > -1 ? '&' : '?' ) + extraParams;
 			}
 
 			var continueLink = view.querySelector( '[data-kg-continue-link]' );
@@ -216,6 +244,14 @@
 				showView( forkView );
 			} );
 		} );
+
+		// Landed here already showing Route Two (page-get-started.php
+		// unhides it server-side when the URL carries a completed Zoho
+		// Bookings redirect's customer_* params) — load it immediately
+		// instead of waiting for a button click that never comes.
+		if ( routeTwoView && ! routeTwoView.hidden ) {
+			loadRoute( 'two', routeTwoView );
+		}
 	}
 
 	/**

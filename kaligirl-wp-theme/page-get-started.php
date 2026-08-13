@@ -33,14 +33,25 @@
  * navigation to that same URL — see the iframe `load` listener in
  * loadRoute().
  *
- * TWO THINGS NEED MANUAL CONFIRMATION (see README + PR notes):
+ * Route Two can also be entered "booking-first": if a Zoho Bookings
+ * confirmation redirects back here with its own customer_* merge-field
+ * params (customer_name, customer_first_name, customer_last_name,
+ * customer_contact_no, customer_email — Zoho Bookings' native redirect
+ * vocabulary, not something this codebase invented), the fork is skipped
+ * and Route Two's form is shown immediately with those values appended to
+ * the form iframe's src for prefill. See loadRoute() in main.js.
+ *
+ * THINGS THAT NEED MANUAL CONFIRMATION (see README + PR notes):
  * 1. Whether each Zoho Form's own "Redirect URL on Submission" setting can
  *    carry `gated_token` forward dynamically to /payment or /booking. If
  *    yes, prefer configuring that in Zoho Forms directly — this page's
  *    "Continue" links below are the fallback for if it can't.
- * 2. The literal Zoho referrer-tracking `<script>` that ships with each
- *    embed code isn't reproduced here (not available at build time) — see
- *    the HTML comments marking exactly where to paste it, unmodified.
+ * 2. Whether the Route Two form's Name/Email/Phone fields actually have
+ *    "Prefill using URL parameter" enabled with parameter names matching
+ *    customer_name / customer_email / customer_contact_no — that mapping
+ *    lives in the Zoho Forms field editor, not in the embed script, and
+ *    can't be confirmed from code. Test by opening the form's iframe URL
+ *    directly with e.g. `&customer_email=test@test.com` appended.
  */
 
 if ( ! defined( 'ABSPATH' ) ) {
@@ -48,6 +59,21 @@ if ( ! defined( 'ABSPATH' ) ) {
 }
 
 get_header();
+
+// Zoho Bookings' own post-booking redirect merge fields, when this page is
+// landed on after a completed booking rather than reached via the fork.
+$kg_booking_prefill = array();
+foreach ( array( 'customer_name', 'customer_first_name', 'customer_last_name', 'customer_contact_no', 'customer_email' ) as $kg_field ) {
+	if ( empty( $_GET[ $kg_field ] ) ) {
+		continue;
+	}
+	$kg_value = sanitize_text_field( wp_unslash( $_GET[ $kg_field ] ) );
+	if ( 'customer_email' === $kg_field && ! is_email( $kg_value ) ) {
+		continue;
+	}
+	$kg_booking_prefill[ $kg_field ] = $kg_value;
+}
+$kg_from_booking = ! empty( $kg_booking_prefill['customer_email'] );
 
 $kg_steps = array(
 	array(
@@ -81,7 +107,7 @@ $kg_steps = array(
 	<section>
 		<div class="kg-container" style="padding-top:0;padding-bottom:clamp(2rem,5vh,3rem);">
 
-			<div data-kg-view="fork">
+			<div data-kg-view="fork"<?php echo $kg_from_booking ? ' hidden' : ''; ?>>
 				<div class="advising-toggle" role="radiogroup" aria-label="Type of advising">
 					<input type="radio" id="kg-mode-personal" name="kg-advising-mode" value="personal" checked>
 					<label for="kg-mode-personal">Personal Advising</label>
@@ -110,18 +136,133 @@ $kg_steps = array(
 				<p class="route-view__continue">Already submitted the form above? <a href="#" data-kg-continue-link data-kg-destination="/payment">Continue &rarr;</a></p>
 			</div>
 
-			<div data-kg-view="route-two" hidden>
+			<div data-kg-view="route-two"<?php echo $kg_from_booking ? '' : ' hidden'; ?> data-kg-booking-prefill="<?php echo esc_attr( wp_json_encode( (object) $kg_booking_prefill ) ); ?>">
 				<button type="button" class="back-link" data-kg-back-to-fork>&larr; Back</button>
 				<h2 class="route-view__title">Schedule an Introductory Consultation</h2>
-				<p class="route-view__lede">A no-obligation conversation to see if we're a good fit.</p>
+				<p class="route-view__lede"><?php echo $kg_from_booking ? "You're booked — just a few more questions to help us prepare." : "A no-obligation conversation to see if we're a good fit."; ?></p>
 				<div class="embed-frame">
-					<iframe id="ziframe_314925" aria-label="Let's review your finances together" frameborder="0" style="height:500px;width:99%;border:none;" data-kg-form-src="https://forms.zohopublic.com/ryankaligirlfina1/form/GetStarted/formperma/IA70KZBAwznXrIPD3dBzx_Y26wUDWEnX78U0u80ivMQ"></iframe>
+					<!--
+						Zoho's own embed script for this form (verbatim, unmodified
+						— do not hand-edit; if Zoho reissues this form's embed code,
+						replace this whole block). It builds the iframe's src (with
+						its own UTM/referrer tracking params) and injects the iframe
+						into the div below itself. js/main.js's loadRoute() finds
+						that iframe afterward and appends gated_token, plus the
+						customer_* prefill params above when arriving from a
+						completed booking, onto whatever src Zoho already built —
+						see the "div[id^=zf_div_] iframe" branch there.
+					-->
+					<div id="zf_div_IA70KZBAwznXrIPD3dBzx_Y26wUDWEnX78U0u80ivMQ"></div>
+					<script type="text/javascript">
+					(function() {
+						try{
+							var f = document.createElement("iframe");
+
+								var ifrmSrc = 'https://forms.zohopublic.com/ryankaligirlfina1/form/GetStarted/formperma/IA70KZBAwznXrIPD3dBzx_Y26wUDWEnX78U0u80ivMQ?zf_rszfm=1';
+
+
+					        try{
+								if ( typeof ZFAdvLead != "undefined" && typeof zfutm_zfAdvLead != "undefined" ) {
+									for( var prmIdx = 0 ; prmIdx < ZFAdvLead.utmPNameArr.length ; prmIdx ++ ) {
+									    var utmPm = ZFAdvLead.utmPNameArr[ prmIdx ];
+									    utmPm = ( ZFAdvLead.isSameDomian && ( ZFAdvLead.utmcustPNameArr.indexOf(utmPm) == -1 ) ) ? "zf_" + utmPm : utmPm;
+									    var utmVal = zfutm_zfAdvLead.zfautm_gC_enc( ZFAdvLead.utmPNameArr[ prmIdx ] );
+									    if ( typeof utmVal !== "undefined" ) {
+									      if ( utmVal != "" ) {
+									        if(ifrmSrc.indexOf('?') > 0){
+									             ifrmSrc = ifrmSrc+'&'+utmPm+'='+utmVal;
+									        }else{
+									            ifrmSrc = ifrmSrc+'?'+utmPm+'='+utmVal;
+									        }
+									      }
+									    }
+									}
+								}
+								if ( typeof ZFLead !== "undefined" && typeof zfutm_zfLead !== "undefined" ) {
+									for( var prmIdx = 0 ; prmIdx < ZFLead.utmPNameArr.length ; prmIdx ++ ) {
+							        	var utmPm = ZFLead.utmPNameArr[ prmIdx ];
+							        	var utmVal = zfutm_zfLead.zfutm_gC_enc( ZFLead.utmPNameArr[ prmIdx ] );
+								        if ( typeof utmVal !== "undefined" ) {
+								          if ( utmVal != "" ){
+								            if(ifrmSrc.indexOf('?') > 0){
+								              ifrmSrc = ifrmSrc+'&'+utmPm+'='+utmVal;//No I18N
+								            }else{
+								              ifrmSrc = ifrmSrc+'?'+utmPm+'='+utmVal;//No I18N
+								            }
+								          }
+								        }
+							      	}
+								}
+								if (!((new RegExp("[?&]referrername=")).test(ifrmSrc))) {
+					            var rfr = window.location.href;
+
+					            try {
+					                rfr = window.self !== window.top ?
+					                    window.top.location.href :
+					                    (/^https?:\/\/[\w.-]+\.[a-zA-Z]{2,}/i.test(rfr) ? rfr : "");
+					            } catch (e) {}
+
+					            if (rfr && rfr !== "") {
+					                if (rfr.length > 1800) {
+					                    var queryIndex = rfr.indexOf('?');
+					                    if (queryIndex > -1) {
+					                        rfr = rfr.substring(0, queryIndex);
+					                    }
+					                    if (rfr.length > 1800) {
+					                        rfr = rfr.substring(0, 1800);
+					                    }
+					                }
+					                ifrmSrc += ((ifrmSrc.indexOf('?') > 0) ? '&' : '?') + 'referrername=' + encodeURIComponent(rfr);
+					            }
+					        }
+							}catch(e){}
+
+
+							f.src = ifrmSrc;
+							f.style.border="none";
+							f.style.height="150px";
+							f.style.width="99%";
+							f.style.transition="all 0.5s ease";
+							f.setAttribute("aria-label", 'Let\x27s review your finances together');
+
+							var d = document.getElementById("zf_div_IA70KZBAwznXrIPD3dBzx_Y26wUDWEnX78U0u80ivMQ");
+							d.appendChild(f);
+							window.addEventListener('message', function (){
+								var evntData = event.data;
+								if( evntData && evntData.constructor == String ){
+									var zf_ifrm_data = evntData.split("|");
+									if ( zf_ifrm_data.length == 2 || zf_ifrm_data.length == 3 ) {
+										var zf_perma = zf_ifrm_data[0];
+										var zf_ifrm_ht_nw = ( parseInt(zf_ifrm_data[1], 10) + 15 ) + "px";
+										var iframe = document.getElementById("zf_div_IA70KZBAwznXrIPD3dBzx_Y26wUDWEnX78U0u80ivMQ").getElementsByTagName("iframe")[0];
+										if ( (iframe.src).indexOf('formperma') > 0 && (iframe.src).indexOf(zf_perma) > 0 ) {
+											var prevIframeHeight = iframe.style.height;
+											var zf_tout = false;
+											if( zf_ifrm_data.length == 3 ) {
+											    iframe.scrollIntoView();
+											    zf_tout = true;
+											}
+
+											if ( prevIframeHeight != zf_ifrm_ht_nw ) {
+												if( zf_tout ) {
+												    setTimeout(function(){
+												        iframe.style.height = zf_ifrm_ht_nw;
+												    },500);
+												} else {
+												    iframe.style.height = zf_ifrm_ht_nw;
+												}
+											}
+										}
+									}
+								}
+							}, false);
+					    }catch(e){}
+
+
+					})();
+					</script>
 				</div>
-				<!--
-					TODO: paste the standard Zoho referrer-tracking <script> block
-					that ships with this form's embed code here, unmodified.
-				-->
-				<p class="route-view__continue">Already submitted the form above? <a href="#" data-kg-continue-link data-kg-destination="/booking">Continue &rarr;</a></p>
+				<p class="route-view__continue">Already submitted the form above? <a href="#" data-kg-continue-link data-kg-destination="<?php echo $kg_from_booking ? '/thank-you' : '/booking'; ?>">Continue &rarr;</a></p>
 			</div>
 
 		</div>

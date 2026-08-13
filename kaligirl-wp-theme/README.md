@@ -285,6 +285,48 @@ You do **not** need to store name/email/phone in the `intake-token-gate`
 Creator report for this — whatever the real mechanism turns out to be,
 the redirect URL already carries everything `page-booking.php` needs.
 
+### Route Two, booking-first variant
+
+Route Two can also be entered in the opposite order — book first, answer
+the rest of the questions after — for whichever Zoho Bookings service is
+configured to redirect back to `/get-started` on completion. Zoho
+Bookings' own post-booking redirect setting supports merge fields for the
+customer's own submitted info (native Bookings vocabulary:
+`customer_name`, `customer_first_name`, `customer_last_name`,
+`customer_contact_no`, `customer_email` — confirmed against a real
+completed booking's redirect URL). `page-get-started.php` reads these off
+`$_GET`; if `customer_email` is present and valid, the Personal/Business
+fork is skipped entirely and Route Two's form is shown immediately,
+pre-populated via `data-kg-booking-prefill` (a JSON blob of whatever
+customer_* values were present) on that view.
+
+Route Two's form embed is the **real Zoho-provided embed script**
+(dynamic iframe creation + UTM/referrer tracking + auto-resize
+postMessage listener — pasted verbatim, do not hand-edit; replace the
+whole block if Zoho reissues the embed code) rather than a static
+`<iframe>` tag, since Zoho's script builds the iframe itself into a
+`<div id="zf_div_...">`. Because of that, `loadRoute()` in `js/main.js`
+can't set `iframe.src` directly the way it does for Route One's static
+iframe — instead it finds the iframe Zoho's script already created
+(`div[id^="zf_div_"] iframe`) and **appends** `gated_token` plus the
+`customer_*` prefill params onto whatever src Zoho already built, so its
+own UTM/referrer params survive intact.
+
+**Not yet confirmed:** whether the Name/Email/Phone fields on this form
+actually have "Prefill using URL parameter" turned on with parameter
+names matching `customer_name` / `customer_email` / `customer_contact_no`
+— that mapping is a per-field setting in the Zoho Forms field editor, not
+visible from the embed script, and can't be confirmed from code. Test by
+opening the form's iframe URL directly with e.g. `&customer_email=test@test.com`
+appended; if the Email field doesn't populate, go set that field's
+prefill parameter name to match (or tell me what it's already set to and
+the theme's query param names can be changed to match instead).
+
+When arriving via this booking-first path, the "Continue" fallback link
+points at `/thank-you` instead of `/booking` (the booking already
+happened) — the normal fork-first path into Route Two still points at
+`/booking` as before.
+
 ### Still needs manual confirmation
 
 - **Zoho Bookings' own "post-booking redirect" setting** (configured in
