@@ -81,7 +81,7 @@ if ( ! empty( $_GET['Phone'] ) ) {
 
 $kg_flow           = isset( $_GET['flow'] ) ? sanitize_text_field( wp_unslash( $_GET['flow'] ) ) : 'personal';
 $kg_booking_widget = array(
-	'personal' => '4946279000000039045',
+	'personal' => '4946279000000136007',
 	'business' => '4946279000000136026',
 );
 $kg_widget_id   = isset( $kg_booking_widget[ $kg_flow ] ) ? $kg_booking_widget[ $kg_flow ] : $kg_booking_widget['personal'];

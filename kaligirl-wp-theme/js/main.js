@@ -206,7 +206,7 @@
 
 			var widgetUrl = 'business' === mode
 				? 'https://kaligirlfinancialservices.zohobookings.com/portal-embed#/4946279000000136026'
-				: 'https://kaligirlfinancialservices.zohobookings.com/portal-embed#/4946279000000039045';
+				: 'https://kaligirlfinancialservices.zohobookings.com/portal-embed#/4946279000000136007';
 
 			Bookings.inlineEmbed( {
 				url: widgetUrl,

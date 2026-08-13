@@ -259,7 +259,7 @@ tier). The Get Started page is now a **fork page**, not a form itself:
 `page-booking.php` reads `?Name=`, `?Email=`, `?Phone=` off its own URL
 (capitalized — exactly these, `$_GET` keys are case-sensitive) and
 appends them onto the Zoho Bookings widget's own URL as a query string
-placed **after** the `#/4946279000000039045` hash fragment. This is the
+placed **after** the `#/{widget id}` hash fragment. This is the
 opposite of normal URL structure (query strings normally precede a
 fragment) and opposite of what an earlier version of this file did, but
 it's confirmed by testing: placing it before the hash does **not**
@@ -305,9 +305,15 @@ on which form it is, fixed at prefill time — see below) both now carry
 `&flow=personal` or `&flow=business` alongside `?token=...`, since
 Personal and Business feed **different** Zoho Bookings services.
 `page-booking.php` reads `?flow=` and picks the matching widget ID from a
-small map (`personal` → `4946279000000039045`, `business` →
+small map (`personal` → `4946279000000136007`, `business` →
 `4946279000000136026`); anything unrecognized or missing falls back to
-`personal`.
+`personal`. **Note:** since Route Two is now booking-first end to end (see
+below), nothing currently links to `/booking` any more — its own
+"Continue" link and the Personal/Business forms' redirects should point
+at `/thank-you` instead, since the booking already happened before the
+form. This flow/widget-picking logic is left in place in case
+`/booking` gets reused for something later, but as of now it's dead code
+for Route Two specifically.
 
 **Manual setup needed — both forms, two fields each:**
 
@@ -381,9 +387,12 @@ pre-populated via `data-kg-booking-prefill` (a JSON blob of whatever
 customer_* values were present) on that view.
 
 **Confirmed set up:** the Personal service's ("Personal Financial
-Consultation - Getting Started", `service_uuid` `4946279000000136007`,
-widget ID `4946279000000039045`) redirect-to-`/get-started` is confirmed
-working from a real test.
+Consultation - Getting Started", `service_uuid` and widget ID both
+`4946279000000136007` — Zoho reuses the same number for both) redirect-to-
+`/get-started` is confirmed working from a real test. (An earlier widget
+ID, `4946279000000039045`, was stale/wrong — left over from before this
+specific service existed as its own thing — and has been corrected
+everywhere it was hardcoded.)
 
 **Still needs confirming:** whether the Business service's (widget ID
 `4946279000000136026`) own "redirect after booking" setting is *also*
@@ -391,10 +400,21 @@ pointed at `/get-started` — it needs to be, the same way Personal's is,
 for the loop to close on that side too. And once you've tested a real
 Business booking, send me that redirect URL (same as you did for
 Personal) so I can add its `service_uuid` to `$kg_booking_routes` in
-`page-get-started.php` — without that entry, a completed Business booking
-will still correctly show the Business form, just with the generic
-"Schedule an Introductory Consultation" heading instead of
-business-specific copy.
+`page-get-started.php`.
+
+**Which form shows on return, not just which heading:** since the
+Personal/Business toggle radios default to "Personal" in the raw HTML,
+and a Zoho Bookings redirect is a real full-page reload (not a JS state
+that could otherwise survive it), `page-get-started.php` has to
+explicitly re-check which radio should be pre-checked on that fresh load
+— it can't rely on whatever the visitor had selected before they left to
+book. Each `$kg_booking_routes` entry now carries a `mode` (`personal` or
+`business`) used for exactly this; an unmapped `service_uuid` (i.e.
+Business, until its entry is added) falls back to guessing from
+`service_name` (checking whether it contains "business", case-insensitive)
+rather than always defaulting to Personal. This was the cause of a real
+bug: booking via Business was landing back showing — and letting people
+submit — the Personal form.
 
 Route Two's form embed is the **real Zoho-provided embed script**
 (dynamic iframe creation + UTM/referrer tracking + auto-resize

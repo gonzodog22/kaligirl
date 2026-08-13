@@ -94,21 +94,36 @@ $kg_from_booking = ! empty( $kg_booking_prefill['customer_email'] );
 // the redirect automatically, so use it as the routing key rather than
 // treating every booking-first arrival as the same generic route. Add an
 // entry here for each additional booking-first service as its link is
-// provided; anything not yet mapped falls back to the generic copy below.
+// provided; anything not yet mapped falls back to a best-effort guess
+// below. Each entry's 'mode' also decides which of the two Route Two
+// forms (Personal/Business) actually shows — not just the heading copy —
+// since the Personal/Business toggle's checked radio otherwise always
+// resets to its HTML default ("personal") on this fresh page load, no
+// matter which service was really booked.
 $kg_booking_service_uuid = isset( $_GET['service_uuid'] ) ? sanitize_text_field( wp_unslash( $_GET['service_uuid'] ) ) : '';
+$kg_booking_service_name = isset( $_GET['service_name'] ) ? sanitize_text_field( wp_unslash( $_GET['service_name'] ) ) : '';
 $kg_booking_routes       = array(
 	'4946279000000136007' => array(
 		'title' => 'Personal Financial Consulting',
 		'lede'  => "You're booked — just a few more questions to help us prepare.",
+		'mode'  => 'personal',
 	),
 );
-$kg_booking_route_default = array(
-	'title' => 'Schedule an Introductory Consultation',
-	'lede'  => "You're booked — just a few more questions to help us prepare.",
-);
-$kg_booking_route = isset( $kg_booking_routes[ $kg_booking_service_uuid ] )
-	? $kg_booking_routes[ $kg_booking_service_uuid ]
-	: $kg_booking_route_default;
+
+if ( isset( $kg_booking_routes[ $kg_booking_service_uuid ] ) ) {
+	$kg_booking_route = $kg_booking_routes[ $kg_booking_service_uuid ];
+} else {
+	// Unmapped service_uuid (e.g. Business, until its real service_uuid is
+	// provided and added above) — guess personal vs. business from the
+	// service's own name rather than always defaulting to personal, so at
+	// least the right FORM shows even before this is properly mapped.
+	$kg_is_business_guess = ( false !== stripos( $kg_booking_service_name, 'business' ) );
+	$kg_booking_route      = array(
+		'title' => $kg_is_business_guess ? 'Business Advisory' : 'Schedule an Introductory Consultation',
+		'lede'  => "You're booked — just a few more questions to help us prepare.",
+		'mode'  => $kg_is_business_guess ? 'business' : 'personal',
+	);
+}
 
 $kg_steps = array(
 	array(
@@ -144,9 +159,9 @@ $kg_steps = array(
 
 			<div data-kg-view="fork"<?php echo $kg_from_booking ? ' hidden' : ''; ?>>
 				<div class="advising-toggle" role="radiogroup" aria-label="Type of advising">
-					<input type="radio" id="kg-mode-personal" name="kg-advising-mode" value="personal" checked>
+					<input type="radio" id="kg-mode-personal" name="kg-advising-mode" value="personal"<?php echo ( ! $kg_from_booking || 'business' !== $kg_booking_route['mode'] ) ? ' checked' : ''; ?>>
 					<label for="kg-mode-personal">Personal Advising</label>
-					<input type="radio" id="kg-mode-business" name="kg-advising-mode" value="business">
+					<input type="radio" id="kg-mode-business" name="kg-advising-mode" value="business"<?php echo ( $kg_from_booking && 'business' === $kg_booking_route['mode'] ) ? ' checked' : ''; ?>>
 					<label for="kg-mode-business">Business Advising</label>
 					<span class="advising-toggle__thumb" aria-hidden="true"></span>
 				</div>
