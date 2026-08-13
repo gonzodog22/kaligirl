@@ -283,7 +283,18 @@
 						// Malformed/empty JSON — no prefill data to add, carry on.
 					}
 				}
+				var srcBefore = dynamicIframe.src;
 				dynamicIframe.src += ( dynamicIframe.src.indexOf( '?' ) > -1 ? '&' : '?' ) + extraParams;
+				// TEMP diagnostic — remove once prefill is confirmed working.
+				// Open dev tools (Console tab) on a real booking-first test
+				// and check these three lines to see exactly what got sent.
+				// eslint-disable-next-line no-console
+				console.log( 'kaligirl prefill debug:', {
+					mode: iframeFlow,
+					rawPrefillAttribute: prefillRaw,
+					srcBeforeAppend: srcBefore,
+					srcAfterAppend: dynamicIframe.src
+				} );
 			} );
 
 			var continueLink = view.querySelector( '[data-kg-continue-link]' );
