@@ -159,28 +159,6 @@
 			return ( ! checked || checked.value === 'personal' ) ? 'personal' : 'business';
 		}
 
-		function applyMode() {
-			var isPersonal = getAdvisingMode() === 'personal';
-			personalOnlyEls.forEach( function ( el ) {
-				el.hidden = ! isPersonal;
-			} );
-			businessOnlyEls.forEach( function ( el ) {
-				el.hidden = isPersonal;
-			} );
-			// Route Two already visible and the toggle just switched which
-			// side is showing — lazily init that side's booking widget if
-			// this is the first time it's been revealed. (Declared below;
-			// hoisted, so this forward reference is fine.)
-			if ( routeTwoView && ! routeTwoView.hidden ) {
-				kaligirlEnsureBookingWidget( isPersonal ? 'personal' : 'business' );
-			}
-		}
-
-		modeRadios.forEach( function ( radio ) {
-			radio.addEventListener( 'change', applyMode );
-		} );
-		applyMode();
-
 		/**
 		 * Route Two's not-yet-booked state shows a Zoho Bookings widget
 		 * instead of a form — lazily initialized the first time its
@@ -191,6 +169,13 @@
 		 * display:none can size itself incorrectly. No-ops harmlessly if
 		 * this page is in the $kg_from_booking state instead (no
 		 * #inline-container-* markup exists there at all).
+		 *
+		 * Declared (and kaligirlBookingWidgetsLoaded initialized) before
+		 * applyMode()'s first call below — applyMode() calls this, and a
+		 * `var` initializer only runs when its line of source actually
+		 * executes, not just because the declaration is hoisted, so this
+		 * has to come first or that first call reads kaligirlBookingWidgetsLoaded
+		 * while it's still undefined and throws.
 		 */
 		var kaligirlBookingWidgetsLoaded = {};
 		function kaligirlEnsureBookingWidget( mode ) {
@@ -219,6 +204,27 @@
 			// nested iframe, break out to a real top-level navigation.
 			kaligirlWatchEmbedContainerForIframes( container );
 		}
+
+		function applyMode() {
+			var isPersonal = getAdvisingMode() === 'personal';
+			personalOnlyEls.forEach( function ( el ) {
+				el.hidden = ! isPersonal;
+			} );
+			businessOnlyEls.forEach( function ( el ) {
+				el.hidden = isPersonal;
+			} );
+			// Route Two already visible and the toggle just switched which
+			// side is showing — lazily init that side's booking widget if
+			// this is the first time it's been revealed.
+			if ( routeTwoView && ! routeTwoView.hidden ) {
+				kaligirlEnsureBookingWidget( isPersonal ? 'personal' : 'business' );
+			}
+		}
+
+		modeRadios.forEach( function ( radio ) {
+			radio.addEventListener( 'change', applyMode );
+		} );
+		applyMode();
 
 		/**
 		 * Generates (or reuses, if this route's view was already opened once
