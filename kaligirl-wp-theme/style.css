@@ -1,0 +1,1146 @@
+/*
+Theme Name: Kaligirl Financial Services
+Theme URI: https://kaligirlfinancialservices.com
+Author: Kaligirl Financial Services
+Description: Custom WordPress theme for Kaligirl Financial Services, wired to Paid Memberships Pro for login/membership gating and to Zoho (Forms, Bookings, Billing) for the Get Started flow. Rebuilt pixel-for-pixel from the design_handoff_wordpress_migration reference (Terracotta theme).
+Version: 2.0.0
+Requires at least: 6.0
+Requires PHP: 7.4
+License: GNU General Public License v2 or later
+License URI: LICENSE
+Text Domain: kaligirl
+*/
+
+/* ==========================================================================
+   Design tokens — Terracotta theme (the shipped default per the redesign
+   handoff; Ocean/Dark exist in the design tool but aren't built here).
+   Token *names* are generic/semantic (primary/accent/...) rather than
+   color-literal, since a straight value swap under the old --navy/--blue
+   names would leave a primary color that isn't navy at all — every usage
+   below was individually re-checked against the redesign's palette
+   (renderVals()'s `palettes.terracotta`), not just search-and-replaced,
+   since a couple of old tokens (--navy vs --navy-dark) shared the same hex
+   value by coincidence in the old theme and diverge under this one.
+   ========================================================================== */
+:root {
+  --primary: #1b2333;
+  --primary-hover: #c1603f;
+  --accent: #2f6b64;
+  --accent-soft: #dce9e6;
+  --cta-band-hover: #dbe7f7; /* kept literal in the design file itself, not themed per-palette */
+  --text-heading: #2b2b2b;
+  --text-body: #5b6472;
+  --muted: #8891a0;
+  --border: #e6e9ef;
+  --border-2: #e1e5ec;
+  --border-3: #c7cedb;
+  --border-4: #dde2ea;
+  --bg: #f5ead9;
+  --header-bg: rgba(255, 255, 255, 0.92);
+  --card-bg: #fff;
+  --placeholder-a: #eef1f7;
+  --placeholder-b: #e4e8f0;
+
+  --radius-pill: 100px;
+  --radius-card: 14px;
+  --radius-banner: 20px;
+  --radius-small: 8px;
+
+  --shadow-card: 0 1px 2px rgba(28, 40, 66, 0.04);
+  --shadow-card-hover: 0 20px 36px rgba(44, 62, 99, 0.14);
+  --shadow-card-hover-strong: 0 24px 40px rgba(44, 62, 99, 0.2);
+  --shadow-dropdown: 0 16px 32px rgba(28, 40, 66, 0.14);
+  --shadow-mega: 0 24px 48px rgba(28, 40, 66, 0.16);
+
+  --content-max: 100rem;
+  --font-heading: 'Fraunces', Georgia, serif;
+  --font-body: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+}
+
+/* ==========================================================================
+   Base
+   ========================================================================== */
+* { box-sizing: border-box; }
+
+html { scroll-behavior: smooth; }
+
+body {
+  margin: 0;
+  -webkit-font-smoothing: antialiased;
+  font-family: var(--font-body);
+  color: var(--text-heading);
+  background: var(--bg);
+  min-height: 100vh;
+}
+
+a { text-decoration: none; color: inherit; }
+
+img { max-width: 100%; }
+
+.screen-reader-text {
+  position: absolute;
+  width: 1px; height: 1px;
+  overflow: hidden;
+  clip: rect(1px,1px,1px,1px);
+}
+
+@keyframes kg-fade {
+  from { opacity: 0; transform: translateY(6px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.kg-container {
+  max-width: var(--content-max);
+  margin: 0 auto;
+  padding: 0 clamp(1.25rem, 5vw, 3rem);
+}
+
+.kg-section {
+  border-top: 1px solid var(--border);
+}
+.kg-section--no-border { border-top: none; }
+
+.kg-eyebrow {
+  font-size: 0.82rem;
+  text-transform: uppercase;
+  letter-spacing: 0.16em;
+  color: var(--accent);
+  font-weight: 600;
+  margin: 0 0 1.25rem;
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+.kg-eyebrow__rule {
+  width: 1.75rem;
+  height: 1px;
+  background: var(--accent);
+  display: inline-block;
+}
+
+/* ==========================================================================
+   Header / Navigation
+   ========================================================================== */
+.site-header {
+  position: sticky;
+  top: 0;
+  z-index: 50;
+  background: var(--header-bg);
+  backdrop-filter: blur(10px);
+  border-bottom: 1px solid var(--border-2);
+}
+
+.site-header__row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 2.5rem;
+  height: 108px;
+}
+
+.site-header__left {
+  display: flex;
+  align-items: center;
+  gap: 3rem;
+}
+
+.site-logo { display: flex; align-items: center; }
+.site-logo img { height: 68px; width: auto; display: block; }
+
+.nav-primary {
+  display: flex;
+  align-items: center;
+  gap: 2.5rem;
+}
+
+.nav-link {
+  color: var(--text-body);
+  font-size: 1.2rem;
+  font-weight: 500;
+  display: inline-block;
+  padding-bottom: 4px;
+  border-bottom: 2px solid transparent;
+  transition: color 0.25s ease, transform 0.25s ease;
+}
+.nav-link:hover { color: var(--accent); transform: translateY(-2px); }
+.nav-link.is-active { color: var(--text-heading); }
+.nav-link.is-active.has-underline { border-bottom-color: var(--accent); }
+
+.nav-account {
+  display: flex;
+  align-items: center;
+  gap: 1.5rem;
+}
+
+.btn-login {
+  color: var(--text-body);
+  font-size: 1.2rem;
+  font-weight: 500;
+  display: inline-block;
+  transition: color 0.25s ease, transform 0.25s ease;
+}
+.btn-login:hover { color: var(--accent); transform: translateY(-2px); }
+.btn-login.is-active { color: var(--text-heading); }
+
+.btn-pill {
+  background: var(--primary);
+  color: #fff;
+  padding: 0.85rem 1.8rem;
+  border-radius: var(--radius-pill);
+  font-size: 1.1rem;
+  font-weight: 600;
+  display: inline-block;
+  border: none;
+  cursor: pointer;
+  font-family: var(--font-body);
+  transition: background 0.25s ease, transform 0.25s ease;
+}
+.btn-pill:hover { background: var(--primary-hover); transform: translateY(-2px); color: #fff; }
+
+.btn-pill--sm { padding: 0.85rem 1.6rem; font-size: 0.95rem; }
+.btn-pill--white { background: #fff; color: var(--primary); }
+.btn-pill--white:hover { background: var(--cta-band-hover); color: var(--primary); }
+
+.btn-outline {
+  border: 1px solid var(--border-3);
+  color: var(--primary);
+  padding: 0.85rem 1.6rem;
+  border-radius: var(--radius-pill);
+  font-size: 0.95rem;
+  font-weight: 600;
+  display: inline-block;
+  background: transparent;
+  cursor: pointer;
+  font-family: var(--font-body);
+  transition: background 0.25s ease, border-color 0.25s ease;
+}
+.btn-outline:hover { background: var(--accent-soft); border-color: var(--accent); }
+
+.resources {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+.resources-toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: var(--text-heading);
+  font-size: 1.2rem;
+  font-weight: 500;
+  line-height: 1;
+  font-family: var(--font-body);
+  padding: 0 0 4px;
+  border-bottom: 2px solid transparent;
+}
+.resources-caret {
+  width: 0; height: 0;
+  border-left: 5px solid transparent;
+  border-right: 5px solid transparent;
+  border-top: 6px solid var(--text-heading);
+  display: inline-block;
+  flex: none;
+  transition: transform 0.2s ease;
+}
+.resources-toggle[aria-expanded="true"] .resources-caret { transform: rotate(180deg); }
+
+.resources-menu {
+  position: absolute;
+  top: calc(100% + 12px);
+  right: 0;
+  background: #fff;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  box-shadow: var(--shadow-dropdown);
+  padding: 0.5rem;
+  min-width: 11rem;
+  display: none;
+  flex-direction: column;
+  gap: 0.15rem;
+  z-index: 60;
+}
+.resources-menu.is-open { display: flex; }
+.resources-menu a {
+  color: var(--text-heading);
+  font-size: 0.98rem;
+  font-weight: 500;
+  padding: 0.65rem 0.85rem;
+  border-radius: 8px;
+  transition: background 0.2s ease;
+}
+.resources-menu a:hover { background: var(--accent-soft); }
+
+@keyframes kg-dropdown-pop {
+  from { opacity: 0; transform: translateY(-6px) scale(0.98); }
+  to { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+.mega-trigger {
+  position: relative;
+  display: flex;
+  align-items: center;
+  padding-bottom: 24px;
+  margin-bottom: -24px;
+}
+
+.mega-menu {
+  display: none;
+  position: absolute;
+  top: 100%;
+  left: clamp(1.25rem, 5vw, 3rem);
+  transform-origin: top left;
+  background: var(--card-bg);
+  border: 1px solid var(--border);
+  border-top: 2px solid var(--accent);
+  border-radius: 0 0 16px 16px;
+  box-shadow: var(--shadow-mega);
+  z-index: 60;
+}
+.mega-menu.is-open {
+  display: block;
+  animation: kg-dropdown-pop 0.22s cubic-bezier(0.2, 0.8, 0.2, 1) both;
+}
+
+.mega-menu__inner { padding: 2.5rem; }
+
+.mega-menu__eyebrow {
+  font-size: 0.78rem;
+  text-transform: uppercase;
+  letter-spacing: 0.14em;
+  color: var(--muted);
+  font-weight: 600;
+  margin: 0 0 1.25rem;
+}
+
+.mega-menu__grid {
+  display: grid;
+  grid-template-columns: auto auto auto;
+  gap: 3rem;
+}
+
+.mega-menu__col { width: 15rem; }
+
+.mega-menu__thumb {
+  width: 100%;
+  height: 6.5rem;
+  border-radius: 10px;
+  overflow: hidden;
+  margin-bottom: 0.85rem;
+  background: repeating-linear-gradient(45deg, #eef1f7, #eef1f7 10px, #e4e8f0 10px, #e4e8f0 20px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: ui-monospace, Menlo, monospace;
+  font-size: 0.7rem;
+  color: var(--muted);
+  text-align: center;
+}
+
+.mega-menu__link {
+  display: block;
+  color: var(--text-heading);
+  font-size: 1.1rem;
+  font-weight: 500;
+  font-family: var(--font-heading);
+  margin-bottom: 1rem;
+  transition: color 0.2s ease;
+}
+.mega-menu__link:hover { color: var(--accent); }
+
+.mega-menu__sublink {
+  display: block;
+  color: var(--muted);
+  font-size: 0.98rem;
+  margin-bottom: 0.75rem;
+  transition: color 0.2s ease;
+}
+.mega-menu__sublink:hover { color: var(--primary); }
+
+.mega-menu__desc {
+  color: var(--muted);
+  font-size: 0.92rem;
+  line-height: 1.5;
+  margin: 0;
+}
+
+.mega-menu__cta-col {
+  width: 18rem;
+  border-left: 1px solid var(--border-2);
+  padding-left: 2.5rem;
+}
+
+.mega-menu__cta-card {
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  padding: 1.75rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+  transition: box-shadow 0.25s ease, transform 0.25s ease;
+}
+.mega-menu__cta-card:hover {
+  box-shadow: 0 12px 24px rgba(28, 35, 51, 0.12);
+  transform: translateY(-3px);
+}
+.mega-menu__cta-card h3 {
+  font-family: var(--font-heading);
+  font-weight: 500;
+  font-size: 1.15rem;
+  line-height: 1.4;
+  margin: 0;
+  color: var(--text-heading);
+}
+
+.mobile-menu__sublink {
+  color: var(--muted) !important;
+  font-size: 0.9rem !important;
+  padding-left: 0.75rem;
+}
+
+@media (max-width: 1040px) {
+  .mega-menu { display: none !important; }
+}
+
+.mobile-toggle {
+  background: none;
+  border: none;
+  display: none;
+  flex-direction: column;
+  gap: 5px;
+  padding: 8px;
+  cursor: pointer;
+}
+.mobile-toggle span {
+  width: 26px; height: 2.5px;
+  background: var(--text-heading);
+  display: block;
+}
+.mobile-toggle span:last-child { width: 16px; align-self: flex-end; }
+
+.mobile-menu {
+  display: none;
+  flex-direction: column;
+  padding: 0.5rem clamp(1.25rem, 5vw, 3rem) 1.5rem;
+  gap: 1.1rem;
+  border-top: 1px solid var(--border-2);
+}
+.mobile-menu.is-open { display: flex; }
+.mobile-menu a { font-size: 1rem; font-weight: 500; color: var(--text-body); }
+.mobile-menu a.is-active { color: var(--text-heading); }
+.mobile-menu .btn-pill { text-align: center; padding: 0.75rem 1.4rem; font-size: 0.95rem; }
+
+@media (max-width: 1040px) {
+  .nav-primary,
+  .site-header__row .nav-account {
+    display: none;
+  }
+  .mobile-toggle { display: flex; }
+}
+@media (min-width: 1041px) {
+  .mobile-menu { display: none !important; }
+}
+
+/* ==========================================================================
+   Buttons shared
+   ========================================================================== */
+.btn-row { display: flex; gap: 1rem; flex-wrap: wrap; }
+
+/* ==========================================================================
+   Hero
+   ========================================================================== */
+.hero {
+  padding: clamp(4.5rem, 12vh, 7rem) 0 clamp(3rem, 8vh, 4.5rem);
+  animation: kg-fade 0.5s ease both;
+  display: grid;
+  grid-template-columns: 1.1fr 0.9fr;
+  gap: clamp(2rem, 5vw, 4rem);
+  align-items: center;
+}
+.hero--tight { padding: clamp(4rem, 10vh, 6rem) 0 clamp(2.5rem, 6vh, 3.5rem); grid-template-columns: 1fr; }
+.hero--narrow { padding: clamp(2rem, 5vh, 3rem) 0 clamp(1.5rem, 3vh, 2rem); grid-template-columns: 1fr; }
+
+.hero h1 {
+  font-family: var(--font-heading);
+  font-weight: 500;
+  font-size: clamp(3rem, 2.4rem + 4vw, 5.5rem);
+  line-height: 1.08;
+  letter-spacing: -0.01em;
+  max-width: 20ch;
+  margin: 0 0 1.5rem;
+}
+.hero--tight h1 { font-size: clamp(2.6rem, 2.1rem + 3vw, 4.4rem); line-height: 1.1; max-width: none; margin-bottom: 1.25rem; }
+.hero--narrow h1 { font-size: clamp(2rem, 1.7rem + 1.6vw, 2.9rem); line-height: 1.1; max-width: 28ch; margin-bottom: 0.75rem; }
+
+.hero p.lede {
+  font-size: 1.4rem;
+  line-height: 1.6;
+  color: var(--text-body);
+  max-width: 46ch;
+  margin: 0 0 2.25rem;
+}
+.hero--tight p.lede { font-size: 1.3rem; max-width: 48ch; margin-bottom: 0; }
+.hero--narrow p.lede { font-size: 1.1rem; line-height: 1.55; max-width: 60ch; margin-bottom: 0; }
+
+.hero-media {
+  aspect-ratio: 4 / 5;
+  border-radius: 20px;
+  border: 1px solid var(--border-4);
+  background: repeating-linear-gradient(45deg, var(--placeholder-a), var(--placeholder-a) 12px, var(--placeholder-b) 12px, var(--placeholder-b) 24px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.hero-media--wide { aspect-ratio: 16 / 9; border-radius: 16px; }
+.hero-media span {
+  font-family: ui-monospace, Menlo, monospace;
+  font-size: 0.78rem;
+  color: var(--muted);
+  letter-spacing: 0.02em;
+}
+
+.hero-wash {
+  background: radial-gradient(ellipse 90% 100% at 20% 0%, var(--accent-soft), var(--bg) 100%);
+}
+
+/* ==========================================================================
+   Section heading blocks
+   ========================================================================== */
+.section-pad { padding: clamp(3.5rem, 9vh, 5.5rem) 0; }
+.section-pad--sm { padding: clamp(3rem, 7vh, 4.5rem) 0; }
+
+.section-head {
+  max-width: 46ch;
+  margin-bottom: 3rem;
+}
+.section-head h2 {
+  font-family: var(--font-heading);
+  font-weight: 500;
+  font-size: clamp(2.1rem, 1.7rem + 2vw, 3.4rem);
+  line-height: 1.15;
+  margin: 0 0 1rem;
+}
+.section-head p {
+  color: var(--text-body);
+  font-size: 1.15rem;
+  line-height: 1.65;
+  margin: 0;
+}
+.section-head--split {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  gap: 2rem;
+  flex-wrap: wrap;
+}
+
+.mini-bars { display: flex; align-items: flex-end; gap: 6px; height: 56px; flex: none; }
+.mini-bars span { width: 14px; border-radius: 4px; display: block; }
+.mini-bars span:nth-child(1) { height: 38%; background: #a8c5e8; }
+.mini-bars span:nth-child(2) { height: 62%; background: #6f9bd6; }
+.mini-bars span:nth-child(3) { height: 100%; background: var(--primary); }
+
+/* ==========================================================================
+   Numbered principle rows
+   ========================================================================== */
+.principle-list { display: grid; gap: 0; border-top: 1px solid var(--border); }
+.principle-row {
+  display: grid;
+  grid-template-columns: 3rem 1fr;
+  gap: 1.5rem;
+  padding-block: 1.75rem;
+  border-top: 1px solid var(--border);
+}
+.principle-list > .principle-row:first-child { border-top: none; }
+.principle-row__n {
+  font-family: var(--font-heading);
+  color: var(--accent);
+  font-size: 1.3rem;
+}
+.principle-row h3 {
+  font-family: var(--font-heading);
+  font-weight: 500;
+  font-size: 1.35rem;
+  margin: 0 0 0.4rem;
+}
+.principle-row p {
+  color: var(--text-body);
+  font-size: 1.05rem;
+  line-height: 1.6;
+  margin: 0;
+}
+.principle-list-end { border-top: 1px solid var(--border); }
+
+/* ==========================================================================
+   Card grids: services, pricing, info
+   ========================================================================== */
+.card-grid {
+  display: grid;
+  gap: 1.5rem;
+  grid-template-columns: repeat(auto-fit, minmax(15rem, 1fr));
+}
+.card-grid--pricing { grid-template-columns: repeat(auto-fit, minmax(16rem, 1fr)); }
+
+.service-card {
+  padding: 2rem 1.85rem;
+  background: #fff;
+  border: 1px solid var(--border);
+  border-top: 3px solid var(--accent);
+  border-radius: var(--radius-card);
+  box-shadow: var(--shadow-card);
+  transition: box-shadow 0.35s cubic-bezier(.2,.8,.2,1), transform 0.35s cubic-bezier(.2,.8,.2,1), border-color 0.35s ease;
+}
+.service-card:hover {
+  box-shadow: var(--shadow-card-hover-strong);
+  transform: translateY(-8px) scale(1.02);
+  border-top-color: var(--primary);
+}
+.service-card__icon {
+  width: 44px; height: 44px;
+  border-radius: 11px;
+  background: var(--primary);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 1.1rem;
+  transition: transform 0.35s cubic-bezier(.34,1.56,.64,1), background 0.35s ease;
+}
+.service-card:hover .service-card__icon {
+  transform: scale(1.15) rotate(-6deg);
+  background: var(--accent);
+}
+.service-card__icon-bars { display: flex; align-items: flex-end; gap: 3px; height: 18px; }
+.service-card__icon-bars span { width: 4px; border-radius: 2px; display: block; }
+.service-card__icon-bars span:nth-child(1) { height: 45%; background: #9fc0ec; }
+.service-card__icon-bars span:nth-child(2) { height: 75%; background: #c7dbf5; }
+.service-card__icon-bars span:nth-child(3) { height: 100%; background: #fff; }
+.service-card h3 {
+  font-family: var(--font-heading);
+  font-weight: 500;
+  font-size: 1.3rem;
+  margin: 0 0 0.5rem;
+  transition: color 0.3s ease;
+}
+.service-card:hover h3 { color: var(--primary); }
+.service-card p { color: var(--text-body); font-size: 1.05rem; line-height: 1.6; margin: 0; }
+.service-card__bar {
+  height: 2px; width: 2rem;
+  background: var(--accent);
+  border-radius: 2px;
+  margin-top: 1.1rem;
+  transition: width 0.4s ease;
+}
+.service-card:hover .service-card__bar { width: 100%; }
+
+.pricing-card {
+  padding: 2.25rem 1.85rem;
+  background: #fff;
+  border: 1px solid var(--border);
+  border-top: 3px solid var(--accent);
+  border-radius: var(--radius-card);
+  box-shadow: var(--shadow-card);
+  transition: box-shadow 0.35s ease, transform 0.35s ease;
+}
+.pricing-card:hover { box-shadow: var(--shadow-card-hover); transform: translateY(-6px); }
+.pricing-card h3 { font-family: var(--font-heading); font-weight: 500; font-size: 1.4rem; margin: 0 0 0.5rem; }
+.pricing-card p.desc { color: var(--text-body); font-size: 0.98rem; line-height: 1.55; margin: 0 0 1.5rem; min-height: 3.3rem; }
+.pricing-card p.price {
+  font-family: var(--font-heading);
+  font-size: 1.6rem;
+  font-weight: 500;
+  color: var(--primary);
+  margin: 0;
+  border-top: 1px solid var(--border);
+  padding-top: 1.25rem;
+}
+
+.info-card {
+  padding: 1.85rem;
+  background: #fff;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-card);
+}
+.info-card h3 { font-family: var(--font-heading); font-weight: 500; font-size: 1.1rem; margin: 0 0 0.5rem; }
+.info-card p { color: var(--text-body); font-size: 1.05rem; line-height: 1.6; margin: 0; }
+.info-card a { color: var(--primary); transition: color 0.25s ease; }
+.info-card a:hover { color: var(--accent); }
+
+/* ==========================================================================
+   Consulting cards (Personal/Business consulting pages): a grid of
+   click-to-expand image-left/text-right cards, and the single expanded-card
+   view swapped in for it, per the redesign's click-to-expand interaction.
+   ========================================================================== */
+.consulting-grid {
+  display: grid;
+  gap: 1.75rem;
+  grid-template-columns: repeat(2, 1fr);
+}
+
+.consulting-card {
+  cursor: pointer;
+  display: flex;
+  align-items: stretch;
+  background: var(--card-bg);
+  border: 1px solid var(--border);
+  border-left: 4px solid var(--accent);
+  border-radius: var(--radius-card);
+  overflow: hidden;
+  box-shadow: var(--shadow-card);
+  transition: box-shadow 0.35s cubic-bezier(.2,.8,.2,1), transform 0.35s cubic-bezier(.2,.8,.2,1), border-left-color 0.35s ease;
+}
+.consulting-card:hover {
+  box-shadow: var(--shadow-card-hover);
+  transform: translateY(-6px);
+  border-left-color: var(--primary);
+}
+.consulting-card__media {
+  width: 40%;
+  flex: none;
+  overflow: hidden;
+  background: repeating-linear-gradient(45deg, var(--placeholder-a), var(--placeholder-a) 12px, var(--placeholder-b) 12px, var(--placeholder-b) 24px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: ui-monospace, Menlo, monospace;
+  font-size: 0.72rem;
+  color: var(--muted);
+  text-align: center;
+  padding: 0.5rem;
+}
+.consulting-card__body {
+  padding: 1.75rem 1.6rem;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+.consulting-card__body h3 {
+  font-family: var(--font-heading);
+  font-weight: 500;
+  font-size: 1.2rem;
+  margin: 0 0 0.5rem;
+  transition: color 0.3s ease;
+}
+.consulting-card:hover .consulting-card__body h3 { color: var(--primary); }
+.consulting-card__body p { color: var(--text-body); font-size: 0.95rem; line-height: 1.55; margin: 0; }
+
+.consulting-back {
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: var(--text-body);
+  font-size: 0.92rem;
+  font-weight: 600;
+  padding: 0;
+  margin-bottom: 1.5rem;
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-family: var(--font-body);
+}
+.consulting-back:hover { color: var(--primary); }
+
+.consulting-detail {
+  animation: kg-fade 0.35s ease both;
+}
+.consulting-detail__card {
+  display: flex;
+  align-items: stretch;
+  background: var(--card-bg);
+  border: 1px solid var(--border);
+  border-left: 4px solid var(--primary);
+  border-radius: 16px;
+  overflow: hidden;
+  box-shadow: var(--shadow-card-hover);
+}
+.consulting-detail__media {
+  width: 42%;
+  flex: none;
+  overflow: hidden;
+  background: repeating-linear-gradient(45deg, var(--placeholder-a), var(--placeholder-a) 12px, var(--placeholder-b) 12px, var(--placeholder-b) 24px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: ui-monospace, Menlo, monospace;
+  font-size: 0.72rem;
+  color: var(--muted);
+  text-align: center;
+  padding: 0.5rem;
+}
+.consulting-detail__body {
+  padding: clamp(2rem, 4vw, 3rem);
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+.consulting-detail__body h2 {
+  font-family: var(--font-heading);
+  font-weight: 500;
+  font-size: clamp(1.6rem, 1.3rem + 1.2vw, 2.2rem);
+  margin: 0 0 1rem;
+}
+.consulting-detail__body p {
+  color: var(--text-body);
+  font-size: 1.1rem;
+  line-height: 1.7;
+  margin: 0 0 1.75rem;
+}
+
+@media (max-width: 720px) {
+  .consulting-grid { grid-template-columns: 1fr; }
+  .consulting-card, .consulting-detail__card { flex-direction: column; }
+  .consulting-card__media, .consulting-detail__media { width: 100%; height: 10rem; }
+}
+
+/* ==========================================================================
+   CTA band
+   ========================================================================== */
+.cta-band {
+  background: linear-gradient(135deg, var(--primary), var(--accent));
+  color: #fff;
+  border-radius: var(--radius-banner);
+  padding: clamp(2.5rem, 6vw, 4rem);
+  text-align: center;
+}
+.cta-band--sm { padding: clamp(2.25rem, 5vw, 3.5rem); }
+.cta-band .kg-eyebrow { color: #bcd0ef; justify-content: center; }
+.cta-band h2 {
+  font-family: var(--font-heading);
+  font-weight: 500;
+  font-size: clamp(2.1rem, 1.7rem + 1.8vw, 3rem);
+  margin: 0 0 0.9rem;
+  color: #fff;
+}
+.cta-band--sm h2 { font-size: clamp(1.9rem, 1.6rem + 1.3vw, 2.6rem); margin-bottom: 0.75rem; }
+.cta-band p {
+  color: rgba(255,255,255,0.82);
+  max-width: 46ch;
+  margin: 0 auto 1.75rem;
+  font-size: 1.15rem;
+  line-height: 1.6;
+}
+
+/* ==========================================================================
+   Integrations (About)
+   ========================================================================== */
+.integrations { display: flex; align-items: center; gap: 1rem; flex-wrap: wrap; margin-top: 2.5rem; }
+.integrations__label { font-size: 0.85rem; color: var(--muted); }
+.integration-badge {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--text-body);
+  padding: 0.4rem 0.85rem;
+  border: 1px solid var(--border-2);
+  border-radius: var(--radius-pill);
+}
+.integration-badge--soon { border-style: dashed; color: var(--muted); }
+.integration-badge--soon .tag { color: var(--muted); font-weight: 500; }
+
+/* ==========================================================================
+   Get Started — fork page, Zoho Forms/Bookings/Billing embeds
+   ========================================================================== */
+.embed-frame {
+  border-radius: 16px;
+  overflow: hidden;
+  border: 1px solid var(--border);
+}
+.embed-frame iframe { border: none; display: block; }
+
+/* Personal/Business sliding toggle — a pair of visually-hidden radios with
+   styled labels (keyboard-operable, no hand-rolled ARIA state) plus a
+   thumb `<span>` whose position is driven purely by :has()/:checked, no
+   JS needed for the slide itself. Both labels are equal-width grid cells
+   so the thumb's 50%/translateX(100%) math lines up exactly. */
+.advising-toggle {
+  position: relative;
+  display: inline-grid;
+  grid-template-columns: 1fr 1fr;
+  min-width: 22rem;
+  padding: 0.3rem;
+  background: var(--accent-soft);
+  border-radius: var(--radius-pill);
+  margin-bottom: 1.75rem;
+}
+.advising-toggle input[type="radio"] {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(1px, 1px, 1px, 1px);
+}
+.advising-toggle label {
+  position: relative;
+  z-index: 1;
+  text-align: center;
+  padding: 0.65rem 1rem;
+  border-radius: var(--radius-pill);
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: var(--text-body);
+  cursor: pointer;
+  transition: color 0.25s ease;
+}
+.advising-toggle input[type="radio"]:checked + label {
+  color: #fff;
+}
+.advising-toggle input[type="radio"]:focus-visible + label {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+.advising-toggle__thumb {
+  position: absolute;
+  z-index: 0;
+  top: 0.3rem;
+  left: 0.3rem;
+  width: calc(50% - 0.3rem);
+  height: calc(100% - 0.6rem);
+  background: var(--primary);
+  border-radius: var(--radius-pill);
+  transition: transform 0.25s ease;
+}
+.advising-toggle:has(#kg-mode-business:checked) .advising-toggle__thumb {
+  transform: translateX(100%);
+}
+
+.route-buttons {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+}
+/* Both route buttons share one visual size regardless of .btn-pill's vs.
+   .btn-outline's own (different) global padding/font-size defaults. */
+.route-buttons .btn-pill,
+.route-buttons .btn-outline {
+  padding: 0.85rem 1.8rem;
+  font-size: 0.95rem;
+}
+/* .btn-outline sets its own `display`, which (same-origin, same-specificity
+   tie broken by source order) would otherwise beat the browser's default
+   [hidden] { display: none } rule and leave a "hidden" button visible. */
+[data-kg-personal-only][hidden] { display: none !important; }
+[data-kg-business-only][hidden] { display: none !important; }
+
+.back-link {
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: var(--text-body);
+  font-size: 0.9rem;
+  font-family: var(--font-body);
+  padding: 0;
+  margin-bottom: 1.5rem;
+  transition: color 0.25s ease;
+}
+.back-link:hover { color: var(--accent); }
+
+.route-view__title {
+  font-family: var(--font-heading);
+  font-weight: 500;
+  font-size: clamp(1.6rem, 1.4rem + 1vw, 2.1rem);
+  margin: 0 0 0.5rem;
+}
+.route-view__lede {
+  color: var(--text-body);
+  font-size: 1.05rem;
+  line-height: 1.6;
+  margin: 0 0 1.5rem;
+}
+.route-view__continue {
+  font-size: 0.9rem;
+  color: var(--text-body);
+  margin: 1.25rem 0 0;
+}
+.route-view__continue a { color: var(--primary); font-weight: 600; transition: color 0.25s ease; }
+.route-view__continue a:hover { color: var(--accent); }
+
+/* ==========================================================================
+   Login
+   ========================================================================== */
+.login-wrap {
+  max-width: 26rem;
+  margin: 0 auto;
+  padding: clamp(4rem, 10vh, 6rem) clamp(1.25rem, 5vw, 3rem) clamp(3rem, 8vh, 4.5rem);
+  animation: kg-fade 0.5s ease both;
+}
+.login-wrap h1 { font-family: var(--font-heading); font-weight: 500; font-size: 1.9rem; margin: 0 0 0.5rem; text-align: center; }
+.login-wrap > p.sub { color: var(--text-body); font-size: 0.96rem; text-align: center; margin: 0 0 2rem; }
+.login-card {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  background: #fff;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-card);
+  padding: 1.75rem;
+}
+.login-card label { font-size: 0.85rem; color: var(--text-body); display: block; }
+.login-card input[type="email"],
+.login-card input[type="password"],
+.login-card input[type="text"] {
+  display: block;
+  width: 100%;
+  margin-top: 0.4rem;
+  padding: 0.7rem 0.9rem;
+  border: 1px solid var(--border-3);
+  border-radius: var(--radius-small);
+  font-size: 0.95rem;
+  font-family: var(--font-body);
+  box-sizing: border-box;
+}
+.login-card button,
+.login-card input[type="submit"] {
+  background: var(--primary);
+  color: #fff;
+  padding: 0.8rem;
+  border-radius: var(--radius-pill);
+  font-size: 0.95rem;
+  font-weight: 600;
+  border: none;
+  cursor: pointer;
+  margin-top: 0.5rem;
+  transition: background 0.25s ease, transform 0.25s ease;
+  width: 100%;
+  font-family: var(--font-body);
+}
+.login-card button:hover,
+.login-card input[type="submit"]:hover { background: var(--primary-hover); transform: translateY(-2px); }
+.login-card .hint { font-size: 0.82rem; color: var(--muted); text-align: center; margin: 0.25rem 0 0; }
+.login-footer-note { text-align: center; font-size: 0.9rem; color: var(--text-body); margin-top: 1.5rem; }
+.login-footer-note a { color: var(--primary); font-weight: 600; }
+
+/* honeypot field - visually hidden but present for bots */
+.kg-hp-field { position: absolute !important; left: -9999px !important; top: -9999px !important; width: 1px; height: 1px; overflow: hidden; }
+
+/* ==========================================================================
+   Account
+   ========================================================================== */
+.account-hero p.lede { max-width: 44ch; margin-bottom: 2rem; }
+
+/* ==========================================================================
+   Resource placeholder pages
+   ========================================================================== */
+.resource-hero {
+  padding: clamp(5rem, 14vh, 8rem) 0 clamp(4rem, 12vh, 6rem);
+  animation: kg-fade 0.5s ease both;
+  text-align: center;
+}
+.resource-hero h1 {
+  font-family: var(--font-heading);
+  font-weight: 500;
+  font-size: clamp(2.2rem, 1.9rem + 2vw, 3.2rem);
+  line-height: 1.1;
+  margin: 0 0 1rem;
+}
+.resource-hero p { font-size: 1.1rem; line-height: 1.6; color: var(--text-body); max-width: 44ch; margin: 0 auto; }
+
+/* ==========================================================================
+   Contact closing block
+   ========================================================================== */
+.contact-closing {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 2.5rem;
+  align-items: center;
+}
+.contact-closing h2 { font-family: var(--font-heading); font-weight: 500; font-size: 1.7rem; margin: 0 0 1rem; }
+@media (max-width: 760px) {
+  .contact-closing { grid-template-columns: 1fr; }
+  .hero, .hero--tight { grid-template-columns: 1fr; }
+}
+
+/* ==========================================================================
+   Footer
+   ========================================================================== */
+.site-footer {
+  border-top: 1px solid var(--border);
+  margin-top: 1rem;
+  background: linear-gradient(180deg, var(--bg), var(--header-bg) 40%);
+  backdrop-filter: blur(10px);
+}
+.site-footer__inner { padding: clamp(2.5rem, 6vh, 3.5rem) 0 2.5rem; }
+.site-footer__top {
+  display: flex;
+  justify-content: space-between;
+  gap: 2rem;
+  flex-wrap: wrap;
+  margin-bottom: 2rem;
+}
+.site-footer__logo img { height: 46px; width: auto; display: block; }
+.site-footer__links {
+  display: flex;
+  gap: 1.5rem;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  flex-wrap: wrap;
+}
+.site-footer__links a { color: var(--text-body); font-size: 0.9rem; transition: color 0.25s ease; }
+.site-footer__links a:hover { color: var(--primary); }
+.site-footer__disclosure {
+  font-size: 0.78rem;
+  line-height: 1.6;
+  color: var(--text-body);
+  max-width: 100%;
+  border-top: 1px dashed var(--border-2);
+  padding-top: 1.5rem;
+  margin: 0;
+}
+.site-footer__disclosure strong { color: var(--text-heading); }
+
+/* ==========================================================================
+   Login form overrides — themes WordPress core's own login form markup
+   (wp_login_form(), rendered on the theme's Login page template) to match
+   .login-card in the design. Paid Memberships Pro doesn't replace this
+   form, so no plugin-specific selectors are needed here.
+   ========================================================================== */
+.kg-login-form-wrap {
+  font-family: var(--font-body);
+}
+.kg-login-form-wrap form {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  background: #fff;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-card);
+  padding: 1.75rem;
+}
+.kg-login-form-wrap p { margin: 0; }
+.kg-login-form-wrap label {
+  font-size: 0.85rem;
+  color: var(--text-body);
+}
+.kg-login-form-wrap input[type="text"],
+.kg-login-form-wrap input[type="email"],
+.kg-login-form-wrap input[type="password"] {
+  display: block;
+  width: 100%;
+  margin-top: 0.4rem;
+  padding: 0.7rem 0.9rem;
+  border: 1px solid var(--border-3);
+  border-radius: var(--radius-small);
+  font-size: 0.95rem;
+  font-family: var(--font-body);
+  box-sizing: border-box;
+}
+.kg-login-form-wrap .login-submit input[type="submit"] {
+  background: var(--primary);
+  color: #fff;
+  padding: 0.8rem;
+  border-radius: var(--radius-pill);
+  font-size: 0.95rem;
+  font-weight: 600;
+  border: none;
+  cursor: pointer;
+  margin-top: 0.5rem;
+  transition: background 0.25s ease, transform 0.25s ease;
+  width: 100%;
+}
+.kg-login-form-wrap .login-submit input[type="submit"]:hover { background: var(--primary-hover); transform: translateY(-2px); }
+
+/* ==========================================================================
+   Utility
+   ========================================================================== */
+.visually-hidden { position: absolute !important; width: 1px; height: 1px; overflow: hidden; clip: rect(1px,1px,1px,1px); white-space: nowrap; }

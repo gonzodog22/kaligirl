@@ -11,52 +11,61 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="">
   <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600&amp;family=Inter:wght@400;500;600;700&amp;display=swap" rel="stylesheet">
+  <script src="./image-slot.js"></script>
   <style>
     body { margin: 0; -webkit-font-smoothing: antialiased; }
     a { text-decoration: none; }
     * { box-sizing: border-box; }
     @keyframes kg-fade { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: translateY(0); } }
+    @keyframes kg-dropdown-pop { from { opacity: 0; transform: translateY(-10px) scale(0.96); } to { opacity: 1; transform: translateY(0) scale(1); } }
   </style>
 </helmet>
 
-<div style="font-family:'Inter',-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;color:#1b2333;background:#f8f9fb;min-height:100vh;">
+<div style="font-family:'Inter',-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;color:{{ textColor }};background:{{ pageBg }};min-height:100vh;">
 
   <!-- HEADER -->
-  <header style="position:sticky;top:0;z-index:50;background:rgba(248,249,251,0.92);backdrop-filter:blur(10px);border-bottom:1px solid #e1e5ec;">
+  <header style="position:sticky;top:0;z-index:50;background:{{ headerBg }};backdrop-filter:blur(10px);border-bottom:1px solid #e1e5ec;">
     <div style="max-width:100rem;margin:0 auto;padding:0 clamp(1.25rem,5vw,3rem);display:flex;align-items:center;justify-content:space-between;gap:2.5rem;height:108px;">
       <div style="display:flex;align-items:center;gap:3rem;">
         <a href="#" onClick="{{ goHome }}" style="display:flex;align-items:center;">
           <img src="assets/kaligirl-logo.png" alt="Kali Girl Financial Services" style="height:68px;width:auto;display:block;">
         </a>
+        <sc-if value="{{ showDesktopNav }}" hint-placeholder-val="{{ true }}">
         <sc-if value="{{ isLoggedOut }}" hint-placeholder-val="{{ true }}">
           <nav aria-label="Primary" style="display:flex;align-items:center;gap:2.5rem;">
-            <a href="#" onClick="{{ goServices }}" style="color:{{ servicesColor }};font-size:1.2rem;font-weight:500;display:inline-block;padding-bottom:4px;border-bottom:{{ servicesUnderline }};transition:color 0.25s ease,transform 0.25s ease;" style-hover="color:#5b8fd6 !important;transform:translateY(-2px) !important;">Services</a>
-            <a href="#" onClick="{{ goAbout }}" style="color:{{ aboutColor }};font-size:1.2rem;font-weight:500;display:inline-block;padding-bottom:4px;border-bottom:{{ aboutUnderline }};transition:color 0.25s ease,transform 0.25s ease;" style-hover="color:#5b8fd6 !important;transform:translateY(-2px) !important;">About</a>
-            <a href="#" onClick="{{ goContact }}" style="color:{{ contactColor }};font-size:1.2rem;font-weight:500;display:inline-block;padding-bottom:4px;border-bottom:{{ contactUnderline }};transition:color 0.25s ease,transform 0.25s ease;" style-hover="color:#5b8fd6 !important;transform:translateY(-2px) !important;">Contact</a>
+            <div style="position:relative;display:flex;align-items:center;padding-bottom:24px;margin-bottom:-24px;" onMouseEnter="{{ openServicesMenu }}" onMouseLeave="{{ closeServicesMenu }}">
+              <a href="#" onClick="{{ goServices }}" style="color:{{ servicesColor }};font-size:1.2rem;font-weight:500;display:inline-block;padding-bottom:4px;border-bottom:{{ servicesUnderline }};transition:color 0.25s ease,transform 0.25s ease;" style-hover="color:{{ accentColor }} !important;transform:translateY(-2px) !important;">Services</a>
+            </div>
+            <div style="position:relative;display:flex;align-items:center;padding-bottom:24px;margin-bottom:-24px;" onMouseEnter="{{ openResourcesMegaMenu }}" onMouseLeave="{{ closeResourcesMegaMenu }}">
+              <a href="#" onClick="{{ goPublicResources }}" style="color:{{ publicResourcesColor }};font-size:1.2rem;font-weight:500;display:inline-block;padding-bottom:4px;border-bottom:{{ publicResourcesUnderline }};transition:color 0.25s ease,transform 0.25s ease;" style-hover="color:{{ accentColor }} !important;transform:translateY(-2px) !important;">Resources</a>
+            </div>
+            <a href="#" onClick="{{ goAbout }}" style="color:{{ aboutColor }};font-size:1.2rem;font-weight:500;display:inline-block;padding-bottom:4px;border-bottom:{{ aboutUnderline }};transition:color 0.25s ease,transform 0.25s ease;" style-hover="color:{{ accentColor }} !important;transform:translateY(-2px) !important;">About</a>
+            <a href="#" onClick="{{ goContact }}" style="color:{{ contactColor }};font-size:1.2rem;font-weight:500;display:inline-block;padding-bottom:4px;border-bottom:{{ contactUnderline }};transition:color 0.25s ease,transform 0.25s ease;" style-hover="color:{{ accentColor }} !important;transform:translateY(-2px) !important;">Contact</a>
           </nav>
+        </sc-if>
         </sc-if>
       </div>
 
       <sc-if value="{{ showDesktopNav }}" hint-placeholder-val="{{ true }}">
         <sc-if value="{{ isLoggedOut }}" hint-placeholder-val="{{ true }}">
           <nav aria-label="Account" style="display:flex;align-items:center;gap:1.5rem;">
-            <a href="#" onClick="{{ goLogin }}" style="color:{{ loginColor }};font-size:1.2rem;font-weight:500;display:inline-block;transition:color 0.25s ease,transform 0.25s ease;" style-hover="color:#5b8fd6 !important;transform:translateY(-2px) !important;">Login</a>
-            <a href="#" onClick="{{ goGetStarted }}" style="background:#2c3e63;color:#fff;padding:0.85rem 1.8rem;border-radius:100px;font-size:1.1rem;font-weight:600;transition:background 0.25s ease,transform 0.25s ease;" style-hover="background:#8fb3e8 !important; transform:translateY(-2px) !important;">Get started</a>
+            <a href="#" onClick="{{ goLogin }}" style="color:{{ loginColor }};font-size:1.2rem;font-weight:500;display:inline-block;transition:color 0.25s ease,transform 0.25s ease;" style-hover="color:{{ accentColor }} !important;transform:translateY(-2px) !important;">Login</a>
+            <a href="#" onClick="{{ goGetStarted }}" style="background:{{ primaryColor }};color:#fff;padding:0.85rem 1.8rem;border-radius:100px;font-size:1.1rem;font-weight:600;transition:background 0.25s ease,transform 0.25s ease;" style-hover="background:{{ primaryHoverColor }} !important; transform:translateY(-2px) !important;">Get started</a>
           </nav>
         </sc-if>
         <sc-if value="{{ isLoggedIn }}" hint-placeholder-val="{{ false }}">
           <nav aria-label="Account" style="display:flex;align-items:center;gap:1.5rem;">
-            <a href="#" onClick="{{ goAccount }}" style="color:{{ accountColor }};font-size:1.2rem;font-weight:500;line-height:1;display:inline-flex;align-items:center;padding-bottom:4px;border-bottom:{{ accountUnderline }};transition:color 0.25s ease,transform 0.25s ease;" style-hover="color:#5b8fd6 !important;transform:translateY(-2px) !important;">Account</a>
+            <a href="#" onClick="{{ goAccount }}" style="color:{{ accountColor }};font-size:1.2rem;font-weight:500;line-height:1;display:inline-flex;align-items:center;padding-bottom:4px;border-bottom:{{ accountUnderline }};transition:color 0.25s ease,transform 0.25s ease;" style-hover="color:{{ accentColor }} !important;transform:translateY(-2px) !important;">Account</a>
             <div style="position:relative;display:flex;align-items:center;">
-              <button onClick="{{ toggleResourcesMenu }}" style="display:inline-flex;align-items:center;gap:0.4rem;background:none;border:none;cursor:pointer;color:#1b2333;font-size:1.2rem;font-weight:500;line-height:1;font-family:'Inter',sans-serif;padding:0 0 4px;border-bottom:2px solid transparent;">
+              <button onClick="{{ toggleResourcesMenu }}" style="display:inline-flex;align-items:center;gap:0.4rem;background:none;border:none;cursor:pointer;color:{{ textColor }};font-size:1.2rem;font-weight:500;line-height:1;font-family:'Inter',sans-serif;padding:0 0 4px;border-bottom:2px solid transparent;">
                 Resources
-                <span style="width:0;height:0;border-left:5px solid transparent;border-right:5px solid transparent;border-top:6px solid #1b2333;display:inline-block;flex:none;transition:transform 0.2s ease;transform:{{ resourcesArrowTransform }};"></span>
+                <span style="width:0;height:0;border-left:5px solid transparent;border-right:5px solid transparent;border-top:6px solid {{ textColor }};display:inline-block;flex:none;transition:transform 0.2s ease;transform:{{ resourcesArrowTransform }};"></span>
               </button>
               <sc-if value="{{ resourcesMenuOpen }}" hint-placeholder-val="{{ false }}">
-                <div style="position:absolute;top:calc(100% + 12px);right:0;background:#fff;border:1px solid #e6e9ef;border-radius:12px;box-shadow:0 16px 32px rgba(28,40,66,0.14);padding:0.5rem;min-width:11rem;display:flex;flex-direction:column;gap:0.15rem;">
-                  <a href="#" onClick="{{ goLibrary }}" style="color:#1b2333;font-size:0.98rem;font-weight:500;padding:0.65rem 0.85rem;border-radius:8px;transition:background 0.2s ease;" style-hover="background:#eef4fc !important;">Library</a>
-                  <a href="#" onClick="{{ goLessons }}" style="color:#1b2333;font-size:0.98rem;font-weight:500;padding:0.65rem 0.85rem;border-radius:8px;transition:background 0.2s ease;" style-hover="background:#eef4fc !important;">Lessons</a>
-                  <a href="#" onClick="{{ goTools }}" style="color:#1b2333;font-size:0.98rem;font-weight:500;padding:0.65rem 0.85rem;border-radius:8px;transition:background 0.2s ease;" style-hover="background:#eef4fc !important;">Tools</a>
+                <div style="position:absolute;top:calc(100% + 12px);right:0;transform-origin:top right;background:{{ cardBg }};border:1px solid {{ cardBorder }};border-radius:12px;box-shadow:0 16px 32px rgba(28,40,66,0.14);padding:0.5rem;min-width:11rem;display:flex;flex-direction:column;gap:0.15rem;animation:kg-dropdown-pop 0.22s cubic-bezier(.2,.8,.2,1) both;">
+                  <a href="#" onClick="{{ goLibrary }}" style="color:{{ textColor }};font-size:0.98rem;font-weight:500;padding:0.65rem 0.85rem;border-radius:8px;transition:background 0.2s ease;" style-hover="background:{{ accentSoftColor }} !important;">Library</a>
+                  <a href="#" onClick="{{ goLessons }}" style="color:{{ textColor }};font-size:0.98rem;font-weight:500;padding:0.65rem 0.85rem;border-radius:8px;transition:background 0.2s ease;" style-hover="background:{{ accentSoftColor }} !important;">Lessons</a>
+                  <a href="#" onClick="{{ goTools }}" style="color:{{ textColor }};font-size:0.98rem;font-weight:500;padding:0.65rem 0.85rem;border-radius:8px;transition:background 0.2s ease;" style-hover="background:{{ accentSoftColor }} !important;">Tools</a>
                 </div>
               </sc-if>
             </div>
@@ -66,29 +75,96 @@
 
       <sc-if value="{{ showMobileToggle }}" hint-placeholder-val="{{ false }}">
         <button onClick="{{ toggleMenu }}" aria-label="Menu" style="background:none;border:none;display:flex;flex-direction:column;gap:5px;padding:8px;cursor:pointer;">
-          <span style="width:26px;height:2.5px;background:#1b2333;display:block;"></span>
-          <span style="width:26px;height:2.5px;background:#1b2333;display:block;"></span>
-          <span style="width:16px;height:2.5px;background:#1b2333;display:block;align-self:flex-end;"></span>
+          <span style="width:26px;height:2.5px;background:{{ textColor }};display:block;"></span>
+          <span style="width:26px;height:2.5px;background:{{ textColor }};display:block;"></span>
+          <span style="width:16px;height:2.5px;background:{{ textColor }};display:block;align-self:flex-end;"></span>
         </button>
       </sc-if>
     </div>
+
+    <sc-if value="{{ servicesMenuOpen }}" hint-placeholder-val="{{ false }}">
+    <div onMouseEnter="{{ openServicesMenu }}" onMouseLeave="{{ closeServicesMenu }}" style="position:absolute;top:100%;left:clamp(1.25rem,5vw,3rem);transform-origin:top left;background:{{ cardBg }};border:1px solid {{ cardBorder }};border-top:2px solid {{ accentColor }};border-radius:0 0 16px 16px;box-shadow:0 24px 48px rgba(28,40,66,0.16);animation:kg-dropdown-pop 0.22s cubic-bezier(.2,.8,.2,1) both;">
+        <div style="padding:2.5rem;display:grid;grid-template-columns:auto auto auto;gap:3rem;">
+          <div style="width:15rem;">
+            <div style="width:100%;height:6.5rem;border-radius:10px;overflow:hidden;margin-bottom:0.85rem;">
+              <image-slot id="svcmenu-personal" shape="rect" placeholder="Personal image"></image-slot>
+            </div>
+            <p style="font-size:0.78rem;text-transform:uppercase;letter-spacing:0.14em;color:#8891a0;font-weight:600;margin:0 0 1.25rem;">Personal</p>
+            <a href="#" onClick="{{ goPersonalConsulting }}" style="display:block;color:{{ textColor }};font-size:1.1rem;font-weight:500;font-family:'Fraunces',Georgia,serif;margin-bottom:1rem;transition:color 0.2s ease;" style-hover="color:{{ accentColor }} !important;">Personal Financial Consulting</a>
+            <a href="#" onClick="{{ goPersonalConsulting }}" style="display:block;color:{{ mutedText }};font-size:0.98rem;margin-bottom:0.75rem;transition:color 0.2s ease;" style-hover="color:{{ primaryColor }} !important;">Financial planning</a>
+            <a href="#" onClick="{{ goPersonalConsulting }}" style="display:block;color:{{ mutedText }};font-size:0.98rem;margin-bottom:0.75rem;transition:color 0.2s ease;" style-hover="color:{{ primaryColor }} !important;">Investment guidance</a>
+            <a href="#" onClick="{{ goPersonalConsulting }}" style="display:block;color:{{ mutedText }};font-size:0.98rem;margin-bottom:0.75rem;transition:color 0.2s ease;" style-hover="color:{{ primaryColor }} !important;">Financial decisions</a>
+          </div>
+          <div style="width:15rem;">
+            <div style="width:100%;height:6.5rem;border-radius:10px;overflow:hidden;margin-bottom:0.85rem;">
+              <image-slot id="svcmenu-business" shape="rect" placeholder="Business image"></image-slot>
+            </div>
+            <p style="font-size:0.78rem;text-transform:uppercase;letter-spacing:0.14em;color:#8891a0;font-weight:600;margin:0 0 1.25rem;">Business</p>
+            <a href="#" onClick="{{ goBusinessConsulting }}" style="display:block;color:{{ textColor }};font-size:1.1rem;font-weight:500;font-family:'Fraunces',Georgia,serif;margin-bottom:1rem;transition:color 0.2s ease;" style-hover="color:{{ accentColor }} !important;">Business Operations Consulting</a>
+            <a href="#" onClick="{{ goBusinessConsulting }}" style="display:block;color:{{ mutedText }};font-size:0.98rem;margin-bottom:0.75rem;transition:color 0.2s ease;" style-hover="color:{{ primaryColor }} !important;">Financial operations</a>
+            <a href="#" onClick="{{ goBusinessConsulting }}" style="display:block;color:{{ mutedText }};font-size:0.98rem;margin-bottom:0.75rem;transition:color 0.2s ease;" style-hover="color:{{ primaryColor }} !important;">Fractional CFO</a>
+          </div>
+          <div style="width:18rem;border-left:1px solid #e6e9ef;padding-left:2.5rem;">
+            <p style="font-size:0.78rem;text-transform:uppercase;letter-spacing:0.14em;color:#8891a0;font-weight:600;margin:0 0 1.25rem;">Not sure where to begin?</p>
+            <div style="background:#f8f9fb;border:1px solid {{ cardBorder }};border-radius:14px;padding:1.75rem;display:flex;flex-direction:column;gap:1.25rem;transition:box-shadow 0.25s ease,transform 0.25s ease;" style-hover="box-shadow:0 12px 24px rgba(44,62,99,0.12) !important; transform:translateY(-3px) !important;">
+              <h3 style="font-family:'Fraunces',Georgia,serif;font-weight:500;font-size:1.15rem;line-height:1.4;margin:0;color:{{ textColor }};">Book a no obligation conversation to get started</h3>
+              <a href="#" onClick="{{ goGetStarted }}" style="background:{{ primaryColor }};color:#fff;padding:0.7rem 1.4rem;border-radius:100px;font-size:0.9rem;font-weight:600;display:inline-block;align-self:flex-start;transition:background 0.25s ease;" style-hover="background:{{ primaryHoverColor }} !important;">Book now</a>
+            </div>
+          </div>
+        </div>
+      </div>
+    </sc-if>
+
+    <sc-if value="{{ resourcesMegaMenuOpen }}" hint-placeholder-val="{{ false }}">
+    <div onMouseEnter="{{ openResourcesMegaMenu }}" onMouseLeave="{{ closeResourcesMegaMenu }}" style="position:absolute;top:100%;left:clamp(1.25rem,5vw,3rem);transform-origin:top left;background:{{ cardBg }};border:1px solid {{ cardBorder }};border-top:2px solid {{ accentColor }};border-radius:0 0 16px 16px;box-shadow:0 24px 48px rgba(28,40,66,0.16);animation:kg-dropdown-pop 0.22s cubic-bezier(.2,.8,.2,1) both;">
+        <div style="padding:2.5rem;">
+          <p style="font-size:0.78rem;text-transform:uppercase;letter-spacing:0.14em;color:#8891a0;font-weight:600;margin:0 0 1.5rem;">Financial resources</p>
+          <div style="display:grid;grid-template-columns:auto auto auto;gap:3rem;">
+            <div style="width:15rem;">
+              <div style="width:100%;height:6.5rem;border-radius:10px;overflow:hidden;margin-bottom:0.85rem;">
+                <image-slot id="resmenu-articles" shape="rect" placeholder="Articles image"></image-slot>
+              </div>
+              <a href="#" onClick="{{ goPublicResources }}" style="display:block;color:{{ textColor }};font-size:1.1rem;font-weight:500;font-family:'Fraunces',Georgia,serif;margin-bottom:1rem;transition:color 0.2s ease;" style-hover="color:{{ accentColor }} !important;">Articles</a>
+              <p style="color:{{ mutedText }};font-size:0.92rem;line-height:1.5;margin:0;">Practical articles on planning, investing, and running a small business.</p>
+            </div>
+            <div style="width:15rem;">
+              <div style="width:100%;height:6.5rem;border-radius:10px;overflow:hidden;margin-bottom:0.85rem;">
+                <image-slot id="resmenu-videos" shape="rect" placeholder="Videos image"></image-slot>
+              </div>
+              <a href="#" onClick="{{ goPublicResources }}" style="display:block;color:{{ textColor }};font-size:1.1rem;font-weight:500;font-family:'Fraunces',Georgia,serif;margin-bottom:1rem;transition:color 0.2s ease;" style-hover="color:{{ accentColor }} !important;">Videos</a>
+              <p style="color:{{ mutedText }};font-size:0.92rem;line-height:1.5;margin:0;">Short explainers on financial topics, no jargon required.</p>
+            </div>
+            <div style="width:15rem;">
+              <div style="width:100%;height:6.5rem;border-radius:10px;overflow:hidden;margin-bottom:0.85rem;">
+                <image-slot id="resmenu-calculators" shape="rect" placeholder="Calculators image"></image-slot>
+              </div>
+              <a href="#" onClick="{{ goPublicResources }}" style="display:block;color:{{ textColor }};font-size:1.1rem;font-weight:500;font-family:'Fraunces',Georgia,serif;margin-bottom:1rem;transition:color 0.2s ease;" style-hover="color:{{ accentColor }} !important;">Calculators</a>
+              <p style="color:{{ mutedText }};font-size:0.92rem;line-height:1.5;margin:0;">Simple tools to estimate savings, budgets, and business cash flow.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </sc-if>
 
     <sc-if value="{{ mobileMenuOpen }}" hint-placeholder-val="{{ false }}">
       <div style="display:flex;flex-direction:column;padding:0.5rem clamp(1.25rem,5vw,3rem) 1.5rem;gap:1.1rem;border-top:1px solid #e1e5ec;">
         <sc-if value="{{ isLoggedOut }}" hint-placeholder-val="{{ true }}">
           <a href="#" onClick="{{ goServices }}" style="color:{{ servicesColor }};font-size:1rem;font-weight:500;">Services</a>
+          <a href="#" onClick="{{ goPersonalConsulting }}" style="color:{{ mutedText }};font-size:0.9rem;font-weight:500;padding-left:0.75rem;">— Personal Financial Consulting</a>
+          <a href="#" onClick="{{ goBusinessConsulting }}" style="color:{{ mutedText }};font-size:0.9rem;font-weight:500;padding-left:0.75rem;">— Business Operations Consulting</a>
+          <a href="#" onClick="{{ goPublicResources }}" style="color:{{ publicResourcesColor }};font-size:1rem;font-weight:500;">Resources</a>
           <a href="#" onClick="{{ goAbout }}" style="color:{{ aboutColor }};font-size:1rem;font-weight:500;">About</a>
           <a href="#" onClick="{{ goContact }}" style="color:{{ contactColor }};font-size:1rem;font-weight:500;">Contact</a>
         </sc-if>
         <sc-if value="{{ isLoggedIn }}" hint-placeholder-val="{{ false }}">
           <a href="#" onClick="{{ goAccount }}" style="color:{{ accountColor }};font-size:1rem;font-weight:500;">Account</a>
-          <a href="#" onClick="{{ goLibrary }}" style="color:#1b2333;font-size:1rem;font-weight:500;">Library</a>
-          <a href="#" onClick="{{ goLessons }}" style="color:#1b2333;font-size:1rem;font-weight:500;">Lessons</a>
-          <a href="#" onClick="{{ goTools }}" style="color:#1b2333;font-size:1rem;font-weight:500;">Tools</a>
+          <a href="#" onClick="{{ goLibrary }}" style="color:{{ textColor }};font-size:1rem;font-weight:500;">Library</a>
+          <a href="#" onClick="{{ goLessons }}" style="color:{{ textColor }};font-size:1rem;font-weight:500;">Lessons</a>
+          <a href="#" onClick="{{ goTools }}" style="color:{{ textColor }};font-size:1rem;font-weight:500;">Tools</a>
         </sc-if>
         <sc-if value="{{ isLoggedOut }}" hint-placeholder-val="{{ false }}">
-          <a href="#" onClick="{{ goLogin }}" style="color:{{ loginColor }};font-size:1rem;font-weight:500;transition:color 0.25s ease;" style-hover="color:#5b8fd6 !important;">Login</a>
-          <a href="#" onClick="{{ goGetStarted }}" style="background:#2c3e63;color:#fff;padding:0.75rem 1.4rem;border-radius:100px;font-size:0.95rem;font-weight:600;text-align:center;transition:background 0.25s ease,transform 0.25s ease;" style-hover="background:#8fb3e8 !important; transform:translateY(-2px) !important;">Get started</a>
+          <a href="#" onClick="{{ goLogin }}" style="color:{{ loginColor }};font-size:1rem;font-weight:500;transition:color 0.25s ease;" style-hover="color:{{ accentColor }} !important;">Login</a>
+          <a href="#" onClick="{{ goGetStarted }}" style="background:{{ primaryColor }};color:#fff;padding:0.75rem 1.4rem;border-radius:100px;font-size:0.95rem;font-weight:600;text-align:center;transition:background 0.25s ease,transform 0.25s ease;" style-hover="background:{{ primaryHoverColor }} !important; transform:translateY(-2px) !important;">Get started</a>
         </sc-if>
       </div>
     </sc-if>
@@ -97,82 +173,84 @@
   <!-- ============ HOME ============ -->
   <sc-if value="{{ isHome }}" hint-placeholder-val="{{ true }}">
     <main data-screen-label="Home" key="{{ animKey }}">
-      <section style="max-width:100rem;margin:0 auto;padding:clamp(4.5rem,12vh,7rem) clamp(1.25rem,5vw,3rem) clamp(3rem,8vh,4.5rem);animation:kg-fade 0.5s ease both;display:grid;grid-template-columns:1.1fr 0.9fr;gap:clamp(2rem,5vw,4rem);align-items:center;">
+      <section style="background:radial-gradient(ellipse 90% 100% at 20% 0%,{{ accentSoftColor }},{{ pageBg }} 100%);">
+      <div style="max-width:100rem;margin:0 auto;padding:clamp(4.5rem,12vh,7rem) clamp(1.25rem,5vw,3rem) clamp(3rem,8vh,4.5rem);animation:kg-fade 0.5s ease both;display:grid;grid-template-columns:1.1fr 0.9fr;gap:clamp(2rem,5vw,4rem);align-items:center;">
         <div>
-          <p style="font-size:0.82rem;text-transform:uppercase;letter-spacing:0.16em;color:#5b8fd6;font-weight:600;display:flex;align-items:center;gap:0.75rem;margin:0 0 1.25rem;"><span style="width:1.75rem;height:1px;background:#5b8fd6;display:inline-block;"></span>Financial services & fractional CFO · California</p>
+          <p style="font-size:0.82rem;text-transform:uppercase;letter-spacing:0.16em;color:{{ accentColor }};font-weight:600;display:flex;align-items:center;gap:0.75rem;margin:0 0 1.25rem;"><span style="width:1.75rem;height:1px;background:{{ accentColor }};display:inline-block;"></span>Financial services & fractional CFO · California</p>
           <h1 style="font-family:'Fraunces',Georgia,serif;font-weight:500;font-size:clamp(3rem,2.4rem+4vw,5.5rem);line-height:1.08;letter-spacing:-0.01em;max-width:20ch;margin:0 0 1.5rem;">Financial advice that answers to you, and only you.</h1>
-          <p style="font-size:1.4rem;line-height:1.6;color:#5b6472;max-width:46ch;margin:0 0 2.25rem;">Independent, fee-based advice held to a fiduciary standard — no product sales, no hidden incentives.</p>
+          <p style="font-size:1.4rem;line-height:1.6;color:{{ mutedText }};max-width:46ch;margin:0 0 2.25rem;">Independent, fee-based advice held to a fiduciary standard — no product sales, no hidden incentives.</p>
           <div style="display:flex;gap:1rem;flex-wrap:wrap;">
-            <a href="#" onClick="{{ goGetStarted }}" style="background:#2c3e63;color:#fff;padding:0.85rem 1.6rem;border-radius:100px;font-size:0.95rem;font-weight:600;transition:background 0.25s ease,transform 0.25s ease;" style-hover="background:#8fb3e8 !important; transform:translateY(-2px) !important;">Book an introduction</a>
-            <a href="#" onClick="{{ goServices }}" style="border:1px solid #c7cedb;color:#2c3e63;padding:0.85rem 1.6rem;border-radius:100px;font-size:0.95rem;font-weight:600;transition:background 0.25s ease,border-color 0.25s ease;" style-hover="background:#eef4fc !important; border-color:#5b8fd6 !important;">See how we work</a>
+            <a href="#" onClick="{{ goGetStarted }}" style="background:{{ primaryColor }};color:#fff;padding:0.85rem 1.6rem;border-radius:100px;font-size:0.95rem;font-weight:600;transition:background 0.25s ease,transform 0.25s ease;" style-hover="background:{{ primaryHoverColor }} !important; transform:translateY(-2px) !important;">Book an introduction</a>
+            <a href="#" onClick="{{ goServices }}" style="border:1px solid #c7cedb;color:{{ primaryColor }};padding:0.85rem 1.6rem;border-radius:100px;font-size:0.95rem;font-weight:600;transition:background 0.25s ease,border-color 0.25s ease;" style-hover="background:{{ accentSoftColor }} !important; border-color:{{ accentColor }} !important;">See how we work</a>
           </div>
         </div>
         <div style="aspect-ratio:4/5;border-radius:20px;border:1px solid #dde2ea;background:repeating-linear-gradient(45deg,#eef1f7,#eef1f7 12px,#e4e8f0 12px,#e4e8f0 24px);display:flex;align-items:center;justify-content:center;">
           <span style="font-family:ui-monospace,Menlo,monospace;font-size:0.78rem;color:#8891a0;letter-spacing:0.02em;">advisor portrait</span>
         </div>
+      </div>
       </section>
 
-      <section style="border-top:1px solid #e6e9ef;">
+      <section style="border-top:1px solid {{ cardBorder }};">
         <div style="max-width:100rem;margin:0 auto;padding:clamp(3.5rem,9vh,5.5rem) clamp(1.25rem,5vw,3rem);">
           <div style="max-width:46ch;margin-bottom:3rem;">
-            <p style="font-size:0.82rem;text-transform:uppercase;letter-spacing:0.16em;color:#5b8fd6;font-weight:600;margin:0 0 1rem;">The standard we hold</p>
+            <p style="font-size:0.82rem;text-transform:uppercase;letter-spacing:0.16em;color:{{ accentColor }};font-weight:600;margin:0 0 1rem;">The standard we hold</p>
             <h2 style="font-family:'Fraunces',Georgia,serif;font-weight:500;font-size:clamp(2.1rem,1.7rem+2vw,3.4rem);line-height:1.15;margin:0 0 1rem;">A fiduciary is legally bound to put your interests first.</h2>
-            <p style="color:#5b6472;font-size:1.15rem;line-height:1.65;margin:0;">Not every financial professional is. Here's what our obligation looks like in practice.</p>
+            <p style="color:{{ mutedText }};font-size:1.15rem;line-height:1.65;margin:0;">Not every financial professional is. Here's what our obligation looks like in practice.</p>
           </div>
           <div style="display:grid;gap:0;">
             <sc-for list="{{ principlesHome }}" as="p" hint-placeholder-count="3">
-              <div style="display:grid;grid-template-columns:3rem 1fr;gap:1.5rem;padding-block:1.75rem;border-top:1px solid #e6e9ef;">
-                <span style="font-family:'Fraunces',Georgia,serif;color:#5b8fd6;font-size:1.3rem;">{{ p.n }}</span>
+              <div style="display:grid;grid-template-columns:3rem 1fr;gap:1.5rem;padding-block:1.75rem;border-top:1px solid {{ cardBorder }};">
+                <span style="font-family:'Fraunces',Georgia,serif;color:{{ accentColor }};font-size:1.3rem;">{{ p.n }}</span>
                 <div>
                   <h3 style="font-family:'Fraunces',Georgia,serif;font-weight:500;font-size:1.35rem;margin:0 0 0.4rem;">{{ p.title }}</h3>
-                  <p style="color:#5b6472;font-size:1.05rem;line-height:1.6;margin:0;">{{ p.body }}</p>
+                  <p style="color:{{ mutedText }};font-size:1.05rem;line-height:1.6;margin:0;">{{ p.body }}</p>
                 </div>
               </div>
             </sc-for>
-            <div style="border-top:1px solid #e6e9ef;"></div>
+            <div style="border-top:1px solid {{ cardBorder }};"></div>
           </div>
         </div>
       </section>
 
-      <section style="border-top:1px solid #e6e9ef;background:linear-gradient(180deg,#eef4fc,#f8f9fb);">
+      <section style="border-top:1px solid {{ cardBorder }};background:linear-gradient(180deg,{{ accentSoftColor }},{{ pageBg }});">
         <div style="max-width:100rem;margin:0 auto;padding:clamp(3.5rem,9vh,5.5rem) clamp(1.25rem,5vw,3rem);">
           <div style="display:flex;justify-content:space-between;align-items:flex-end;gap:2rem;flex-wrap:wrap;margin-bottom:3rem;">
             <div style="max-width:46ch;">
-              <p style="font-size:0.82rem;text-transform:uppercase;letter-spacing:0.16em;color:#5b8fd6;font-weight:600;margin:0 0 1rem;">How we help</p>
+              <p style="font-size:0.82rem;text-transform:uppercase;letter-spacing:0.16em;color:{{ accentColor }};font-weight:600;margin:0 0 1rem;">How we help</p>
               <h2 style="font-family:'Fraunces',Georgia,serif;font-weight:500;font-size:clamp(2.1rem,1.7rem+2vw,3.4rem);line-height:1.15;margin:0;">Guidance for the decisions that matter most.</h2>
             </div>
             <div style="display:flex;align-items:flex-end;gap:6px;height:56px;flex:none;">
               <div style="width:14px;height:38%;background:#a8c5e8;border-radius:4px;"></div>
               <div style="width:14px;height:62%;background:#6f9bd6;border-radius:4px;"></div>
-              <div style="width:14px;height:100%;background:#2c3e63;border-radius:4px;"></div>
+              <div style="width:14px;height:100%;background:{{ primaryColor }};border-radius:4px;"></div>
             </div>
           </div>
           <div style="display:grid;gap:1.5rem;grid-template-columns:repeat(auto-fit,minmax(15rem,1fr));">
             <sc-for list="{{ servicesHome }}" as="s" hint-placeholder-count="3">
-              <div style="padding:2rem 1.85rem;background:#fff;border:1px solid #e6e9ef;border-top:3px solid #5b8fd6;border-radius:14px;box-shadow:0 1px 2px rgba(28,40,66,0.04);transition:box-shadow 0.35s cubic-bezier(.2,.8,.2,1),transform 0.35s cubic-bezier(.2,.8,.2,1),border-color 0.35s ease;" style-hover="box-shadow:0 24px 40px rgba(44,62,99,0.2) !important; transform:translateY(-8px) scale(1.02) !important; border-top-color:#2c3e63 !important;">
-                <div style="width:44px;height:44px;border-radius:11px;background:#2c3e63;display:flex;align-items:center;justify-content:center;margin-bottom:1.1rem;transition:transform 0.35s cubic-bezier(.34,1.56,.64,1),background 0.35s ease;" style-hover="transform:scale(1.15) rotate(-6deg) !important; background:#5b8fd6 !important;">
+              <div style="padding:2rem 1.85rem;background:{{ cardBg }};border:1px solid {{ cardBorder }};border-top:3px solid {{ accentColor }};border-radius:14px;box-shadow:0 1px 2px rgba(28,40,66,0.04);transition:box-shadow 0.35s cubic-bezier(.2,.8,.2,1),transform 0.35s cubic-bezier(.2,.8,.2,1),border-color 0.35s ease;" style-hover="box-shadow:0 24px 40px rgba(44,62,99,0.2) !important; transform:translateY(-8px) scale(1.02) !important; border-top-color:{{ primaryColor }} !important;">
+                <div style="width:44px;height:44px;border-radius:11px;background:{{ primaryColor }};display:flex;align-items:center;justify-content:center;margin-bottom:1.1rem;transition:transform 0.35s cubic-bezier(.34,1.56,.64,1),background 0.35s ease;" style-hover="transform:scale(1.15) rotate(-6deg) !important; background:{{ accentColor }} !important;">
                   <div style="display:flex;align-items:flex-end;gap:3px;height:18px;">
                     <div style="width:4px;height:45%;background:#9fc0ec;border-radius:2px;"></div>
                     <div style="width:4px;height:75%;background:#c7dbf5;border-radius:2px;"></div>
                     <div style="width:4px;height:100%;background:#fff;border-radius:2px;"></div>
                   </div>
                 </div>
-                <h3 style="font-family:'Fraunces',Georgia,serif;font-weight:500;font-size:1.3rem;margin:0 0 0.5rem;transition:color 0.3s ease;" style-hover="color:#2c3e63 !important;">{{ s.title }}</h3>
-                <p style="color:#5b6472;font-size:1.05rem;line-height:1.6;margin:0;">{{ s.body }}</p>
-                <div style="height:2px;width:2rem;background:#5b8fd6;border-radius:2px;margin-top:1.1rem;transition:width 0.4s ease;" style-hover="width:100% !important;"></div>
+                <h3 style="font-family:'Fraunces',Georgia,serif;font-weight:500;font-size:1.3rem;margin:0 0 0.5rem;transition:color 0.3s ease;" style-hover="color:{{ primaryColor }} !important;">{{ s.title }}</h3>
+                <p style="color:{{ mutedText }};font-size:1.05rem;line-height:1.6;margin:0;">{{ s.body }}</p>
+                <div style="height:2px;width:2rem;background:{{ accentColor }};border-radius:2px;margin-top:1.1rem;transition:width 0.4s ease;" style-hover="width:100% !important;"></div>
               </div>
             </sc-for>
           </div>
         </div>
       </section>
 
-      <section style="border-top:1px solid #e6e9ef;">
+      <section style="border-top:1px solid {{ cardBorder }};">
         <div style="max-width:100rem;margin:0 auto;padding:clamp(3.5rem,9vh,5.5rem) clamp(1.25rem,5vw,3rem);">
-          <div style="background:linear-gradient(135deg,#2c3e63,#4f6fa8);color:#fff;border-radius:20px;padding:clamp(2.5rem,6vw,4rem);text-align:center;">
+          <div style="background:linear-gradient(135deg,{{ primaryColor }},{{ accentColor }});color:#fff;border-radius:20px;padding:clamp(2.5rem,6vw,4rem);text-align:center;">
             <p style="font-size:0.82rem;text-transform:uppercase;letter-spacing:0.16em;color:#bcd0ef;font-weight:600;margin:0 0 1rem;">Pre-launch · Now taking introductions</p>
             <h2 style="font-family:'Fraunces',Georgia,serif;font-weight:500;font-size:clamp(2.1rem,1.7rem+1.8vw,3rem);margin:0 0 0.9rem;color:#fff;">Let's start with a conversation.</h2>
             <p style="color:rgba(255,255,255,0.82);max-width:46ch;margin:0 auto 1.75rem;font-size:1.15rem;line-height:1.6;">The first meeting is a chance to understand your situation and see whether we're the right fit — no obligation, no pressure.</p>
-            <a href="#" onClick="{{ goGetStarted }}" style="background:#fff;color:#2c3e63;padding:0.85rem 1.75rem;border-radius:100px;font-size:0.95rem;font-weight:600;display:inline-block;transition:background 0.25s ease,color 0.25s ease;" style-hover="background:#dbe7f7 !important;">Book an introduction</a>
+            <a href="#" onClick="{{ goGetStarted }}" style="background:#fff;color:{{ primaryColor }};padding:0.85rem 1.75rem;border-radius:100px;font-size:0.95rem;font-weight:600;display:inline-block;transition:background 0.25s ease,color 0.25s ease;" style-hover="background:#dbe7f7 !important;">Book an introduction</a>
           </div>
         </div>
       </section>
@@ -182,55 +260,171 @@
   <!-- ============ SERVICES ============ -->
   <sc-if value="{{ isServices }}" hint-placeholder-val="{{ false }}">
     <main data-screen-label="Services" key="{{ animKey }}">
+      <div style="background:radial-gradient(ellipse 90% 100% at 20% 0%,{{ accentSoftColor }},{{ pageBg }} 100%);">
       <section style="max-width:100rem;margin:0 auto;padding:clamp(4rem,10vh,6rem) clamp(1.25rem,5vw,3rem) clamp(2.5rem,6vh,3.5rem);animation:kg-fade 0.5s ease both;">
-        <p style="font-size:0.82rem;text-transform:uppercase;letter-spacing:0.16em;color:#5b8fd6;font-weight:600;margin:0 0 1.25rem;">Services</p>
+        <p style="font-size:0.82rem;text-transform:uppercase;letter-spacing:0.16em;color:{{ accentColor }};font-weight:600;margin:0 0 1.25rem;">Services</p>
         <h1 style="font-family:'Fraunces',Georgia,serif;font-weight:500;font-size:clamp(2.6rem,2.1rem+3vw,4.4rem);line-height:1.1;margin:0 0 1.25rem;">How we work with you.</h1>
-        <p style="font-size:1.3rem;line-height:1.6;color:#5b6472;max-width:48ch;margin:0;">Every engagement is grounded in the fiduciary standard: advice that serves your interests, with fees and methods disclosed up front — for individuals and for small businesses that need fractional CFO support.</p>
+        <p style="font-size:1.3rem;line-height:1.6;color:{{ mutedText }};max-width:48ch;margin:0;">Every engagement is grounded in the fiduciary standard: advice that serves your interests, with fees and methods disclosed up front — for individuals and for small businesses that need fractional CFO support.</p>
       </section>
+      </div>
 
-      <section style="border-top:1px solid #e6e9ef;">
+      <section style="border-top:1px solid {{ cardBorder }};">
         <div style="max-width:100rem;margin:0 auto;padding:clamp(3rem,7vh,4.5rem) clamp(1.25rem,5vw,3rem);">
           <div style="display:grid;gap:0;">
             <sc-for list="{{ principlesServices }}" as="p" hint-placeholder-count="3">
-              <div style="display:grid;grid-template-columns:3rem 1fr;gap:1.5rem;padding-block:1.75rem;border-top:1px solid #e6e9ef;">
-                <span style="font-family:'Fraunces',Georgia,serif;color:#5b8fd6;font-size:1.3rem;">{{ p.n }}</span>
+              <div style="display:grid;grid-template-columns:3rem 1fr;gap:1.5rem;padding-block:1.75rem;border-top:1px solid {{ cardBorder }};">
+                <span style="font-family:'Fraunces',Georgia,serif;color:{{ accentColor }};font-size:1.3rem;">{{ p.n }}</span>
                 <div>
                   <h3 style="font-family:'Fraunces',Georgia,serif;font-weight:500;font-size:1.35rem;margin:0 0 0.4rem;">{{ p.title }}</h3>
-                  <p style="color:#5b6472;font-size:1.05rem;line-height:1.6;margin:0;">{{ p.body }}</p>
+                  <p style="color:{{ mutedText }};font-size:1.05rem;line-height:1.6;margin:0;">{{ p.body }}</p>
                 </div>
               </div>
             </sc-for>
-            <div style="border-top:1px solid #e6e9ef;"></div>
+            <div style="border-top:1px solid {{ cardBorder }};"></div>
           </div>
         </div>
       </section>
 
-      <section style="border-top:1px solid #e6e9ef;background:radial-gradient(circle at 85% 15%,#f3f7fd,#f8f9fb 55%);">
+      <section style="border-top:1px solid {{ cardBorder }};background:radial-gradient(circle at 85% 15%,#f3f7fd,{{ pageBg }} 55%);">
         <div style="max-width:100rem;margin:0 auto;padding:clamp(3rem,7vh,4.5rem) clamp(1.25rem,5vw,3rem);">
           <div style="max-width:46ch;margin-bottom:2.5rem;">
-            <p style="font-size:0.82rem;text-transform:uppercase;letter-spacing:0.16em;color:#5b8fd6;font-weight:600;margin:0 0 1rem;">Fee structure</p>
+            <p style="font-size:0.82rem;text-transform:uppercase;letter-spacing:0.16em;color:{{ accentColor }};font-weight:600;margin:0 0 1rem;">Fee structure</p>
             <h2 style="font-family:'Fraunces',Georgia,serif;font-weight:500;font-size:clamp(1.9rem,1.6rem+1.5vw,2.6rem);line-height:1.15;margin:0 0 1rem;">Pricing built around where you are.</h2>
-            <p style="color:#5b6472;font-size:1.05rem;line-height:1.6;margin:0;">Exact fees are confirmed in writing before any engagement begins.</p>
+            <p style="color:{{ mutedText }};font-size:1.05rem;line-height:1.6;margin:0;">Exact fees are confirmed in writing before any engagement begins.</p>
           </div>
           <div style="display:grid;gap:1.5rem;grid-template-columns:repeat(auto-fit,minmax(16rem,1fr));">
             <sc-for list="{{ pricingTiers }}" as="t" hint-placeholder-count="3">
-              <div style="padding:2.25rem 1.85rem;background:#fff;border:1px solid #e6e9ef;border-top:3px solid #5b8fd6;border-radius:14px;box-shadow:0 1px 2px rgba(28,40,66,0.04);transition:box-shadow 0.35s ease,transform 0.35s ease;" style-hover="box-shadow:0 20px 36px rgba(44,62,99,0.14);transform:translateY(-6px);">
+              <div style="padding:2.25rem 1.85rem;background:{{ cardBg }};border:1px solid {{ cardBorder }};border-top:3px solid {{ accentColor }};border-radius:14px;box-shadow:0 1px 2px rgba(28,40,66,0.04);transition:box-shadow 0.35s ease,transform 0.35s ease;" style-hover="box-shadow:0 20px 36px rgba(44,62,99,0.14);transform:translateY(-6px);">
                 <h3 style="font-family:'Fraunces',Georgia,serif;font-weight:500;font-size:1.4rem;margin:0 0 0.5rem;">{{ t.name }}</h3>
-                <p style="color:#5b6472;font-size:0.98rem;line-height:1.55;margin:0 0 1.5rem;min-height:3.3rem;">{{ t.desc }}</p>
-                <p style="font-family:'Fraunces',Georgia,serif;font-size:1.6rem;font-weight:500;color:#2c3e63;margin:0;border-top:1px solid #e6e9ef;padding-top:1.25rem;">{{ t.price }}</p>
+                <p style="color:{{ mutedText }};font-size:0.98rem;line-height:1.55;margin:0 0 1.5rem;min-height:3.3rem;">{{ t.desc }}</p>
+                <p style="font-family:'Fraunces',Georgia,serif;font-size:1.6rem;font-weight:500;color:{{ primaryColor }};margin:0;border-top:1px solid {{ cardBorder }};padding-top:1.25rem;">{{ t.price }}</p>
               </div>
             </sc-for>
           </div>
         </div>
       </section>
 
-      <section style="border-top:1px solid #e6e9ef;">
+      <section style="border-top:1px solid {{ cardBorder }};">
         <div style="max-width:100rem;margin:0 auto;padding:clamp(3rem,7vh,4.5rem) clamp(1.25rem,5vw,3rem);">
-          <div style="background:linear-gradient(135deg,#2c3e63,#4f6fa8);color:#fff;border-radius:20px;padding:clamp(2.25rem,5vw,3.5rem);text-align:center;">
+          <div style="background:linear-gradient(135deg,{{ primaryColor }},{{ accentColor }});color:#fff;border-radius:20px;padding:clamp(2.25rem,5vw,3.5rem);text-align:center;">
             <h2 style="font-family:'Fraunces',Georgia,serif;font-weight:500;font-size:clamp(1.9rem,1.6rem+1.3vw,2.6rem);margin:0 0 0.75rem;color:#fff;">Not sure which fits?</h2>
             <p style="color:rgba(255,255,255,0.82);margin:0 0 1.5rem;font-size:1.15rem;">Start with an introduction and we'll figure it out together.</p>
-            <a href="#" onClick="{{ goGetStarted }}" style="background:#fff;color:#2c3e63;padding:0.85rem 1.75rem;border-radius:100px;font-size:0.95rem;font-weight:600;display:inline-block;transition:background 0.25s ease,color 0.25s ease;" style-hover="background:#dbe7f7 !important;">Book an introduction</a>
+            <a href="#" onClick="{{ goGetStarted }}" style="background:#fff;color:{{ primaryColor }};padding:0.85rem 1.75rem;border-radius:100px;font-size:0.95rem;font-weight:600;display:inline-block;transition:background 0.25s ease,color 0.25s ease;" style-hover="background:#dbe7f7 !important;">Book an introduction</a>
           </div>
+        </div>
+      </section>
+    </main>
+  </sc-if>
+
+  <!-- ============ PERSONAL FINANCIAL CONSULTING ============ -->
+  <sc-if value="{{ isPersonalConsulting }}" hint-placeholder-val="{{ false }}">
+    <main data-screen-label="Personal Financial Consulting" key="{{ animKey }}">
+      <div style="background:radial-gradient(ellipse 90% 100% at 20% 0%,{{ accentSoftColor }},{{ pageBg }} 100%);">
+      <section style="max-width:100rem;margin:0 auto;padding:clamp(4rem,10vh,6rem) clamp(1.25rem,5vw,3rem) clamp(2.5rem,6vh,3.5rem);animation:kg-fade 0.5s ease both;">
+        <p style="font-size:0.82rem;text-transform:uppercase;letter-spacing:0.16em;color:{{ accentColor }};font-weight:600;margin:0 0 1.25rem;">Services · Personal</p>
+        <h1 style="font-family:'Fraunces',Georgia,serif;font-weight:500;font-size:clamp(2.6rem,2.1rem+3vw,4.4rem);line-height:1.1;margin:0 0 1.25rem;max-width:20ch;">Personal Financial Consulting</h1>
+        <p style="font-size:1.3rem;line-height:1.6;color:{{ mutedText }};max-width:48ch;margin:0;">Planning, investment guidance, and everyday financial decisions — built around your life, not a product line.</p>
+      </section>
+      </div>
+      <section style="border-top:1px solid {{ cardBorder }};">
+        <div style="max-width:100rem;margin:0 auto;padding:clamp(3rem,7vh,4.5rem) clamp(1.25rem,5vw,3rem);">
+          <sc-if value="{{ showPersonalGrid }}" hint-placeholder-val="{{ true }}">
+            <div style="display:grid;gap:1.75rem;grid-template-columns:repeat(2,1fr);">
+              <sc-for list="{{ personalConsultingCardsWithHandlers }}" as="s" hint-placeholder-count="4">
+                <div onClick="{{ s.onSelect }}" style="cursor:pointer;display:flex;align-items:stretch;background:{{ cardBg }};border:1px solid {{ cardBorder }};border-left:4px solid {{ accentColor }};border-radius:14px;overflow:hidden;box-shadow:0 1px 2px rgba(28,40,66,0.04);transition:box-shadow 0.35s cubic-bezier(.2,.8,.2,1),transform 0.35s cubic-bezier(.2,.8,.2,1),border-left-color 0.35s ease;" style-hover="box-shadow:0 20px 36px rgba(44,62,99,0.16) !important; transform:translateY(-6px) !important; border-left-color:{{ primaryColor }} !important;">
+                  <div style="width:40%;flex:none;overflow:hidden;">
+                    <image-slot id="{{ s.imgId }}" shape="rect" placeholder="{{ s.title }} image"></image-slot>
+                  </div>
+                  <div style="padding:1.75rem 1.6rem;display:flex;flex-direction:column;justify-content:center;">
+                    <h3 style="font-family:'Fraunces',Georgia,serif;font-weight:500;font-size:1.2rem;margin:0 0 0.5rem;transition:color 0.3s ease;" style-hover="color:{{ primaryColor }} !important;">{{ s.title }}</h3>
+                    <p style="color:{{ mutedText }};font-size:0.95rem;line-height:1.55;margin:0;">{{ s.body }}</p>
+                  </div>
+                </div>
+              </sc-for>
+            </div>
+            <a href="#" onClick="{{ goGetStarted }}" style="margin-top:2.5rem;background:{{ primaryColor }};color:#fff;padding:0.85rem 1.6rem;border-radius:100px;font-size:0.95rem;font-weight:600;display:inline-block;transition:background 0.25s ease,transform 0.25s ease;" style-hover="background:{{ primaryHoverColor }} !important; transform:translateY(-2px) !important;">Find the Right Plan</a>
+          </sc-if>
+          <sc-if value="{{ selectedPersonalCardData }}" hint-placeholder-val="{{ false }}">
+            <div style="animation:kg-fade 0.35s ease both;">
+              <button onClick="{{ clearPersonalCard }}" style="background:none;border:none;cursor:pointer;color:{{ mutedText }};font-size:0.92rem;font-weight:600;padding:0;margin-bottom:1.5rem;display:flex;align-items:center;gap:0.4rem;">← Back to all</button>
+              <div style="display:flex;align-items:stretch;background:{{ cardBg }};border:1px solid {{ cardBorder }};border-left:4px solid {{ primaryColor }};border-radius:16px;overflow:hidden;box-shadow:0 12px 32px rgba(28,40,66,0.1);">
+                <div style="width:42%;flex:none;overflow:hidden;">
+                  <image-slot id="{{ selectedPersonalCardData.imgId }}" shape="rect" placeholder="{{ selectedPersonalCardData.title }} image"></image-slot>
+                </div>
+                <div style="padding:clamp(2rem,4vw,3rem);display:flex;flex-direction:column;justify-content:center;">
+                  <h2 style="font-family:'Fraunces',Georgia,serif;font-weight:500;font-size:clamp(1.6rem,1.3rem+1.2vw,2.2rem);margin:0 0 1rem;">{{ selectedPersonalCardData.title }}</h2>
+                  <p style="color:{{ mutedText }};font-size:1.1rem;line-height:1.7;margin:0 0 1.75rem;">{{ selectedPersonalCardData.detail }}</p>
+                  <a href="#" onClick="{{ goGetStarted }}" style="background:{{ primaryColor }};color:#fff;padding:0.8rem 1.6rem;border-radius:100px;font-size:0.95rem;font-weight:600;display:inline-block;align-self:flex-start;transition:background 0.25s ease;" style-hover="background:{{ primaryHoverColor }} !important;">Find the Right Plan</a>
+                </div>
+              </div>
+            </div>
+          </sc-if>
+        </div>
+      </section>
+    </main>
+  </sc-if>
+
+  <!-- ============ BUSINESS OPERATIONS CONSULTING ============ -->
+  <sc-if value="{{ isBusinessConsulting }}" hint-placeholder-val="{{ false }}">
+    <main data-screen-label="Business Operations Consulting" key="{{ animKey }}">
+      <div style="background:radial-gradient(ellipse 90% 100% at 20% 0%,{{ accentSoftColor }},{{ pageBg }} 100%);">
+      <section style="max-width:100rem;margin:0 auto;padding:clamp(4rem,10vh,6rem) clamp(1.25rem,5vw,3rem) clamp(2.5rem,6vh,3.5rem);animation:kg-fade 0.5s ease both;">
+        <p style="font-size:0.82rem;text-transform:uppercase;letter-spacing:0.16em;color:{{ accentColor }};font-weight:600;margin:0 0 1.25rem;">Services · Business</p>
+        <h1 style="font-family:'Fraunces',Georgia,serif;font-weight:500;font-size:clamp(2.6rem,2.1rem+3vw,4.4rem);line-height:1.1;margin:0 0 1.25rem;max-width:20ch;">Business Advisory</h1>
+        <p style="font-size:1.3rem;line-height:1.6;color:{{ mutedText }};max-width:52ch;margin:0;">Strengthen your financial foundation, operating model, organization, and customer experience.</p>
+      </section>
+      </div>
+      <section style="border-top:1px solid {{ cardBorder }};">
+        <div style="max-width:100rem;margin:0 auto;padding:clamp(3rem,7vh,4.5rem) clamp(1.25rem,5vw,3rem);">
+          <sc-if value="{{ showBusinessGrid }}" hint-placeholder-val="{{ true }}">
+            <div style="display:grid;gap:1.75rem;grid-template-columns:repeat(2,1fr);">
+              <sc-for list="{{ businessAdvisoryCardsWithHandlers }}" as="s" hint-placeholder-count="6">
+                <div onClick="{{ s.onSelect }}" style="cursor:pointer;display:flex;align-items:stretch;background:{{ cardBg }};border:1px solid {{ cardBorder }};border-left:4px solid {{ accentColor }};border-radius:14px;overflow:hidden;box-shadow:0 1px 2px rgba(28,40,66,0.04);transition:box-shadow 0.35s cubic-bezier(.2,.8,.2,1),transform 0.35s cubic-bezier(.2,.8,.2,1),border-left-color 0.35s ease;" style-hover="box-shadow:0 20px 36px rgba(44,62,99,0.16) !important; transform:translateY(-6px) !important; border-left-color:{{ primaryColor }} !important;">
+                  <div style="width:40%;flex:none;overflow:hidden;">
+                    <image-slot id="{{ s.imgId }}" shape="rect" placeholder="{{ s.title }} image"></image-slot>
+                  </div>
+                  <div style="padding:1.75rem 1.6rem;display:flex;flex-direction:column;justify-content:center;">
+                    <h3 style="font-family:'Fraunces',Georgia,serif;font-weight:500;font-size:1.2rem;margin:0 0 0.5rem;transition:color 0.3s ease;" style-hover="color:{{ primaryColor }} !important;">{{ s.title }}</h3>
+                    <p style="color:{{ mutedText }};font-size:0.95rem;line-height:1.55;margin:0;">{{ s.body }}</p>
+                  </div>
+                </div>
+              </sc-for>
+            </div>
+            <a href="#" onClick="{{ goGetStarted }}" style="margin-top:2.5rem;background:{{ primaryColor }};color:#fff;padding:0.85rem 1.6rem;border-radius:100px;font-size:0.95rem;font-weight:600;display:inline-block;transition:background 0.25s ease,transform 0.25s ease;" style-hover="background:{{ primaryHoverColor }} !important; transform:translateY(-2px) !important;">Schedule a Consultation</a>
+          </sc-if>
+          <sc-if value="{{ selectedBusinessCardData }}" hint-placeholder-val="{{ false }}">
+            <div style="animation:kg-fade 0.35s ease both;">
+              <button onClick="{{ clearBusinessCard }}" style="background:none;border:none;cursor:pointer;color:{{ mutedText }};font-size:0.92rem;font-weight:600;padding:0;margin-bottom:1.5rem;display:flex;align-items:center;gap:0.4rem;">← Back to all</button>
+              <div style="display:flex;align-items:stretch;background:{{ cardBg }};border:1px solid {{ cardBorder }};border-left:4px solid {{ primaryColor }};border-radius:16px;overflow:hidden;box-shadow:0 12px 32px rgba(28,40,66,0.1);">
+                <div style="width:42%;flex:none;overflow:hidden;">
+                  <image-slot id="{{ selectedBusinessCardData.imgId }}" shape="rect" placeholder="{{ selectedBusinessCardData.title }} image"></image-slot>
+                </div>
+                <div style="padding:clamp(2rem,4vw,3rem);display:flex;flex-direction:column;justify-content:center;">
+                  <h2 style="font-family:'Fraunces',Georgia,serif;font-weight:500;font-size:clamp(1.6rem,1.3rem+1.2vw,2.2rem);margin:0 0 1rem;">{{ selectedBusinessCardData.title }}</h2>
+                  <p style="color:{{ mutedText }};font-size:1.1rem;line-height:1.7;margin:0 0 1.75rem;">{{ selectedBusinessCardData.detail }}</p>
+                  <a href="#" onClick="{{ goGetStarted }}" style="background:{{ primaryColor }};color:#fff;padding:0.8rem 1.6rem;border-radius:100px;font-size:0.95rem;font-weight:600;display:inline-block;align-self:flex-start;transition:background 0.25s ease;" style-hover="background:{{ primaryHoverColor }} !important;">Schedule a Consultation</a>
+                </div>
+              </div>
+            </div>
+          </sc-if>
+        </div>
+      </section>
+    </main>
+  </sc-if>
+
+  <!-- ============ PUBLIC RESOURCES ============ -->
+  <sc-if value="{{ isPublicResources }}" hint-placeholder-val="{{ false }}">
+    <main data-screen-label="Resources" key="{{ animKey }}">
+      <div style="background:radial-gradient(ellipse 90% 100% at 20% 0%,{{ accentSoftColor }},{{ pageBg }} 100%);">
+      <section style="max-width:100rem;margin:0 auto;padding:clamp(4rem,10vh,6rem) clamp(1.25rem,5vw,3rem) clamp(2.5rem,6vh,3.5rem);animation:kg-fade 0.5s ease both;">
+        <p style="font-size:0.82rem;text-transform:uppercase;letter-spacing:0.16em;color:{{ accentColor }};font-weight:600;margin:0 0 1.25rem;">Resources</p>
+        <h1 style="font-family:'Fraunces',Georgia,serif;font-weight:500;font-size:clamp(2.6rem,2.1rem+3vw,4.4rem);line-height:1.1;margin:0 0 1.25rem;max-width:20ch;">Free articles &amp; videos.</h1>
+        <p style="font-size:1.3rem;line-height:1.6;color:{{ mutedText }};max-width:48ch;margin:0;">Practical, no-pressure financial guidance — open to everyone, client or not.</p>
+      </section>
+      </div>
+      <section style="border-top:1px solid {{ cardBorder }};">
+        <div style="max-width:100rem;margin:0 auto;padding:clamp(4rem,10vh,5rem) clamp(1.25rem,5vw,3rem) clamp(5rem,12vh,6rem);text-align:center;">
+          <p style="font-size:1.1rem;color:{{ mutedText }};margin:0;">Content is coming soon — check back for articles and videos.</p>
         </div>
       </section>
     </main>
@@ -239,33 +433,35 @@
   <!-- ============ ABOUT ============ -->
   <sc-if value="{{ isAbout }}" hint-placeholder-val="{{ false }}">
     <main data-screen-label="About" key="{{ animKey }}">
+      <div style="background:radial-gradient(ellipse 90% 100% at 20% 0%,{{ accentSoftColor }},{{ pageBg }} 100%);">
       <section style="max-width:100rem;margin:0 auto;padding:clamp(4rem,10vh,6rem) clamp(1.25rem,5vw,3rem) clamp(2.5rem,6vh,3.5rem);animation:kg-fade 0.5s ease both;">
-        <p style="font-size:0.82rem;text-transform:uppercase;letter-spacing:0.16em;color:#5b8fd6;font-weight:600;margin:0 0 1.25rem;">About</p>
+        <p style="font-size:0.82rem;text-transform:uppercase;letter-spacing:0.16em;color:{{ accentColor }};font-weight:600;margin:0 0 1.25rem;">About</p>
         <h1 style="font-family:'Fraunces',Georgia,serif;font-weight:500;font-size:clamp(2.6rem,2.1rem+3vw,4.4rem);line-height:1.1;margin:0 0 1.25rem;max-width:22ch;">Independent by design, fiduciary by standard.</h1>
-        <p style="font-size:1.3rem;line-height:1.6;color:#5b6472;max-width:52ch;margin:0;">Kaligirl Financial Services was founded on a simple premise: advice should serve the client, not a product line. [Founder bio and firm background — replace with approved copy.]</p>
+        <p style="font-size:1.3rem;line-height:1.6;color:{{ mutedText }};max-width:52ch;margin:0;">Kaligirl Financial Services was founded on a simple premise: advice should serve the client, not a product line. [Founder bio and firm background — replace with approved copy.]</p>
       </section>
+      </div>
 
-      <section style="border-top:1px solid #e6e9ef;">
+      <section style="border-top:1px solid {{ cardBorder }};">
         <div style="max-width:100rem;margin:0 auto;padding:clamp(3rem,7vh,4.5rem) clamp(1.25rem,5vw,3rem);">
           <div style="display:grid;gap:1.5rem;grid-template-columns:repeat(auto-fit,minmax(15rem,1fr));">
-            <div style="padding:1.85rem;background:#fff;border:1px solid #e6e9ef;border-radius:14px;">
+            <div style="padding:1.85rem;background:{{ cardBg }};border:1px solid {{ cardBorder }};border-radius:14px;">
               <h3 style="font-family:'Fraunces',Georgia,serif;font-weight:500;font-size:1.1rem;margin:0 0 0.5rem;">Fiduciary-minded</h3>
-              <p style="color:#5b6472;font-size:1.05rem;line-height:1.6;margin:0;">Built to put your interests first, with a fiduciary certification underway.</p>
+              <p style="color:{{ mutedText }};font-size:1.05rem;line-height:1.6;margin:0;">Built to put your interests first, with a fiduciary certification underway.</p>
             </div>
-            <div style="padding:1.85rem;background:#fff;border:1px solid #e6e9ef;border-radius:14px;">
+            <div style="padding:1.85rem;background:{{ cardBg }};border:1px solid {{ cardBorder }};border-radius:14px;">
               <h3 style="font-family:'Fraunces',Georgia,serif;font-weight:500;font-size:1.1rem;margin:0 0 0.5rem;">Fee-only</h3>
-              <p style="color:#5b6472;font-size:1.05rem;line-height:1.6;margin:0;">No commissions, no product sales — compensation comes only from the clients we serve.</p>
+              <p style="color:{{ mutedText }};font-size:1.05rem;line-height:1.6;margin:0;">No commissions, no product sales — compensation comes only from the clients we serve.</p>
             </div>
-            <div style="padding:1.85rem;background:#fff;border:1px solid #e6e9ef;border-radius:14px;">
+            <div style="padding:1.85rem;background:{{ cardBg }};border:1px solid {{ cardBorder }};border-radius:14px;">
               <h3 style="font-family:'Fraunces',Georgia,serif;font-weight:500;font-size:1.1rem;margin:0 0 0.5rem;">Based in Morgan Hill</h3>
-              <p style="color:#5b6472;font-size:1.05rem;line-height:1.6;margin:0;">Serving clients across California, in person and remotely.</p>
+              <p style="color:{{ mutedText }};font-size:1.05rem;line-height:1.6;margin:0;">Serving clients across California, in person and remotely.</p>
             </div>
           </div>
           <div style="display:flex;align-items:center;gap:1rem;flex-wrap:wrap;margin-top:2.5rem;">
             <span style="font-size:0.85rem;color:#8891a0;">Connects with:</span>
-            <span style="font-size:0.85rem;font-weight:600;color:#5b6472;padding:0.4rem 0.85rem;border:1px solid #e1e5ec;border-radius:100px;">QuickBooks</span>
-            <span style="font-size:0.85rem;font-weight:600;color:#5b6472;padding:0.4rem 0.85rem;border:1px solid #e1e5ec;border-radius:100px;">Xero</span>
-            <span style="font-size:0.85rem;font-weight:600;color:#5b6472;padding:0.4rem 0.85rem;border:1px solid #e1e5ec;border-radius:100px;">Plaid <span style="color:#8891a0;font-weight:500;">(coming soon)</span></span>
+            <span style="font-size:0.85rem;font-weight:600;color:{{ mutedText }};padding:0.4rem 0.85rem;border:1px solid #e1e5ec;border-radius:100px;">QuickBooks</span>
+            <span style="font-size:0.85rem;font-weight:600;color:{{ mutedText }};padding:0.4rem 0.85rem;border:1px solid #e1e5ec;border-radius:100px;">Xero</span>
+            <span style="font-size:0.85rem;font-weight:600;color:{{ mutedText }};padding:0.4rem 0.85rem;border:1px solid #e1e5ec;border-radius:100px;">Plaid <span style="color:#8891a0;font-weight:500;">(coming soon)</span></span>
           </div>
         </div>
       </section>
@@ -275,32 +471,34 @@
   <!-- ============ CONTACT ============ -->
   <sc-if value="{{ isContact }}" hint-placeholder-val="{{ false }}">
     <main data-screen-label="Contact" key="{{ animKey }}">
+      <div style="background:radial-gradient(ellipse 90% 100% at 20% 0%,{{ accentSoftColor }},{{ pageBg }} 100%);">
       <section style="max-width:100rem;margin:0 auto;padding:clamp(4rem,10vh,6rem) clamp(1.25rem,5vw,3rem) clamp(2.5rem,6vh,3.5rem);animation:kg-fade 0.5s ease both;">
-        <p style="font-size:0.82rem;text-transform:uppercase;letter-spacing:0.16em;color:#5b8fd6;font-weight:600;margin:0 0 1.25rem;">Contact</p>
+        <p style="font-size:0.82rem;text-transform:uppercase;letter-spacing:0.16em;color:{{ accentColor }};font-weight:600;margin:0 0 1.25rem;">Contact</p>
         <h1 style="font-family:'Fraunces',Georgia,serif;font-weight:500;font-size:clamp(2.6rem,2.1rem+3vw,4.4rem);line-height:1.1;margin:0 0 1.25rem;">Get in touch.</h1>
-        <p style="font-size:1.3rem;line-height:1.6;color:#5b6472;max-width:48ch;margin:0;">Based in Morgan Hill, California, and working with clients across the state. Reach out and we'll follow up personally.</p>
+        <p style="font-size:1.3rem;line-height:1.6;color:{{ mutedText }};max-width:48ch;margin:0;">Based in Morgan Hill, California, and working with clients across the state. Reach out and we'll follow up personally.</p>
       </section>
+      </div>
 
-      <section style="border-top:1px solid #e6e9ef;">
+      <section style="border-top:1px solid {{ cardBorder }};">
         <div style="max-width:100rem;margin:0 auto;padding:clamp(3rem,7vh,4.5rem) clamp(1.25rem,5vw,3rem);">
           <div style="display:grid;gap:1.5rem;grid-template-columns:repeat(auto-fit,minmax(15rem,1fr));margin-bottom:2.5rem;">
-            <div style="padding:1.85rem;background:#fff;border:1px solid #e6e9ef;border-radius:14px;">
+            <div style="padding:1.85rem;background:{{ cardBg }};border:1px solid {{ cardBorder }};border-radius:14px;">
               <h3 style="font-family:'Fraunces',Georgia,serif;font-weight:500;font-size:1.1rem;margin:0 0 0.5rem;">Email</h3>
-              <p style="color:#5b6472;font-size:1.05rem;line-height:1.6;margin:0;"><a href="mailto:hello@kaligirlfinancialservices.com" style="color:#2c3e63;transition:color 0.25s ease;" style-hover="color:#5b8fd6 !important;">hello@kaligirlfinancialservices.com</a></p>
+              <p style="color:{{ mutedText }};font-size:1.05rem;line-height:1.6;margin:0;"><a href="mailto:hello@kaligirlfinancialservices.com" style="color:{{ primaryColor }};transition:color 0.25s ease;" style-hover="color:{{ accentColor }} !important;">hello@kaligirlfinancialservices.com</a></p>
             </div>
-            <div style="padding:1.85rem;background:#fff;border:1px solid #e6e9ef;border-radius:14px;">
+            <div style="padding:1.85rem;background:{{ cardBg }};border:1px solid {{ cardBorder }};border-radius:14px;">
               <h3 style="font-family:'Fraunces',Georgia,serif;font-weight:500;font-size:1.1rem;margin:0 0 0.5rem;">Location</h3>
-              <p style="color:#5b6472;font-size:1.05rem;line-height:1.6;margin:0;">Morgan Hill, CA<br>By appointment</p>
+              <p style="color:{{ mutedText }};font-size:1.05rem;line-height:1.6;margin:0;">Morgan Hill, CA<br>By appointment</p>
             </div>
-            <div style="padding:1.85rem;background:#fff;border:1px solid #e6e9ef;border-radius:14px;">
+            <div style="padding:1.85rem;background:{{ cardBg }};border:1px solid {{ cardBorder }};border-radius:14px;">
               <h3 style="font-family:'Fraunces',Georgia,serif;font-weight:500;font-size:1.1rem;margin:0 0 0.5rem;">Hours</h3>
-              <p style="color:#5b6472;font-size:1.05rem;line-height:1.6;margin:0;">Mon–Fri, 9 AM – 5 PM PT</p>
+              <p style="color:{{ mutedText }};font-size:1.05rem;line-height:1.6;margin:0;">Mon–Fri, 9 AM – 5 PM PT</p>
             </div>
           </div>
           <div style="display:grid;grid-template-columns:1fr 1fr;gap:2.5rem;align-items:center;">
             <div>
               <h2 style="font-family:'Fraunces',Georgia,serif;font-weight:500;font-size:1.7rem;margin:0 0 1rem;">Want to get in touch directly?</h2>
-              <a href="#" onClick="{{ goGetStarted }}" style="background:#2c3e63;color:#fff;padding:0.85rem 1.6rem;border-radius:100px;font-size:0.95rem;font-weight:600;display:inline-block;transition:background 0.25s ease,transform 0.25s ease;" style-hover="background:#8fb3e8 !important; transform:translateY(-2px) !important;">Start with an introduction</a>
+              <a href="#" onClick="{{ goGetStarted }}" style="background:{{ primaryColor }};color:#fff;padding:0.85rem 1.6rem;border-radius:100px;font-size:0.95rem;font-weight:600;display:inline-block;transition:background 0.25s ease,transform 0.25s ease;" style-hover="background:{{ primaryHoverColor }} !important; transform:translateY(-2px) !important;">Start with an introduction</a>
             </div>
             <div style="aspect-ratio:16/9;border-radius:16px;border:1px solid #dde2ea;background:repeating-linear-gradient(45deg,#eef1f7,#eef1f7 12px,#e4e8f0 12px,#e4e8f0 24px);display:flex;align-items:center;justify-content:center;">
               <span style="font-family:ui-monospace,Menlo,monospace;font-size:0.78rem;color:#8891a0;letter-spacing:0.02em;">map / office location</span>
@@ -314,33 +512,35 @@
   <!-- ============ GET STARTED ============ -->
   <sc-if value="{{ isGetStarted }}" hint-placeholder-val="{{ false }}">
     <main data-screen-label="Get Started" key="{{ animKey }}">
+      <div style="background:radial-gradient(ellipse 90% 100% at 20% 0%,{{ accentSoftColor }},{{ pageBg }} 100%);">
       <section style="max-width:100rem;margin:0 auto;padding:clamp(2rem,5vh,3rem) clamp(1.25rem,5vw,3rem) clamp(1.5rem,3vh,2rem);animation:kg-fade 0.5s ease both;">
-        <p style="font-size:0.82rem;text-transform:uppercase;letter-spacing:0.16em;color:#5b8fd6;font-weight:600;margin:0 0 1rem;">Get started</p>
+        <p style="font-size:0.82rem;text-transform:uppercase;letter-spacing:0.16em;color:{{ accentColor }};font-weight:600;margin:0 0 1rem;">Get started</p>
         <h1 style="font-family:'Fraunces',Georgia,serif;font-weight:500;font-size:clamp(2rem,1.7rem+1.6vw,2.9rem);line-height:1.1;margin:0 0 0.75rem;max-width:28ch;">Book your introduction right here.</h1>
-        <p style="font-size:1.1rem;line-height:1.55;color:#5b6472;max-width:60ch;margin:0;">Fill out the form below to get onboarded — it's secure, private, and goes straight to us.</p>
+        <p style="font-size:1.1rem;line-height:1.55;color:{{ mutedText }};max-width:60ch;margin:0;">Fill out the form below to get onboarded — it's secure, private, and goes straight to us.</p>
       </section>
+      </div>
 
       <section>
         <div style="max-width:100rem;margin:0 auto;padding:0 clamp(1.25rem,5vw,3rem) clamp(2rem,5vh,3rem);">
-          <div style="border-radius:16px;overflow:hidden;border:1px solid #e6e9ef;">
-            <iframe src="https://app.moxo.com/embed/de789728-f434-4be6-9a47-218400bf7d8d" width="100%" height="600" frameborder="0" style="border:none;display:block;"></iframe>
+          <div style="border-radius:16px;overflow:hidden;border:1px solid {{ cardBorder }};padding:1.5rem;background:#fff;">
+            <div id="zf_div_IA70KZBAwznXrIPD3dBzx_Y26wUDWEnX78U0u80ivMQ" ref="{{ zohoFormRef }}"></div>
           </div>
         </div>
       </section>
 
-      <section style="border-top:1px solid #e6e9ef;">
+      <section style="border-top:1px solid {{ cardBorder }};">
         <div style="max-width:100rem;margin:0 auto;padding:clamp(2.5rem,6vh,3.5rem) clamp(1.25rem,5vw,3rem);">
           <div style="display:grid;gap:0;">
             <sc-for list="{{ stepsGetStarted }}" as="p" hint-placeholder-count="3">
-              <div style="display:grid;grid-template-columns:3rem 1fr;gap:1.5rem;padding-block:1.75rem;border-top:1px solid #e6e9ef;">
-                <span style="font-family:'Fraunces',Georgia,serif;color:#5b8fd6;font-size:1.3rem;">{{ p.n }}</span>
+              <div style="display:grid;grid-template-columns:3rem 1fr;gap:1.5rem;padding-block:1.75rem;border-top:1px solid {{ cardBorder }};">
+                <span style="font-family:'Fraunces',Georgia,serif;color:{{ accentColor }};font-size:1.3rem;">{{ p.n }}</span>
                 <div>
                   <h3 style="font-family:'Fraunces',Georgia,serif;font-weight:500;font-size:1.35rem;margin:0 0 0.4rem;">{{ p.title }}</h3>
-                  <p style="color:#5b6472;font-size:1.05rem;line-height:1.6;margin:0;">{{ p.body }}</p>
+                  <p style="color:{{ mutedText }};font-size:1.05rem;line-height:1.6;margin:0;">{{ p.body }}</p>
                 </div>
               </div>
             </sc-for>
-            <div style="border-top:1px solid #e6e9ef;"></div>
+            <div style="border-top:1px solid {{ cardBorder }};"></div>
           </div>
         </div>
       </section>
@@ -352,18 +552,18 @@
     <main data-screen-label="Login" key="{{ animKey }}">
       <section style="max-width:26rem;margin:0 auto;padding:clamp(4rem,10vh,6rem) clamp(1.25rem,5vw,3rem) clamp(3rem,8vh,4.5rem);animation:kg-fade 0.5s ease both;">
         <h1 style="font-family:'Fraunces',Georgia,serif;font-weight:500;font-size:1.9rem;margin:0 0 0.5rem;text-align:center;">Log in</h1>
-        <p style="color:#5b6472;font-size:0.96rem;text-align:center;margin:0 0 2rem;">Access your client account.</p>
-        <div style="display:flex;flex-direction:column;gap:1rem;background:#fff;border:1px solid #e6e9ef;border-radius:14px;padding:1.75rem;">
-          <label style="font-size:0.85rem;color:#5b6472;">Email
+        <p style="color:{{ mutedText }};font-size:0.96rem;text-align:center;margin:0 0 2rem;">Access your client account.</p>
+        <div style="display:flex;flex-direction:column;gap:1rem;background:{{ cardBg }};border:1px solid {{ cardBorder }};border-radius:14px;padding:1.75rem;">
+          <label style="font-size:0.85rem;color:{{ mutedText }};">Email
             <input type="email" placeholder="you@email.com" style="display:block;width:100%;margin-top:0.4rem;padding:0.7rem 0.9rem;border:1px solid #c7cedb;border-radius:8px;font-size:0.95rem;font-family:'Inter',sans-serif;box-sizing:border-box;">
           </label>
-          <label style="font-size:0.85rem;color:#5b6472;">Password
+          <label style="font-size:0.85rem;color:{{ mutedText }};">Password
             <input type="password" placeholder="••••••••" style="display:block;width:100%;margin-top:0.4rem;padding:0.7rem 0.9rem;border:1px solid #c7cedb;border-radius:8px;font-size:0.95rem;font-family:'Inter',sans-serif;box-sizing:border-box;">
           </label>
-          <button onClick="{{ handleLoginSubmit }}" style="background:#2c3e63;color:#fff;padding:0.8rem;border-radius:100px;font-size:0.95rem;font-weight:600;border:none;cursor:pointer;margin-top:0.5rem;transition:background 0.25s ease,transform 0.25s ease;" style-hover="background:#8fb3e8 !important; transform:translateY(-2px) !important;">Log in</button>
+          <button onClick="{{ handleLoginSubmit }}" style="background:{{ primaryColor }};color:#fff;padding:0.8rem;border-radius:100px;font-size:0.95rem;font-weight:600;border:none;cursor:pointer;margin-top:0.5rem;transition:background 0.25s ease,transform 0.25s ease;" style-hover="background:{{ primaryHoverColor }} !important; transform:translateY(-2px) !important;">Log in</button>
           <p style="font-size:0.82rem;color:#8891a0;text-align:center;margin:0.25rem 0 0;">Demo only — connects to MemberPress login once on WordPress.</p>
         </div>
-        <p style="text-align:center;font-size:0.9rem;color:#5b6472;margin-top:1.5rem;">New here? <a href="#" onClick="{{ goGetStarted }}" style="color:#2c3e63;font-weight:600;">Get started</a></p>
+        <p style="text-align:center;font-size:0.9rem;color:{{ mutedText }};margin-top:1.5rem;">New here? <a href="#" onClick="{{ goGetStarted }}" style="color:{{ primaryColor }};font-weight:600;">Get started</a></p>
       </section>
     </main>
   </sc-if>
@@ -372,25 +572,25 @@
   <sc-if value="{{ isAccount }}" hint-placeholder-val="{{ false }}">
     <main data-screen-label="Account" key="{{ animKey }}">
       <section style="max-width:100rem;margin:0 auto;padding:clamp(4rem,10vh,6rem) clamp(1.25rem,5vw,3rem) clamp(2.5rem,6vh,3.5rem);animation:kg-fade 0.5s ease both;">
-        <p style="font-size:0.82rem;text-transform:uppercase;letter-spacing:0.16em;color:#5b8fd6;font-weight:600;margin:0 0 1.25rem;">Client account</p>
+        <p style="font-size:0.82rem;text-transform:uppercase;letter-spacing:0.16em;color:{{ accentColor }};font-weight:600;margin:0 0 1.25rem;">Client account</p>
         <h1 style="font-family:'Fraunces',Georgia,serif;font-weight:500;font-size:clamp(2rem,1.7rem+2vw,2.8rem);line-height:1.1;margin:0 0 1.25rem;">Welcome back.</h1>
-        <p style="font-size:1.05rem;line-height:1.6;color:#5b6472;max-width:44ch;margin:0 0 2rem;">Your documents, messages, and plan live in the client portal. [This panel becomes your MemberPress account dashboard once on WordPress.]</p>
-        <a href="#" onClick="{{ handleLogout }}" style="border:1px solid #c7cedb;color:#2c3e63;padding:0.75rem 1.5rem;border-radius:100px;font-size:0.9rem;font-weight:600;display:inline-block;transition:background 0.25s ease,border-color 0.25s ease;" style-hover="background:#eef4fc !important; border-color:#5b8fd6 !important;">Log out</a>
+        <p style="font-size:1.05rem;line-height:1.6;color:{{ mutedText }};max-width:44ch;margin:0 0 2rem;">Your documents, messages, and plan live in the client portal. [This panel becomes your MemberPress account dashboard once on WordPress.]</p>
+        <a href="#" onClick="{{ handleLogout }}" style="border:1px solid #c7cedb;color:{{ primaryColor }};padding:0.75rem 1.5rem;border-radius:100px;font-size:0.9rem;font-weight:600;display:inline-block;transition:background 0.25s ease,border-color 0.25s ease;" style-hover="background:{{ accentSoftColor }} !important; border-color:{{ accentColor }} !important;">Log out</a>
       </section>
-      <section style="border-top:1px solid #e6e9ef;">
+      <section style="border-top:1px solid {{ cardBorder }};">
         <div style="max-width:100rem;margin:0 auto;padding:clamp(3rem,7vh,4.5rem) clamp(1.25rem,5vw,3rem);">
           <div style="display:grid;gap:1.5rem;grid-template-columns:repeat(auto-fit,minmax(15rem,1fr));">
-            <div style="padding:1.85rem;background:#fff;border:1px solid #e6e9ef;border-radius:14px;">
+            <div style="padding:1.85rem;background:{{ cardBg }};border:1px solid {{ cardBorder }};border-radius:14px;">
               <h3 style="font-family:'Fraunces',Georgia,serif;font-weight:500;font-size:1.1rem;margin:0 0 0.5rem;">Documents</h3>
-              <p style="color:#5b6472;font-size:1.05rem;line-height:1.6;margin:0;">Secure files shared between you and your advisor.</p>
+              <p style="color:{{ mutedText }};font-size:1.05rem;line-height:1.6;margin:0;">Secure files shared between you and your advisor.</p>
             </div>
-            <div style="padding:1.85rem;background:#fff;border:1px solid #e6e9ef;border-radius:14px;">
+            <div style="padding:1.85rem;background:{{ cardBg }};border:1px solid {{ cardBorder }};border-radius:14px;">
               <h3 style="font-family:'Fraunces',Georgia,serif;font-weight:500;font-size:1.1rem;margin:0 0 0.5rem;">Messages</h3>
-              <p style="color:#5b6472;font-size:1.05rem;line-height:1.6;margin:0;">Direct line to your advisor between meetings.</p>
+              <p style="color:{{ mutedText }};font-size:1.05rem;line-height:1.6;margin:0;">Direct line to your advisor between meetings.</p>
             </div>
-            <div style="padding:1.85rem;background:#fff;border:1px solid #e6e9ef;border-radius:14px;">
+            <div style="padding:1.85rem;background:{{ cardBg }};border:1px solid {{ cardBorder }};border-radius:14px;">
               <h3 style="font-family:'Fraunces',Georgia,serif;font-weight:500;font-size:1.1rem;margin:0 0 0.5rem;">Plan</h3>
-              <p style="color:#5b6472;font-size:1.05rem;line-height:1.6;margin:0;">Your current financial plan and next steps.</p>
+              <p style="color:{{ mutedText }};font-size:1.05rem;line-height:1.6;margin:0;">Your current financial plan and next steps.</p>
             </div>
           </div>
         </div>
@@ -402,29 +602,29 @@
   <sc-if value="{{ isResourcePage }}" hint-placeholder-val="{{ false }}">
     <main data-screen-label="{{ resourcePageLabel }}" key="{{ animKey }}">
       <section style="max-width:100rem;margin:0 auto;padding:clamp(5rem,14vh,8rem) clamp(1.25rem,5vw,3rem) clamp(4rem,12vh,6rem);animation:kg-fade 0.5s ease both;text-align:center;">
-        <p style="font-size:0.82rem;text-transform:uppercase;letter-spacing:0.16em;color:#5b8fd6;font-weight:600;margin:0 0 1.25rem;">Client resources</p>
+        <p style="font-size:0.82rem;text-transform:uppercase;letter-spacing:0.16em;color:{{ accentColor }};font-weight:600;margin:0 0 1.25rem;">Client resources</p>
         <h1 style="font-family:'Fraunces',Georgia,serif;font-weight:500;font-size:clamp(2.2rem,1.9rem+2vw,3.2rem);line-height:1.1;margin:0 0 1rem;">{{ resourcePageLabel }}</h1>
-        <p style="font-size:1.1rem;line-height:1.6;color:#5b6472;max-width:44ch;margin:0 auto;">This area is coming soon. Once live, it'll live here for logged-in clients.</p>
+        <p style="font-size:1.1rem;line-height:1.6;color:{{ mutedText }};max-width:44ch;margin:0 auto;">This area is coming soon. Once live, it'll live here for logged-in clients.</p>
       </section>
     </main>
   </sc-if>
 
   <!-- FOOTER -->
-  <footer style="border-top:1px solid #e6e9ef;margin-top:1rem;">
+  <footer style="border-top:1px solid {{ cardBorder }};margin-top:1rem;background:linear-gradient(180deg,{{ pageBg }},{{ headerBg }} 40%);backdrop-filter:blur(10px);">
     <div style="max-width:100rem;margin:0 auto;padding:clamp(2.5rem,6vh,3.5rem) clamp(1.25rem,5vw,3rem) 2.5rem;">
       <div style="display:flex;justify-content:space-between;gap:2rem;flex-wrap:wrap;margin-bottom:2rem;">
         <a href="#" onClick="{{ goHome }}" style="display:flex;align-items:center;">
           <img src="assets/kaligirl-logo.png" alt="Kali Girl Financial Services" style="height:46px;width:auto;display:block;">
         </a>
         <ul style="display:flex;gap:1.5rem;list-style:none;margin:0;padding:0;flex-wrap:wrap;">
-          <li><a href="#" onClick="{{ goServices }}" style="color:#5b6472;font-size:0.9rem;transition:color 0.25s ease;" style-hover="color:#2c3e63 !important;">Services</a></li>
-          <li><a href="#" onClick="{{ goAbout }}" style="color:#5b6472;font-size:0.9rem;transition:color 0.25s ease;" style-hover="color:#2c3e63 !important;">About</a></li>
-          <li><a href="#" onClick="{{ goContact }}" style="color:#5b6472;font-size:0.9rem;transition:color 0.25s ease;" style-hover="color:#2c3e63 !important;">Contact</a></li>
-          <li><a href="#" data-placeholder="adv" onClick="{{ handleAdvClick }}" style="color:#5b6472;font-size:0.9rem;transition:color 0.25s ease;" style-hover="color:#2c3e63 !important;">Form ADV / Disclosures</a></li>
+          <li><a href="#" onClick="{{ goServices }}" style="color:{{ mutedText }};font-size:0.9rem;transition:color 0.25s ease;" style-hover="color:{{ primaryColor }} !important;">Services</a></li>
+          <li><a href="#" onClick="{{ goAbout }}" style="color:{{ mutedText }};font-size:0.9rem;transition:color 0.25s ease;" style-hover="color:{{ primaryColor }} !important;">About</a></li>
+          <li><a href="#" onClick="{{ goContact }}" style="color:{{ mutedText }};font-size:0.9rem;transition:color 0.25s ease;" style-hover="color:{{ primaryColor }} !important;">Contact</a></li>
+          <li><a href="#" data-placeholder="adv" onClick="{{ handleAdvClick }}" style="color:{{ mutedText }};font-size:0.9rem;transition:color 0.25s ease;" style-hover="color:{{ primaryColor }} !important;">Form ADV / Disclosures</a></li>
         </ul>
       </div>
-      <p style="font-size:0.78rem;line-height:1.6;color:#5b6472;max-width:100%;border-top:1px dashed #e1e5ec;padding-top:1.5rem;margin:0;">
-        <strong style="color:#1b2333;">Disclosure:</strong>
+      <p style="font-size:0.78rem;line-height:1.6;color:{{ mutedText }};max-width:100%;border-top:1px dashed #e1e5ec;padding-top:1.5rem;margin:0;">
+        <strong style="color:{{ textColor }};">Disclosure:</strong>
         Kaligirl Financial Services is a general S corporation and is not currently a registered investment advisory firm. Fiduciary advisory services are not yet being offered. This website is for informational purposes only and does not constitute investment, tax, or legal advice.
       </p>
     </div>
@@ -433,7 +633,7 @@
 </div>
 
 </x-dc>
-<script type="text/x-dc" data-dc-script>
+<script type="text/x-dc" data-dc-script data-props="{&quot;theme&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;default&quot;:&quot;terracotta&quot;,&quot;tsType&quot;:&quot;string&quot;,&quot;options&quot;:[&quot;ocean&quot;,&quot;terracotta&quot;,&quot;dark&quot;],&quot;section&quot;:&quot;Theme&quot;},&quot;pageBackground&quot;:{&quot;editor&quot;:&quot;color&quot;,&quot;default&quot;:&quot;#f8f9fb&quot;,&quot;tsType&quot;:&quot;string&quot;,&quot;options&quot;:[&quot;#f8f9fb&quot;,&quot;#93aed9&quot;,&quot;#6f93cc&quot;,&quot;#b7bfd4&quot;,&quot;#cbb794&quot;,&quot;#a9c9ae&quot;,&quot;#c9a9c2&quot;,&quot;#d9c398&quot;],&quot;section&quot;:&quot;Theme&quot;}}">
 class Component extends DCLogic {
   state = {
     page: 'home',
@@ -442,15 +642,38 @@ class Component extends DCLogic {
     animKey: 0,
     isLoggedIn: false,
     resourcesMenuOpen: false,
+    servicesMenuOpen: false,
+    resourcesMegaMenuOpen: false,
+    selectedPersonalCard: null,
+    selectedBusinessCard: null,
   };
 
   componentDidMount() {
     this._onResize = () => this.setState({ isNarrow: window.innerWidth < 1040 });
     window.addEventListener('resize', this._onResize);
+    this.mountZohoForm();
+  }
+
+  componentDidUpdate() {
+    this.mountZohoForm();
   }
 
   componentWillUnmount() {
     window.removeEventListener('resize', this._onResize);
+  }
+
+  mountZohoForm() {
+    if (this.state.page !== 'get-started') return;
+    if (!this._zohoDiv || this._zohoDiv.childElementCount > 0) return;
+    try {
+      var f = document.createElement('iframe');
+      f.src = 'https://kaligirlfinancialservices.zohobookings.com/4946279000000136007';
+      f.style.border = 'none';
+      f.style.height = '900px';
+      f.style.width = '100%';
+      f.setAttribute('aria-label', 'Book an introduction');
+      this._zohoDiv.appendChild(f);
+    } catch (e) {}
   }
 
   go(page) {
@@ -469,10 +692,43 @@ class Component extends DCLogic {
 
   renderVals() {
     const page = this.state.page;
-    const activeColor = '#1b2333';
-    const inactiveColor = '#5b6472';
+    const theme = this.props.theme ?? 'ocean';
+    const palettes = {
+      ocean: { primary: '#2c3e63', primaryHover: '#8fb3e8', accent: '#5b8fd6', accentSoft: '#eef4fc', text: '#1b2333', bg: this.props.pageBackground ?? '#f8f9fb', cardBg: '#fff', cardBorder: '#e6e9ef', mutedText: '#5b6472', headerBg: 'rgba(248,249,251,0.92)' },
+      terracotta: { primary: '#1b2333', primaryHover: '#c1603f', accent: '#2f6b64', accentSoft: '#dce9e6', text: '#2b2b2b', bg: '#f5ead9', cardBg: '#fff', cardBorder: '#e6e9ef', mutedText: '#5b6472', headerBg: 'rgba(255,255,255,0.92)' },
+      dark: { primary: '#c1603f', primaryHover: '#d98a6c', accent: '#4a9188', accentSoft: '#22322f', text: '#f0f2f5', bg: '#161b26', cardBg: '#212736', cardBorder: '#333d4f', mutedText: '#a8b0bd', headerBg: 'rgba(22,27,38,0.92)' },
+    };
+    const palette = palettes[theme] || palettes.ocean;
+    const activeColor = palette.text;
+    const inactiveColor = palette.mutedText;
+
+    const personalConsultingCards = [
+      { title: 'Financial Planning', body: 'A coordinated look at your income, savings, and goals, turned into a plan you can actually follow.', detail: 'Financial planning starts with a clear-eyed look at your income, savings, debt, and goals — then turns that into a plan with concrete, sequenced steps. No generic templates: the plan is built around your actual numbers and what you’re trying to achieve.', imgId: 'pfc-planning' },
+      { title: 'Financial Strategy', body: 'Longer-term positioning for your assets and goals, adjusted as your life changes.', detail: 'Financial strategy is the longer view — how your assets, income, and goals fit together over years, not months. As your circumstances shift, the strategy adjusts with you, so decisions today stay aligned with where you’re headed.', imgId: 'pfc-strategy' },
+      { title: 'Financial Coaching', body: 'Ongoing, judgment-free guidance to build better financial habits over time.', detail: 'Coaching is about building habits, not just making a one-time plan. Regular, judgment-free check-ins help you stay accountable to your goals, adjust as life happens, and build genuine financial confidence over time.', imgId: 'pfc-coaching' },
+      { title: 'Life Transitions', body: 'Support through major changes — career shifts, marriage, divorce, inheritance, retirement, and more.', detail: 'Major life changes — a new job, marriage, divorce, an inheritance, retirement — all carry financial decisions that are easy to get wrong under stress. We help you navigate the financial side of these transitions clearly and without pressure.', imgId: 'pfc-transitions' },
+    ];
+
+    const businessAdvisoryCards = [
+      { title: 'Fractional CFO', body: 'Executive-level financial guidance without the cost of a full-time hire.', detail: 'A fractional CFO gives your business senior-level financial oversight — cash flow management, forecasting, reporting, and strategic decision support — without the overhead of a full-time executive hire. Engaged on the schedule your business actually needs, from a few hours a month to ongoing weekly involvement.', imgId: 'boa-cfo' },
+      { title: 'Fractional COO', body: 'Hands-on operational leadership to keep the business running smoothly as it grows.', detail: 'A fractional COO steps in to run day-to-day operations, coordinate teams, and remove the bottlenecks that come with growth. This means tighter execution, clearer accountability, and a business that runs well whether or not you’re in the room.', imgId: 'boa-coo' },
+      { title: 'Financial Strategy', body: 'Cash flow, reporting, and a financial structure built for where the business is headed.', detail: 'Beyond bookkeeping, financial strategy means building a structure — cash flow discipline, reporting rhythms, and forecasting — that matches where your business is going, not just where it’s been. It gives you the visibility to make confident decisions.', imgId: 'boa-strategy' },
+      { title: 'Organizational Design', body: 'Structuring roles, teams, and reporting lines so the business scales without friction.', detail: 'As businesses grow, informal structures start to break down. Organizational design means clarifying roles, reporting lines, and decision rights so the business can add people and complexity without losing speed or accountability.', imgId: 'boa-org' },
+      { title: 'Operations Design', body: 'Streamlined processes and systems that reduce bottlenecks and manual work.', detail: 'Operations design looks at how work actually flows through your business and removes the friction — manual handoffs, unclear ownership, redundant steps — replacing it with systems and processes that scale cleanly.', imgId: 'boa-ops' },
+      { title: 'Customer Experience', body: 'Aligning the customer journey with the business’s financial and operational goals.', detail: 'A great customer experience should reinforce your financial and operational goals, not work against them. We look at the full customer journey and align it with how your business actually runs, so growth doesn’t come at the cost of service quality.', imgId: 'boa-cx' },
+    ];
 
     return {
+      pageBg: palette.bg,
+      primaryColor: palette.primary,
+      primaryHoverColor: palette.primaryHover,
+      accentColor: palette.accent,
+      accentSoftColor: palette.accentSoft,
+      textColor: palette.text,
+      cardBg: palette.cardBg,
+      cardBorder: palette.cardBorder,
+      mutedText: palette.mutedText,
+      headerBg: palette.headerBg,
       isHome: page === 'home',
       isServices: page === 'services',
       isAbout: page === 'about',
@@ -480,6 +736,35 @@ class Component extends DCLogic {
       isGetStarted: page === 'get-started',
       isLogin: page === 'login',
       isAccount: page === 'account',
+      isPersonalConsulting: page === 'personal-consulting',
+      isBusinessConsulting: page === 'business-consulting',
+      selectedPersonalCard: this.state.selectedPersonalCard,
+      selectedBusinessCard: this.state.selectedBusinessCard,
+      showPersonalGrid: this.state.selectedPersonalCard === null,
+      showBusinessGrid: this.state.selectedBusinessCard === null,
+      clearPersonalCard: () => this.setState({ selectedPersonalCard: null }),
+      clearBusinessCard: () => this.setState({ selectedBusinessCard: null }),
+      selectedPersonalCardData: this.state.selectedPersonalCard !== null ? personalConsultingCards[this.state.selectedPersonalCard] : null,
+      selectedBusinessCardData: this.state.selectedBusinessCard !== null ? businessAdvisoryCards[this.state.selectedBusinessCard] : null,
+      personalConsultingCards: personalConsultingCards,
+      personalConsultingCardsWithHandlers: personalConsultingCards.map((c, i) => ({ ...c, onSelect: () => this.setState({ selectedPersonalCard: i }) })),
+      businessAdvisoryCardsWithHandlers: businessAdvisoryCards.map((c, i) => ({ ...c, onSelect: () => this.setState({ selectedBusinessCard: i }) })),
+      isPublicResources: page === 'public-resources',
+      goPersonalConsulting: this.go('personal-consulting'),
+      goBusinessConsulting: this.go('business-consulting'),
+      goPublicResources: this.go('public-resources'),
+      publicResourcesColor: page === 'public-resources' ? activeColor : inactiveColor,
+      publicResourcesUnderline: page === 'public-resources' ? '2px solid #5b8fd6' : '2px solid transparent',
+      servicesMenuOpen: this.state.servicesMenuOpen,
+      openServicesMenu: () => { clearTimeout(this._closeTimer); this.setState({ servicesMenuOpen: true }); },
+      closeServicesMenu: () => { this._closeTimer = setTimeout(() => this.setState({ servicesMenuOpen: false }), 120); },
+      servicesMenuAnimOpacity: this.state.servicesMenuOpen ? 1 : 0,
+      servicesMenuAnimTransform: this.state.servicesMenuOpen ? 'translateY(0)' : 'translateY(-8px)',
+      resourcesMegaMenuOpen: this.state.resourcesMegaMenuOpen,
+      openResourcesMegaMenu: () => { clearTimeout(this._resClose); this.setState({ resourcesMegaMenuOpen: true }); },
+      closeResourcesMegaMenu: () => { this._resClose = setTimeout(() => this.setState({ resourcesMegaMenuOpen: false }), 120); },
+      resourcesMegaMenuAnimOpacity: this.state.resourcesMegaMenuOpen ? 1 : 0,
+      resourcesMegaMenuAnimTransform: this.state.resourcesMegaMenuOpen ? 'translateY(0)' : 'translateY(-8px)',
       animKey: this.state.animKey,
 
       isLoggedIn: this.state.isLoggedIn,
@@ -490,6 +775,7 @@ class Component extends DCLogic {
       goAbout: this.go('about'),
       goLogin: this.go('login'),
       goAccount: this.go('account'),
+      zohoFormRef: (el) => { this._zohoDiv = el; if (el) setTimeout(() => this.mountZohoForm(), 0); },
       isResourcePage: page === 'library' || page === 'lessons' || page === 'tools',
       resourcePageLabel: page === 'library' ? 'Library' : page === 'lessons' ? 'Lessons' : 'Tools',
       goLibrary: (e) => { this.setState({ resourcesMenuOpen: false }); this.go('library')(e); },
@@ -539,6 +825,7 @@ class Component extends DCLogic {
         { n: '02', title: 'Full transparency', body: 'Fees, methods, and any conflicts of interest are laid out plainly and documented — before you decide to work with us.' },
         { n: '03', title: 'Built around your life', body: 'Every plan starts with your circumstances and goals, not an off-the-shelf template.' },
       ],
+      businessAdvisoryCards: businessAdvisoryCards,
       servicesHome: [
         { title: 'Financial planning', body: 'A coordinated look at your income, savings, and goals, turned into a plan you can actually follow.' },
         { title: 'Investment guidance', body: 'Objective, fiduciary advice on how your assets are structured and managed over time.' },

@@ -1,0 +1,557 @@
+/**
+ * Header interactions: mobile menu toggle and the Resources dropdown.
+ * Everything else is real page navigation (WordPress permalinks), so there
+ * is no client-side routing here — only the UI toggle state the design
+ * spec calls out as staying client-side JS.
+ */
+( function () {
+	'use strict';
+
+	/**
+	 * RFC 4122-ish fallback for browsers without crypto.randomUUID (older
+	 * Safari). The token's real security property comes from the server-side
+	 * Zoho Creator lookup in inc/zoho.php, not from this generator alone.
+	 */
+	function kaligirlGenerateToken() {
+		if ( window.crypto && typeof window.crypto.randomUUID === 'function' ) {
+			return window.crypto.randomUUID();
+		}
+		return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace( /[xy]/g, function ( c ) {
+			var r = ( Math.random() * 16 ) | 0;
+			var v = c === 'x' ? r : ( r & 0x3 ) | 0x8;
+			return v.toString( 16 );
+		} );
+	}
+
+	/**
+	 * Zoho's own post-submission/post-booking redirects navigate *within
+	 * whatever iframe is showing Zoho's content*, not the top-level page —
+	 * so landing on one of our own pages (e.g. /get-started, /booking, or
+	 * /thank-you) would otherwise render nested inside that small embed
+	 * instead of taking over the whole tab. Same-origin policy blocks
+	 * reading the iframe's location while it's still showing Zoho's domain
+	 * (the try/catch below just swallows that, silently, until it changes)
+	 * — but once Zoho's redirect lands the iframe on our own domain,
+	 * reading it succeeds, and that's our signal to force a real
+	 * top-level navigation to the same URL. Shared by the Get Started form
+	 * iframes and the Zoho Bookings widget.
+	 *
+	 * Same-origin access to the iframe's URL becomes readable the instant
+	 * navigation *lands* on our domain — it does not need to wait for that
+	 * nested page to actually finish loading. The iframe's own `load`
+	 * event, though, only fires once the whole nested page (our full site
+	 * — header, footer, forms and all, loading a second time inside this
+	 * small widget) has completely finished loading, which visibly took
+	 * 1-2 seconds in testing ("picture in picture" flash before
+	 * redirecting). Polling every 60ms catches the same-origin moment far
+	 * earlier than that, and the iframe is hidden the instant it's
+	 * detected, before the top-level navigation takes over, so the nested
+	 * flash is no longer visible.
+	 *
+	 * Zoho Bookings' widget creates its own transient internal iframes
+	 * during normal operation, before a booking is ever completed — some
+	 * of these are about:blank, which (unlike a cross-origin URL) reads
+	 * back successfully with no throw. Without checking the URL itself,
+	 * the poll below would mistake that for "landed on our domain" and
+	 * fire the redirect immediately, sending the whole tab to about:blank
+	 * instead of waiting for the real post-booking landing. Requiring the
+	 * landed URL to actually start with our own origin rules that out.
+	 */
+	function kaligirlBreakoutIframeOnSameOrigin( iframe ) {
+		var brokeOut = false;
+
+		function tryBreakout() {
+			if ( brokeOut ) {
+				return;
+			}
+			try {
+				var landedUrl = iframe.contentWindow.location.href;
+				if ( landedUrl.indexOf( window.location.origin ) !== 0 ) {
+					return; // Not really on our domain yet (e.g. about:blank) — keep waiting.
+				}
+				brokeOut = true;
+				window.clearInterval( pollTimer );
+				iframe.style.visibility = 'hidden';
+				window.top.location.href = landedUrl;
+			} catch ( e ) {
+				// Still cross-origin (on Zoho's domain) — expected; ignore.
+			}
+		}
+
+		iframe.addEventListener( 'load', tryBreakout );
+		var pollTimer = window.setInterval( tryBreakout, 60 );
+	}
+
+	/**
+	 * Zoho Bookings' inlineEmbed() injects its own iframe(s) into the
+	 * target container asynchronously (and possibly more than once across
+	 * a multi-step booking flow), so we can't just grab one iframe once —
+	 * watch the container and apply the breakout above to whatever shows
+	 * up, for as long as the container exists.
+	 */
+	function kaligirlWatchEmbedContainerForIframes( container ) {
+		if ( ! container ) {
+			return;
+		}
+
+		container.querySelectorAll( 'iframe' ).forEach( kaligirlBreakoutIframeOnSameOrigin );
+
+		var observer = new MutationObserver( function ( mutations ) {
+			mutations.forEach( function ( mutation ) {
+				mutation.addedNodes.forEach( function ( node ) {
+					if ( node.nodeType !== 1 ) {
+						return;
+					}
+					if ( node.tagName === 'IFRAME' ) {
+						kaligirlBreakoutIframeOnSameOrigin( node );
+					}
+					if ( node.querySelectorAll ) {
+						node.querySelectorAll( 'iframe' ).forEach( kaligirlBreakoutIframeOnSameOrigin );
+					}
+				} );
+			} );
+		} );
+		observer.observe( container, { childList: true, subtree: true } );
+	}
+
+	/**
+	 * Fallback for when the iframe-breakout trick above finds nothing to
+	 * attach to — plausible if Bookings.inlineEmbed() renders its calendar
+	 * as same-origin DOM content rather than a true cross-origin iframe
+	 * ("inline embed" as opposed to a sandboxed iframe embed), in which
+	 * case there's no iframe boundary at all for that trick to detect.
+	 *
+	 * The standard mechanism for an embedded widget to notify its host
+	 * page of an event like "booking completed" is window.postMessage() —
+	 * this listens for any message from a Zoho domain and:
+	 *   1. Always logs it to the console, so a real test run reveals the
+	 *      exact shape Zoho actually sends (open dev tools, complete a
+	 *      booking, check the Console tab, report back what's there).
+	 *   2. Best-effort redirects to /thank-you if the message looks like a
+	 *      success/completion signal — a broad keyword match, since the
+	 *      real field/event name isn't confirmed (Zoho's docs blocked every
+	 *      fetch attempt). Tighten this once the logged shape is known.
+	 */
+	function kaligirlListenForBookingComplete() {
+		window.addEventListener( 'message', function ( event ) {
+			if ( ! /zohobookings\.com|nimbuspop\.com/.test( event.origin ) ) {
+				return;
+			}
+
+			// eslint-disable-next-line no-console
+			console.log( 'Zoho Bookings postMessage:', event.origin, event.data );
+
+			var raw = event.data;
+			var text = typeof raw === 'string' ? raw : ( function () {
+				try {
+					return JSON.stringify( raw );
+				} catch ( e ) {
+					return '';
+				}
+			} )();
+
+			if ( /book(ed|ing).*(success|complet|confirm)|success.*book|appointment.*(confirm|schedul)/i.test( text ) ) {
+				window.top.location.href = '/thank-you';
+			}
+		} );
+	}
+
+	/**
+	 * Get Started fork page: Personal/Business toggle, Route One/Two form
+	 * reveal, and one-time gate-token generation per route — appended to
+	 * each Zoho Forms iframe's src, and carried into a fallback "Continue"
+	 * link for /booking or /payment in case Zoho's own redirect-on-submission
+	 * setting can't forward the token dynamically (see page-get-started.php
+	 * header comment — this needs confirming in Zoho Forms' own settings).
+	 */
+	function kaligirlInitGetStarted() {
+		var forkView = document.querySelector( '[data-kg-view="fork"]' );
+		if ( ! forkView ) {
+			return; // Not on the Get Started page.
+		}
+
+		var routeOneView = document.querySelector( '[data-kg-view="route-one"]' );
+		var routeTwoView = document.querySelector( '[data-kg-view="route-two"]' );
+		var allViews = [ forkView, routeOneView, routeTwoView ];
+
+		function showView( view ) {
+			allViews.forEach( function ( el ) {
+				if ( el ) {
+					el.hidden = el !== view;
+				}
+			} );
+		}
+
+		// Personal/Business toggle controls: which of Route One's button
+		// (Personal-only) is visible, and — inside Route Two — which of the
+		// two Zoho Forms embeds (Personal vs Business) is shown.
+		var modeRadios = document.querySelectorAll( 'input[name="kg-advising-mode"]' );
+		var personalOnlyEls = document.querySelectorAll( '[data-kg-personal-only]' );
+		var businessOnlyEls = document.querySelectorAll( '[data-kg-business-only]' );
+
+		function getAdvisingMode() {
+			var checked = document.querySelector( 'input[name="kg-advising-mode"]:checked' );
+			return ( ! checked || checked.value === 'personal' ) ? 'personal' : 'business';
+		}
+
+		/**
+		 * Route Two's not-yet-booked state shows a Zoho Bookings widget
+		 * instead of a form — lazily initialized the first time its
+		 * container actually becomes relevant (view shown, or toggle
+		 * switched to it while already showing), rather than eagerly at
+		 * page load like the Forms scripts elsewhere on this page, since an
+		 * inline calendar widget measured while its container is
+		 * display:none can size itself incorrectly. No-ops harmlessly if
+		 * this page is in the $kg_from_booking state instead (no
+		 * #inline-container-* markup exists there at all).
+		 *
+		 * Declared (and kaligirlBookingWidgetsLoaded initialized) before
+		 * applyMode()'s first call below — applyMode() calls this, and a
+		 * `var` initializer only runs when its line of source actually
+		 * executes, not just because the declaration is hoisted, so this
+		 * has to come first or that first call reads kaligirlBookingWidgetsLoaded
+		 * while it's still undefined and throws.
+		 */
+		var kaligirlBookingWidgetsLoaded = {};
+		function kaligirlEnsureBookingWidget( mode ) {
+			if ( kaligirlBookingWidgetsLoaded[ mode ] ) {
+				return;
+			}
+			var containerId = 'inline-container-' + mode;
+			var container = document.getElementById( containerId );
+			if ( ! container || typeof Bookings === 'undefined' ) {
+				return;
+			}
+			kaligirlBookingWidgetsLoaded[ mode ] = true;
+
+			var widgetUrl = 'business' === mode
+				? 'https://kaligirlfinancialservices.zohobookings.com/portal-embed#/4946279000000136026'
+				: 'https://kaligirlfinancialservices.zohobookings.com/portal-embed#/4946279000000136007';
+
+			Bookings.inlineEmbed( {
+				url: widgetUrl,
+				parent: '#' + containerId,
+				height: '600px'
+			} );
+
+			// Same iframe-containment problem as the Forms embeds: if this
+			// widget's own booking-completion redirect fires inside a
+			// nested iframe, break out to a real top-level navigation.
+			kaligirlWatchEmbedContainerForIframes( container );
+		}
+
+		function applyMode() {
+			var isPersonal = getAdvisingMode() === 'personal';
+			personalOnlyEls.forEach( function ( el ) {
+				el.hidden = ! isPersonal;
+			} );
+			businessOnlyEls.forEach( function ( el ) {
+				el.hidden = isPersonal;
+			} );
+			// Route Two already visible and the toggle just switched which
+			// side is showing — lazily init that side's booking widget if
+			// this is the first time it's been revealed.
+			if ( routeTwoView && ! routeTwoView.hidden ) {
+				kaligirlEnsureBookingWidget( isPersonal ? 'personal' : 'business' );
+			}
+		}
+
+		modeRadios.forEach( function ( radio ) {
+			radio.addEventListener( 'change', applyMode );
+		} );
+		applyMode();
+
+		/**
+		 * Generates (or reuses, if this route's view was already opened once
+		 * this session) a gate token for one route, sets it on that route's
+		 * iframe src, and points its fallback "Continue" link at the right
+		 * destination with that same token.
+		 */
+		function loadRoute( routeKey, view ) {
+			if ( ! view || view.dataset.kgLoaded ) {
+				return;
+			}
+			view.dataset.kgLoaded = 'true';
+
+			var storageKey = 'kg_gate_token_' + routeKey;
+			var token = window.sessionStorage.getItem( storageKey );
+			if ( ! token ) {
+				token = kaligirlGenerateToken();
+				window.sessionStorage.setItem( storageKey, token );
+			}
+
+			// Route One: a plain static <iframe data-kg-form-src> in the markup.
+			var staticIframe = view.querySelector( 'iframe[data-kg-form-src]' );
+			if ( staticIframe ) {
+				var baseSrc = staticIframe.getAttribute( 'data-kg-form-src' );
+				staticIframe.src = baseSrc + '?gated_token=' + encodeURIComponent( token );
+				kaligirlBreakoutIframeOnSameOrigin( staticIframe );
+			}
+
+			// Route Two: Zoho's own embed script creates the iframe itself
+			// (into a div[id^="zf_div_"]) rather than us writing a static
+			// <iframe> tag, so its src (already carrying Zoho's own
+			// UTM/referrer params) isn't known until that script has run.
+			// Append our own params on top of it instead of replacing it
+			// outright, so Zoho's own tracking params survive intact. Route
+			// Two now holds *two* such forms (Personal/Business, toggled by
+			// applyMode() above) — augment every one found, not just one,
+			// so whichever is visible is already prefilled by the time the
+			// toggle reveals it.
+			var dynamicIframes = view.querySelectorAll( 'div[id^="zf_div_"] iframe' );
+			dynamicIframes.forEach( function ( dynamicIframe ) {
+				kaligirlBreakoutIframeOnSameOrigin( dynamicIframe );
+
+				// Which form this is (Personal vs Business) is fixed by
+				// which wrapper it lives in, not by whatever the toggle
+				// currently shows — both forms get prefilled together here,
+				// before the visitor has necessarily touched the toggle at
+				// all, so reading "the current mode" would wrongly tag both
+				// forms with whichever mode happens to be selected by
+				// default.
+				var iframeFlow = dynamicIframe.closest( '[data-kg-business-only]' ) ? 'business' : 'personal';
+				var extraParams = 'gated_token=' + encodeURIComponent( token ) + '&flow=' + iframeFlow;
+				var prefillRaw = view.getAttribute( 'data-kg-booking-prefill' );
+				if ( prefillRaw ) {
+					try {
+						var prefill = JSON.parse( prefillRaw );
+						Object.keys( prefill ).forEach( function ( key ) {
+							if ( prefill[ key ] ) {
+								extraParams += '&' + encodeURIComponent( key ) + '=' + encodeURIComponent( prefill[ key ] );
+							}
+						} );
+					} catch ( e ) {
+						// Malformed/empty JSON — no prefill data to add, carry on.
+					}
+				}
+				dynamicIframe.src += ( dynamicIframe.src.indexOf( '?' ) > -1 ? '&' : '?' ) + extraParams;
+			} );
+
+			var continueLink = view.querySelector( '[data-kg-continue-link]' );
+			if ( continueLink ) {
+				var destination = continueLink.getAttribute( 'data-kg-destination' );
+				continueLink.addEventListener( 'click', function ( e ) {
+					e.preventDefault();
+					// Route Two's destination needs to know which of the two
+					// forms (Personal/Business) was actually filled out, so
+					// /booking can embed the matching Zoho Bookings widget.
+					var flowParam = ( routeKey === 'two' ) ? '&flow=' + getAdvisingMode() : '';
+					window.location.href = destination + '?token=' + encodeURIComponent( token ) + flowParam;
+				} );
+			}
+		}
+
+		document.querySelectorAll( '[data-kg-route-button]' ).forEach( function ( button ) {
+			button.addEventListener( 'click', function () {
+				var route = button.getAttribute( 'data-kg-route-button' );
+				var view = route === 'one' ? routeOneView : routeTwoView;
+				loadRoute( route, view );
+				showView( view );
+				if ( route === 'two' ) {
+					kaligirlEnsureBookingWidget( getAdvisingMode() );
+				}
+			} );
+		} );
+
+		document.querySelectorAll( '[data-kg-back-to-fork]' ).forEach( function ( button ) {
+			button.addEventListener( 'click', function () {
+				showView( forkView );
+			} );
+		} );
+
+		// Landed here already showing Route Two (page-get-started.php
+		// unhides it server-side when the URL carries a completed Zoho
+		// Bookings redirect's customer_* params) — load it immediately
+		// instead of waiting for a button click that never comes.
+		if ( routeTwoView && ! routeTwoView.hidden ) {
+			loadRoute( 'two', routeTwoView );
+		}
+
+		// TEMP diagnostic — remove once we know whether Zoho Bookings sends
+		// a postMessage on booking completion. If it does, this reveals the
+		// real shape so a "Redirecting you now..." cover can be shown over
+		// the widget the instant that specific message arrives, instead of
+		// visitors seeing Zoho's own confirmation screen for a second or
+		// two before the redirect we can already detect (see
+		// kaligirlBreakoutIframeOnSameOrigin) actually fires. Not wiring up
+		// a cover based on a guess, since triggering on the wrong message
+		// (e.g. a routine resize ping) would hide the calendar too early.
+		window.addEventListener( 'message', function ( event ) {
+			if ( ! /zohobookings\.com|nimbuspop\.com/.test( event.origin ) ) {
+				return;
+			}
+			// eslint-disable-next-line no-console
+			console.log( 'kaligirl booking widget postMessage:', event.origin, event.data );
+		} );
+	}
+
+	/**
+	 * Services/Resources mega menus: hover to open, with a short close-delay
+	 * on mouse-leave (matches the design spec's 120ms debounce) so moving
+	 * the cursor from the nav link down into the panel doesn't flicker-close
+	 * it. Each trigger/panel pair is matched by a shared data-kg-mega-* key.
+	 */
+	function kaligirlInitMegaMenus() {
+		var triggers = document.querySelectorAll( '[data-kg-mega-trigger]' );
+		if ( ! triggers.length ) {
+			return;
+		}
+
+		var closeTimers = {};
+
+		function openMenu( key ) {
+			window.clearTimeout( closeTimers[ key ] );
+			document.querySelectorAll( '[data-kg-mega-panel]' ).forEach( function ( panel ) {
+				if ( panel.getAttribute( 'data-kg-mega-panel' ) !== key ) {
+					panel.classList.remove( 'is-open' );
+				}
+			} );
+			var panel = document.querySelector( '[data-kg-mega-panel="' + key + '"]' );
+			if ( panel ) {
+				panel.classList.add( 'is-open' );
+			}
+		}
+
+		function scheduleClose( key ) {
+			closeTimers[ key ] = window.setTimeout( function () {
+				var panel = document.querySelector( '[data-kg-mega-panel="' + key + '"]' );
+				if ( panel ) {
+					panel.classList.remove( 'is-open' );
+				}
+			}, 120 );
+		}
+
+		triggers.forEach( function ( trigger ) {
+			var key = trigger.getAttribute( 'data-kg-mega-trigger' );
+			var panel = document.querySelector( '[data-kg-mega-panel="' + key + '"]' );
+
+			trigger.addEventListener( 'mouseenter', function () {
+				openMenu( key );
+			} );
+			trigger.addEventListener( 'mouseleave', function () {
+				scheduleClose( key );
+			} );
+
+			if ( panel ) {
+				panel.addEventListener( 'mouseenter', function () {
+					openMenu( key );
+				} );
+				panel.addEventListener( 'mouseleave', function () {
+					scheduleClose( key );
+				} );
+			}
+		} );
+	}
+
+	/**
+	 * Personal/Business consulting pages: a grid of topic cards that
+	 * expands in place into a single detail card on click — no page
+	 * navigation, just show/hide state, matching the design's
+	 * grid <-> selectedCard interaction. Generic over both pages: each
+	 * detail panel's data-kg-consulting-detail index matches the card that
+	 * opens it.
+	 */
+	function kaligirlInitConsultingCards() {
+		var gridWrap = document.querySelector( '[data-kg-consulting="grid"]' );
+		if ( ! gridWrap ) {
+			return; // Not on a consulting page.
+		}
+
+		var cards = document.querySelectorAll( '[data-kg-consulting-card]' );
+		var details = document.querySelectorAll( '[data-kg-consulting-detail]' );
+
+		function showDetail( index ) {
+			gridWrap.hidden = true;
+			details.forEach( function ( detail ) {
+				detail.hidden = detail.getAttribute( 'data-kg-consulting-detail' ) !== index;
+			} );
+		}
+
+		function showGrid() {
+			gridWrap.hidden = false;
+			details.forEach( function ( detail ) {
+				detail.hidden = true;
+			} );
+		}
+
+		cards.forEach( function ( card ) {
+			var index = card.getAttribute( 'data-kg-consulting-card' );
+			card.addEventListener( 'click', function () {
+				showDetail( index );
+			} );
+			card.addEventListener( 'keydown', function ( e ) {
+				if ( e.key === 'Enter' || e.key === ' ' ) {
+					e.preventDefault();
+					showDetail( index );
+				}
+			} );
+		} );
+
+		document.querySelectorAll( '[data-kg-consulting-back]' ).forEach( function ( button ) {
+			button.addEventListener( 'click', showGrid );
+		} );
+	}
+
+	document.addEventListener( 'DOMContentLoaded', function () {
+		var mobileToggle = document.querySelector( '[data-kg-mobile-toggle]' );
+		var mobileMenu = document.querySelector( '[data-kg-mobile-menu]' );
+
+		if ( mobileToggle && mobileMenu ) {
+			mobileToggle.addEventListener( 'click', function () {
+				var isOpen = mobileMenu.classList.toggle( 'is-open' );
+				mobileToggle.setAttribute( 'aria-expanded', isOpen ? 'true' : 'false' );
+			} );
+		}
+
+		var resourcesToggle = document.querySelector( '[data-kg-resources-toggle]' );
+		var resourcesMenu = document.querySelector( '[data-kg-resources-menu]' );
+
+		if ( resourcesToggle && resourcesMenu ) {
+			resourcesToggle.addEventListener( 'click', function ( e ) {
+				e.stopPropagation();
+				var isOpen = resourcesMenu.classList.toggle( 'is-open' );
+				resourcesToggle.setAttribute( 'aria-expanded', isOpen ? 'true' : 'false' );
+			} );
+
+			// Close on outside click, and on selecting a link (per spec).
+			document.addEventListener( 'click', function ( e ) {
+				if ( ! resourcesMenu.contains( e.target ) && e.target !== resourcesToggle ) {
+					resourcesMenu.classList.remove( 'is-open' );
+					resourcesToggle.setAttribute( 'aria-expanded', 'false' );
+				}
+			} );
+			resourcesMenu.addEventListener( 'click', function ( e ) {
+				if ( e.target.tagName === 'A' ) {
+					resourcesMenu.classList.remove( 'is-open' );
+					resourcesToggle.setAttribute( 'aria-expanded', 'false' );
+				}
+			} );
+		}
+
+		// Footer "Form ADV / Disclosures" is a stub pending a real destination
+		// (see footer.php / README "Compliance placeholders").
+		var advStub = document.querySelector( '[data-kg-adv-stub]' );
+		if ( advStub ) {
+			advStub.addEventListener( 'click', function ( e ) {
+				e.preventDefault();
+				window.alert( 'This link is a placeholder pending compliance-approved content.' );
+			} );
+		}
+
+		kaligirlInitGetStarted();
+		kaligirlInitMegaMenus();
+		kaligirlInitConsultingCards();
+
+		// /booking's Zoho Bookings widget (page-booking.php) — same
+		// iframe-containment problem as the Get Started forms: a completed
+		// booking's redirect to /thank-you would otherwise render nested
+		// inside this small embed instead of taking over the tab. Runs
+		// both: the iframe-breakout trick in case Bookings does use a
+		// nested iframe, and the postMessage listener in case it doesn't
+		// (see kaligirlListenForBookingComplete() for why both exist).
+		if ( document.getElementById( 'inline-container' ) ) {
+			kaligirlWatchEmbedContainerForIframes( document.getElementById( 'inline-container' ) );
+			kaligirlListenForBookingComplete();
+		}
+	} );
+} )();
