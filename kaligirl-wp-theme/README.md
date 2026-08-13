@@ -104,6 +104,9 @@ kaligirl-wp-theme/
    at `/services/` picks up `page-services.php` automatically):
    - `/` or "Home" → Home
    - `services`, `about`, `contact`, `get-started` → matching templates
+   - `personal-consulting`, `business-advisory`, `resources` → matching
+     templates (linked from the Services/Resources mega menus — the
+     mega-menu links 404 until pages with these exact slugs are published)
    - `booking`, `payment` → matching templates (URLs must be exactly
      `/booking` and `/payment` — Zoho Forms' post-submission redirect and
      this theme's fallback "Continue" links both point at those two paths
