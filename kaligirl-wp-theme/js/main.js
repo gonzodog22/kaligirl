@@ -26,25 +26,48 @@
 	/**
 	 * Zoho's own post-submission/post-booking redirects navigate *within
 	 * whatever iframe is showing Zoho's content*, not the top-level page —
-	 * so landing on one of our own pages (e.g. /booking or /thank-you)
-	 * would otherwise render nested inside that small embed instead of
-	 * taking over the whole tab. Same-origin policy blocks reading the
-	 * iframe's location while it's still showing Zoho's domain (the
-	 * try/catch below just swallows that, silently, on every load until it
-	 * changes) — but once Zoho's redirect lands the iframe on our own
-	 * domain, reading it succeeds, and that's our signal to force a real
+	 * so landing on one of our own pages (e.g. /get-started, /booking, or
+	 * /thank-you) would otherwise render nested inside that small embed
+	 * instead of taking over the whole tab. Same-origin policy blocks
+	 * reading the iframe's location while it's still showing Zoho's domain
+	 * (the try/catch below just swallows that, silently, until it changes)
+	 * — but once Zoho's redirect lands the iframe on our own domain,
+	 * reading it succeeds, and that's our signal to force a real
 	 * top-level navigation to the same URL. Shared by the Get Started form
-	 * iframes and the Zoho Bookings widget on /booking.
+	 * iframes and the Zoho Bookings widget.
+	 *
+	 * Same-origin access to the iframe's URL becomes readable the instant
+	 * navigation *lands* on our domain — it does not need to wait for that
+	 * nested page to actually finish loading. The iframe's own `load`
+	 * event, though, only fires once the whole nested page (our full site
+	 * — header, footer, forms and all, loading a second time inside this
+	 * small widget) has completely finished loading, which visibly took
+	 * 1-2 seconds in testing ("picture in picture" flash before
+	 * redirecting). Polling every 60ms catches the same-origin moment far
+	 * earlier than that, and the iframe is hidden the instant it's
+	 * detected, before the top-level navigation takes over, so the nested
+	 * flash is no longer visible.
 	 */
 	function kaligirlBreakoutIframeOnSameOrigin( iframe ) {
-		iframe.addEventListener( 'load', function () {
+		var brokeOut = false;
+
+		function tryBreakout() {
+			if ( brokeOut ) {
+				return;
+			}
 			try {
 				var landedUrl = iframe.contentWindow.location.href;
+				brokeOut = true;
+				window.clearInterval( pollTimer );
+				iframe.style.visibility = 'hidden';
 				window.top.location.href = landedUrl;
 			} catch ( e ) {
 				// Still cross-origin (on Zoho's domain) — expected; ignore.
 			}
-		} );
+		}
+
+		iframe.addEventListener( 'load', tryBreakout );
+		var pollTimer = window.setInterval( tryBreakout, 60 );
 	}
 
 	/**
@@ -289,18 +312,7 @@
 						// Malformed/empty JSON — no prefill data to add, carry on.
 					}
 				}
-				var srcBefore = dynamicIframe.src;
 				dynamicIframe.src += ( dynamicIframe.src.indexOf( '?' ) > -1 ? '&' : '?' ) + extraParams;
-				// TEMP diagnostic — remove once prefill is confirmed working.
-				// Open dev tools (Console tab) on a real booking-first test
-				// and check these three lines to see exactly what got sent.
-				// eslint-disable-next-line no-console
-				console.log( 'kaligirl prefill debug:', {
-					mode: iframeFlow,
-					rawPrefillAttribute: prefillRaw,
-					srcBeforeAppend: srcBefore,
-					srcAfterAppend: dynamicIframe.src
-				} );
 			} );
 
 			var continueLink = view.querySelector( '[data-kg-continue-link]' );
