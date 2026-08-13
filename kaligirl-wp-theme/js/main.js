@@ -47,6 +47,15 @@
 	 * earlier than that, and the iframe is hidden the instant it's
 	 * detected, before the top-level navigation takes over, so the nested
 	 * flash is no longer visible.
+	 *
+	 * Zoho Bookings' widget creates its own transient internal iframes
+	 * during normal operation, before a booking is ever completed — some
+	 * of these are about:blank, which (unlike a cross-origin URL) reads
+	 * back successfully with no throw. Without checking the URL itself,
+	 * the poll below would mistake that for "landed on our domain" and
+	 * fire the redirect immediately, sending the whole tab to about:blank
+	 * instead of waiting for the real post-booking landing. Requiring the
+	 * landed URL to actually start with our own origin rules that out.
 	 */
 	function kaligirlBreakoutIframeOnSameOrigin( iframe ) {
 		var brokeOut = false;
@@ -57,6 +66,9 @@
 			}
 			try {
 				var landedUrl = iframe.contentWindow.location.href;
+				if ( landedUrl.indexOf( window.location.origin ) !== 0 ) {
+					return; // Not really on our domain yet (e.g. about:blank) — keep waiting.
+				}
 				brokeOut = true;
 				window.clearInterval( pollTimer );
 				iframe.style.visibility = 'hidden';
